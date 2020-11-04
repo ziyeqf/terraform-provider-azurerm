@@ -1,0 +1,71 @@
+---
+name: Private Provider Linting
+on:
+  pull_request:
+    types: ['opened', 'synchronize']
+    paths:
+      - '**.go'
+      - 'vendor/**'
+      - '.github/workflows/**'
+
+jobs:
+  provider-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.14.5'
+      - name: Changed Files Exporter
+        uses: futuratrepadeira/changed-files@v3.0.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+        id: changed_files
+
+      - name: provider lint
+        run: |
+          echo "machine github.com login magodo password ${{ secrets.TOKEN }}" > ~/.netrc
+
+          pushd $HOME >/dev/null
+          go get github.com/microsoft/terraform-azurerm-provider-linter || /bin/true
+          popd >/dev/null
+
+          rootdir="$GITHUB_WORKSPACE"
+
+          lint_filelist() {
+              path_list=$1
+              IFS=" " read -r -a path_list < <(echo "$path_list")
+              declare -A file_map
+              for path in "${path_list[@]}"; do
+                  pkg="${rootdir}/$(dirname "$path")"
+                  file="$(basename "$path")"
+                  pkg_file_list="${file_map["$pkg"]}"
+                  if [[ -z $pkg_file_list ]]; then
+                      file_map["$pkg"]="$file"
+                  else
+                      file_map["$pkg"]="${pkg_file_list},$file"
+                  fi
+              done
+
+              # iterate each package, vet for the specified files only
+              for pkg in "${!file_map[@]}"; do
+                  pushd "$pkg" >/dev/null
+                  cat << EOF
+          ----------------------------------------------------------------------------
+          @$(pwd)
+          go vet -files "${file_map[$pkg]}" -vettool="$(command -v terraform-azurerm-provider-linter)"
+
+          EOF
+                # Always return as successful, since the linter is for informative purpse only.
+                  go vet -files "${file_map[$pkg]}" -vettool="$(command -v terraform-azurerm-provider-linter)" || /bin/true
+                  popd >/dev/null
+              done
+          }
+
+          files_created="${{ steps.changed_files.outputs.files_created }}"
+          files_updated="${{ steps.changed_files.outputs.files_updated }}"
+
+          file_list=""
+          [[ -n "$files_created" ]] && file_list="${file_list} ${files_created}"
+          [[ -n "$files_updated" ]] && file_list="${file_list} ${files_updated}"
+          [[ -n "$file_list" ]] && lint_filelist "$file_list"
