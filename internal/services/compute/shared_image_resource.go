@@ -220,6 +220,16 @@ func resourceSharedImage() *pluginsdk.Resource {
 				ForceNew: true,
 			},
 
+			"architecture": {
+				Type:     pluginsdk.TypeString,
+				Optional: true,
+				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(compute.ArchitectureX64),
+					string(compute.ArchitectureArm64),
+				}, false),
+			},
+
 			"tags": tags.Schema(),
 		},
 
@@ -285,6 +295,7 @@ func resourceSharedImageCreateUpdate(d *pluginsdk.ResourceData, meta interface{}
 			PurchasePlan:        expandGalleryImagePurchasePlan(d.Get("purchase_plan").([]interface{})),
 			Features:            &features,
 			Recommended:         recommended,
+			Architecture:        compute.Architecture(d.Get("architecture").(string)),
 		},
 		Tags: tags.Expand(d.Get("tags").(map[string]interface{})),
 	}
@@ -427,6 +438,7 @@ func resourceSharedImageRead(d *pluginsdk.ResourceData, meta interface{}) error 
 		}
 		d.Set("trusted_launch_enabled", trustedLaunchEnabled)
 		d.Set("accelerated_network_support_enabled", acceleratedNetworkSupportEnabled)
+		d.Set("architecture", string(props.Architecture))
 	}
 
 	return tags.FlattenAndSet(d, resp.Tags)

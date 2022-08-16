@@ -262,6 +262,29 @@ func TestAccSharedImage_recommended(t *testing.T) {
 	})
 }
 
+func TestAccSharedImage_architecture(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azurerm_shared_image", "test")
+	r := SharedImageResource{}
+	data.ResourceTest(t, r, []acceptance.TestStep{
+		{
+			Config: r.basicWithArchitecture(data, "x64"),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+				check.That(data.ResourceName).Key("architecture").HasValue("x64"),
+			),
+		},
+		data.ImportStep(),
+		{
+			Config: r.basicWithArchitecture(data, "Arm64"),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+				check.That(data.ResourceName).Key("architecture").HasValue("Arm64"),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
 func (t SharedImageResource) Exists(ctx context.Context, clients *clients.Client, state *pluginsdk.InstanceState) (*bool, error) {
 	id, err := parse.SharedImageID(state.ID)
 	if err != nil {
@@ -836,4 +859,35 @@ resource "azurerm_shared_image" "test" {
   }
 }
 `, data.Locations.Primary, data.RandomInteger)
+}
+
+func (SharedImageResource) basicWithArchitecture(data acceptance.TestData, architecture string) string {
+	return fmt.Sprintf(`
+provider "azurerm" {
+  features {}
+}
+resource "azurerm_resource_group" "test" {
+  name     = "acctestRG-%[2]d"
+  location = "%[1]s"
+}
+resource "azurerm_shared_image_gallery" "test" {
+  name                = "acctestsig%[2]d"
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
+}
+resource "azurerm_shared_image" "test" {
+  name                = "acctestimg%[2]d"
+  gallery_name        = azurerm_shared_image_gallery.test.name
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
+  os_type             = "Linux"
+  architecture           = "%[3]s"
+
+  identifier {
+    publisher = "AccTesPublisher%[2]d"
+    offer     = "AccTesOffer%[2]d"
+    sku       = "AccTesSku%[2]d"
+  }
+}
+`, data.Locations.Primary, data.RandomInteger, architecture)
 }

@@ -135,6 +135,7 @@ func dataSourceSharedImageRead(d *pluginsdk.ResourceData, meta interface{}) erro
 		d.Set("hyper_v_generation", string(props.HyperVGeneration))
 		d.Set("privacy_statement_uri", props.PrivacyStatementURI)
 		d.Set("release_note_uri", props.ReleaseNoteURI)
+		d.Set("architecture", string(props.Architecture))
 
 		if err := d.Set("identifier", flattenGalleryImageDataSourceIdentifier(props.Identifier)); err != nil {
 			return fmt.Errorf("setting `identifier`: %+v", err)

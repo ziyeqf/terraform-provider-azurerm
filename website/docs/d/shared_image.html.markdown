@@ -55,6 +55,8 @@ The following attributes are exported:
 
 * `release_note_uri` - The URI containing the Release Notes for this Shared Image.
 
+* `architecture` - The architecture of the image. Applicable to OS disks only. `x64` and `Arm64` supported. Changing this forces a new resource to be created.
+
 * `tags` - A mapping of tags assigned to the Shared Image.
 
 ---
