@@ -3,6 +3,8 @@ package sentinel_test
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-azure-helpers/lang/response"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/securityinsights/2022-07-01-preview/watchlists"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -10,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance/check"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/sentinel/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
 
@@ -64,13 +65,13 @@ func TestAccWatchlist_requiresImport(t *testing.T) {
 func (r WatchlistResource) Exists(ctx context.Context, clients *clients.Client, state *terraform.InstanceState) (*bool, error) {
 	client := clients.Sentinel.WatchlistsClient
 
-	id, err := parse.WatchlistID(state.ID)
+	id, err := watchlists.ParseWatchlistID(state.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.Name); err != nil {
-		if utils.ResponseWasNotFound(resp.Response) {
+	if resp, err := client.Get(ctx, *id); err != nil {
+		if response.WasNotFound(resp.HttpResponse) {
 			return utils.Bool(false), nil
 		}
 		return nil, fmt.Errorf("retrieving %s: %+v", id, err)

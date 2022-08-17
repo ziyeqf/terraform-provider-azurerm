@@ -3,13 +3,14 @@ package sentinel_test
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-azure-helpers/lang/response"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/securityinsights/2022-07-01-preview/automationrules"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance/check"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/sentinel/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
@@ -93,13 +94,13 @@ func TestAccSentinelAutomationRule_requiresImport(t *testing.T) {
 func (r SentinelAutomationRuleResource) Exists(ctx context.Context, clients *clients.Client, state *pluginsdk.InstanceState) (*bool, error) {
 	client := clients.Sentinel.AutomationRulesClient
 
-	id, err := parse.AutomationRuleID(state.ID)
+	id, err := automationrules.ParseAutomationRuleID(state.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if resp, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.Name); err != nil {
-		if utils.ResponseWasNotFound(resp.Response) {
+	if resp, err := client.AutomationRulesGet(ctx, *id); err != nil {
+		if response.WasNotFound(resp.HttpResponse) {
 			return utils.Bool(false), nil
 		}
 		return nil, fmt.Errorf("retrieving %s: %+v", id, err)

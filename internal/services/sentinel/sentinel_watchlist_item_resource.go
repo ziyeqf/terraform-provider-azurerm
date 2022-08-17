@@ -3,16 +3,15 @@ package sentinel
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-azure-helpers/lang/response"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/securityinsights/2022-07-01-preview/watchlistitems"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/securityinsight/mgmt/2021-09-01-preview/securityinsight"
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/sdk"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/sentinel/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/sentinel/validate"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/validation"
-	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
 
 type WatchlistItemResource struct{}
@@ -82,30 +81,30 @@ func (r WatchlistItemResource) Create() sdk.ResourceFunc {
 				model.Name = uuid.New().String()
 			}
 
-			watchlistId, err := parse.WatchlistID(model.WatchlistID)
+			watchlistId, err := watchlistitems.ParseWatchlistID(model.WatchlistID)
 			if err != nil {
 				return err
 			}
 
-			id := parse.NewWatchlistItemID(watchlistId.SubscriptionId, watchlistId.ResourceGroup, watchlistId.WorkspaceName, watchlistId.Name, model.Name)
+			id := watchlistitems.NewWatchlistItemID(watchlistId.SubscriptionId, watchlistId.ResourceGroupName, watchlistId.WorkspaceName, watchlistId.WatchlistAlias, model.Name)
 
-			existing, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.WatchlistName, id.Name)
+			existing, err := client.Get(ctx, id)
 			if err != nil {
-				if !utils.ResponseWasNotFound(existing.Response) {
+				if !response.WasNotFound(existing.HttpResponse) {
 					return fmt.Errorf("checking for presence of existing %s: %+v", id, err)
 				}
 			}
-			if !utils.ResponseWasNotFound(existing.Response) {
+			if !response.WasNotFound(existing.HttpResponse) {
 				return metadata.ResourceRequiresImport(r.ResourceType(), id)
 			}
 
-			params := securityinsight.WatchlistItem{
-				WatchlistItemProperties: &securityinsight.WatchlistItemProperties{
+			params := watchlistitems.WatchlistItem{
+				Properties: &watchlistitems.WatchlistItemProperties{
 					ItemsKeyValue: model.Properties,
 				},
 			}
 
-			if _, err = client.CreateOrUpdate(ctx, id.ResourceGroup, id.WorkspaceName, id.WatchlistName, id.Name, params); err != nil {
+			if _, err = client.CreateOrUpdate(ctx, id, params); err != nil {
 				return fmt.Errorf("creating %s: %+v", id, err)
 			}
 
@@ -121,30 +120,37 @@ func (r WatchlistItemResource) Read() sdk.ResourceFunc {
 
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
 			client := metadata.Client.Sentinel.WatchlistItemsClient
-			id, err := parse.WatchlistItemID(metadata.ResourceData.Id())
+			id, err := watchlistitems.ParseWatchlistItemID(metadata.ResourceData.Id())
 			if err != nil {
 				return err
 			}
 
-			resp, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.WatchlistName, id.Name)
+			resp, err := client.Get(ctx, *id)
 			if err != nil {
-				if utils.ResponseWasNotFound(resp.Response) {
+				if response.WasNotFound(resp.HttpResponse) {
 					return metadata.MarkAsGone(id)
 				}
 				return fmt.Errorf("retrieving %s: %+v", id, err)
 			}
 
-			watchlistId := parse.NewWatchlistID(id.SubscriptionId, id.ResourceGroup, id.WorkspaceName, id.WatchlistName)
+			watchlistId := watchlistitems.NewWatchlistID(id.SubscriptionId, id.ResourceGroupName, id.WorkspaceName, id.WatchlistAlias)
 
+			var name string
 			var properties map[string]interface{}
-			if props := resp.WatchlistItemProperties; props != nil {
-				if itemsKV := props.ItemsKeyValue; itemsKV != nil {
-					properties = itemsKV.(map[string]interface{})
+			if model := resp.Model; model != nil {
+				if model.Name != nil {
+					name = *model.Name
+				}
+				if props := model.Properties; props != nil {
+					if itemsKV := props.ItemsKeyValue; itemsKV != nil {
+						properties = itemsKV.(map[string]interface{})
+					}
 				}
 			}
+
 			model := WatchlistItemModel{
 				WatchlistID: watchlistId.ID(),
-				Name:        id.Name,
+				Name:        name,
 				Properties:  properties,
 			}
 
@@ -159,12 +165,12 @@ func (r WatchlistItemResource) Delete() sdk.ResourceFunc {
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
 			client := metadata.Client.Sentinel.WatchlistItemsClient
 
-			id, err := parse.WatchlistItemID(metadata.ResourceData.Id())
+			id, err := watchlistitems.ParseWatchlistItemID(metadata.ResourceData.Id())
 			if err != nil {
 				return err
 			}
 
-			if _, err := client.Delete(ctx, id.ResourceGroup, id.WorkspaceName, id.WatchlistName, id.Name); err != nil {
+			if _, err := client.Delete(ctx, *id); err != nil {
 				return fmt.Errorf("deleting %s: %+v", id, err)
 			}
 
@@ -184,29 +190,31 @@ func (r WatchlistItemResource) Update() sdk.ResourceFunc {
 				return fmt.Errorf("decoding %+v", err)
 			}
 
-			watchlistId, err := parse.WatchlistID(model.WatchlistID)
+			watchlistId, err := watchlistitems.ParseWatchlistID(model.WatchlistID)
 			if err != nil {
 				return err
 			}
-			id := parse.NewWatchlistItemID(watchlistId.SubscriptionId, watchlistId.ResourceGroup, watchlistId.WorkspaceName, watchlistId.Name, model.Name)
+			id := watchlistitems.NewWatchlistItemID(watchlistId.SubscriptionId, watchlistId.ResourceGroupName, watchlistId.WorkspaceName, watchlistId.WatchlistAlias, model.Name)
 
-			existing, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.WatchlistName, id.Name)
+			existing, err := client.Get(ctx, id)
 			if err != nil {
 				return fmt.Errorf("checking for presence of existing %s: %+v", id, err)
 			}
 
-			update := securityinsight.WatchlistItem{
-				WatchlistItemProperties: existing.WatchlistItemProperties,
+			update := watchlistitems.WatchlistItem{}
+
+			if t := existing.Model; t != nil {
+				update.Properties = t.Properties
 			}
 
 			if metadata.ResourceData.HasChange("properties") {
-				if update.WatchlistItemProperties == nil {
-					update.WatchlistItemProperties = &securityinsight.WatchlistItemProperties{}
+				if update.Properties == nil {
+					update.Properties = &watchlistitems.WatchlistItemProperties{}
 				}
-				update.WatchlistItemProperties.ItemsKeyValue = model.Properties
+				update.Properties.ItemsKeyValue = model.Properties
 			}
 
-			if _, err = client.CreateOrUpdate(ctx, id.ResourceGroup, id.WorkspaceName, id.WatchlistName, id.Name, update); err != nil {
+			if _, err = client.CreateOrUpdate(ctx, id, update); err != nil {
 				return fmt.Errorf("creating %s: %+v", id, err)
 			}
 

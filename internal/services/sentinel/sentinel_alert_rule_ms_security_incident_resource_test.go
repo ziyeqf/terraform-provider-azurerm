@@ -3,13 +3,12 @@ package sentinel_test
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/securityinsights/2022-07-01-preview/alertrules"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/securityinsight/mgmt/2021-09-01-preview/securityinsight"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance/check"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/sentinel/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
@@ -135,22 +134,27 @@ func TestAccSentinelAlertRuleMsSecurityIncident_withDisplayNameExcludeFilter(t *
 }
 
 func (t SentinelAlertRuleMsSecurityIncidentResource) Exists(ctx context.Context, clients *clients.Client, state *pluginsdk.InstanceState) (*bool, error) {
-	id, err := parse.AlertRuleID(state.ID)
+	id, err := alertrules.ParseAlertRuleID(state.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := clients.Sentinel.AlertRulesClient.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
+	resp, err := clients.Sentinel.AlertRulesClient.AlertRulesGet(ctx, *id)
 	if err != nil {
 		return nil, fmt.Errorf("reading Sentinel Alert Rule Ms Security Incident %q: %v", id, err)
 	}
 
-	rule, ok := resp.Value.(securityinsight.MicrosoftSecurityIncidentCreationAlertRule)
+	model := resp.Model
+	if model == nil {
+		return nil, fmt.Errorf("reading Sentinel Alert Rule Ms Security Incident %q: model is nil", id)
+	}
+
+	rule, ok := (*model).(alertrules.MicrosoftSecurityIncidentCreationAlertRule)
 	if !ok {
 		return nil, fmt.Errorf("the Alert Rule %q is not a MS Security Incident Alert Rule", id)
 	}
 
-	return utils.Bool(rule.ID != nil), nil
+	return utils.Bool(rule.Id != nil), nil
 }
 
 func (r SentinelAlertRuleMsSecurityIncidentResource) basic(data acceptance.TestData) string {

@@ -3,13 +3,13 @@ package sentinel_test
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-azure-helpers/lang/response"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/securityinsights/2022-07-01-preview/alertrules"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/securityinsight/mgmt/2021-09-01-preview/securityinsight"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance/check"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/sentinel/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
@@ -92,26 +92,31 @@ func TestAccSentinelAlertRuleMLBehaviorAnalytics_requiresImport(t *testing.T) {
 
 func (r SentinelAlertRuleMLBehaviorAnalyticsResource) Exists(ctx context.Context, client *clients.Client, state *pluginsdk.InstanceState) (*bool, error) {
 	alertRuleClient := client.Sentinel.AlertRulesClient
-	id, err := parse.AlertRuleID(state.ID)
+	id, err := alertrules.ParseAlertRuleID(state.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := alertRuleClient.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
+	resp, err := alertRuleClient.AlertRulesGet(ctx, *id)
 	if err != nil {
-		if utils.ResponseWasNotFound(resp.Response) {
+		if response.WasNotFound(resp.HttpResponse) {
 			return utils.Bool(false), nil
 		}
 
 		return nil, fmt.Errorf("retrieving Sentinel Alert Rule MLBehaviorAnalytics (%q): %+v", state.String(), err)
 	}
 
-	rule, ok := resp.Value.(securityinsight.MLBehaviorAnalyticsAlertRule)
+	model := resp.Model
+	if model == nil {
+		return nil, fmt.Errorf("retrieving Sentinel Alert Rule MLBehaviorAnalytics (%q): model is nil", state.String())
+	}
+
+	rule, ok := (*model).(alertrules.MLBehaviorAnalyticsAlertRule)
 	if !ok {
 		return nil, fmt.Errorf("the Alert Rule %q is not a MLBehaviorAnalytics Alert Rule", id)
 	}
 
-	return utils.Bool(rule.ID != nil), nil
+	return utils.Bool(rule.Id != nil), nil
 }
 
 func (r SentinelAlertRuleMLBehaviorAnalyticsResource) basic(data acceptance.TestData) string {

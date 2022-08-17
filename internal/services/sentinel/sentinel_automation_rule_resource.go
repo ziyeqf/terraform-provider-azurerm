@@ -2,11 +2,12 @@ package sentinel
 
 import (
 	"fmt"
+	"github.com/hashicorp/go-azure-helpers/lang/response"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/securityinsights/2022-07-01-preview/automationrules"
 	"log"
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/securityinsight/mgmt/2021-09-01-preview/securityinsight"
 	"github.com/Azure/go-autorest/autorest/date"
 	"github.com/gofrs/uuid"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/azure"
@@ -90,58 +91,58 @@ func resourceSentinelAutomationRule() *pluginsdk.Resource {
 							Type:     pluginsdk.TypeString,
 							Required: true,
 							ValidateFunc: validation.StringInSlice([]string{
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAccountAadTenantID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAccountAadUserID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAccountNTDomain),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAccountName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAccountObjectGUID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAccountPUID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAccountSid),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAccountUPNSuffix),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAzureResourceResourceID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyAzureResourceSubscriptionID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyCloudApplicationAppID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyCloudApplicationAppName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyDNSDomainName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyFileDirectory),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyFileHashValue),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyFileName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyHostAzureID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyHostNTDomain),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyHostName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyHostNetBiosName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyHostOSVersion),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIPAddress),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIncidentDescription),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIncidentProviderName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIncidentRelatedAnalyticRuleIds),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIncidentSeverity),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIncidentStatus),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIncidentTactics),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIncidentTitle),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIoTDeviceID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIoTDeviceModel),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIoTDeviceName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIoTDeviceOperatingSystem),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIoTDeviceType),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyIoTDeviceVendor),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailMessageDeliveryAction),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailMessageDeliveryLocation),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailMessageP1Sender),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailMessageP2Sender),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailMessageRecipient),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailMessageSenderIP),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailMessageSubject),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailboxDisplayName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailboxPrimaryAddress),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMailboxUPN),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMalwareCategory),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyMalwareName),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyProcessCommandLine),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyProcessID),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyRegistryKey),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyRegistryValueData),
-								string(securityinsight.AutomationRulePropertyConditionSupportedPropertyURL),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAccountAadTenantId),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAccountAadUserId),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAccountNTDomain),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAccountName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAccountObjectGuid),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAccountPUID),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAccountSid),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAccountUPNSuffix),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAzureResourceResourceId),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyAzureResourceSubscriptionId),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyCloudApplicationAppId),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyCloudApplicationAppName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyDNSDomainName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyFileDirectory),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyFileHashValue),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyFileName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyHostAzureID),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyHostNTDomain),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyHostName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyHostNetBiosName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyHostOSVersion),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIPAddress),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIncidentDescription),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIncidentProviderName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIncidentRelatedAnalyticRuleIds),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIncidentSeverity),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIncidentStatus),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIncidentTactics),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIncidentTitle),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIoTDeviceId),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIoTDeviceModel),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIoTDeviceName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIoTDeviceOperatingSystem),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIoTDeviceType),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyIoTDeviceVendor),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailMessageDeliveryAction),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailMessageDeliveryLocation),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailMessagePOneSender),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailMessagePTwoSender),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailMessageRecipient),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailMessageSenderIP),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailMessageSubject),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailboxDisplayName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailboxPrimaryAddress),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMailboxUPN),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMalwareCategory),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyMalwareName),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyProcessCommandLine),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyProcessId),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyRegistryKey),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyRegistryValueData),
+								string(automationrules.AutomationRulePropertyConditionSupportedPropertyUrl),
 							}, false),
 						},
 
@@ -149,14 +150,14 @@ func resourceSentinelAutomationRule() *pluginsdk.Resource {
 							Type:     pluginsdk.TypeString,
 							Required: true,
 							ValidateFunc: validation.StringInSlice([]string{
-								string(securityinsight.AutomationRulePropertyConditionSupportedOperatorContains),
-								string(securityinsight.AutomationRulePropertyConditionSupportedOperatorEndsWith),
-								string(securityinsight.AutomationRulePropertyConditionSupportedOperatorEquals),
-								string(securityinsight.AutomationRulePropertyConditionSupportedOperatorNotContains),
-								string(securityinsight.AutomationRulePropertyConditionSupportedOperatorNotEndsWith),
-								string(securityinsight.AutomationRulePropertyConditionSupportedOperatorNotEquals),
-								string(securityinsight.AutomationRulePropertyConditionSupportedOperatorNotStartsWith),
-								string(securityinsight.AutomationRulePropertyConditionSupportedOperatorStartsWith),
+								string(automationrules.AutomationRulePropertyConditionSupportedOperatorContains),
+								string(automationrules.AutomationRulePropertyConditionSupportedOperatorEndsWith),
+								string(automationrules.AutomationRulePropertyConditionSupportedOperatorEquals),
+								string(automationrules.AutomationRulePropertyConditionSupportedOperatorNotContains),
+								string(automationrules.AutomationRulePropertyConditionSupportedOperatorNotEndsWith),
+								string(automationrules.AutomationRulePropertyConditionSupportedOperatorNotEquals),
+								string(automationrules.AutomationRulePropertyConditionSupportedOperatorNotStartsWith),
+								string(automationrules.AutomationRulePropertyConditionSupportedOperatorStartsWith),
 							}, false),
 						},
 
@@ -186,9 +187,9 @@ func resourceSentinelAutomationRule() *pluginsdk.Resource {
 							Type:     pluginsdk.TypeString,
 							Optional: true,
 							ValidateFunc: validation.StringInSlice([]string{
-								string(securityinsight.IncidentStatusActive),
-								string(securityinsight.IncidentStatusClosed),
-								string(securityinsight.IncidentStatusNew),
+								string(automationrules.IncidentStatusActive),
+								string(automationrules.IncidentStatusClosed),
+								string(automationrules.IncidentStatusNew),
 							}, false),
 						},
 
@@ -196,11 +197,11 @@ func resourceSentinelAutomationRule() *pluginsdk.Resource {
 							Type:     pluginsdk.TypeString,
 							Optional: true,
 							ValidateFunc: validation.StringInSlice([]string{
-								string(securityinsight.IncidentClassificationUndetermined),
-								string(securityinsight.IncidentClassificationBenignPositive) + "_" + string(securityinsight.IncidentClassificationReasonSuspiciousButExpected),
-								string(securityinsight.IncidentClassificationFalsePositive) + "_" + string(securityinsight.IncidentClassificationReasonIncorrectAlertLogic),
-								string(securityinsight.IncidentClassificationFalsePositive) + "_" + string(securityinsight.IncidentClassificationReasonInaccurateData),
-								string(securityinsight.IncidentClassificationTruePositive) + "_" + string(securityinsight.IncidentClassificationReasonSuspiciousActivity),
+								string(automationrules.IncidentClassificationUndetermined),
+								string(automationrules.IncidentClassificationBenignPositive) + "_" + string(automationrules.IncidentClassificationReasonSuspiciousButExpected),
+								string(automationrules.IncidentClassificationFalsePositive) + "_" + string(automationrules.IncidentClassificationReasonIncorrectAlertLogic),
+								string(automationrules.IncidentClassificationFalsePositive) + "_" + string(automationrules.IncidentClassificationReasonInaccurateData),
+								string(automationrules.IncidentClassificationTruePositive) + "_" + string(automationrules.IncidentClassificationReasonSuspiciousActivity),
 							}, false),
 						},
 
@@ -228,10 +229,10 @@ func resourceSentinelAutomationRule() *pluginsdk.Resource {
 							Type:     pluginsdk.TypeString,
 							Optional: true,
 							ValidateFunc: validation.StringInSlice([]string{
-								string(securityinsight.IncidentSeverityHigh),
-								string(securityinsight.IncidentSeverityInformational),
-								string(securityinsight.IncidentSeverityLow),
-								string(securityinsight.IncidentSeverityMedium),
+								string(automationrules.IncidentSeverityHigh),
+								string(automationrules.IncidentSeverityInformational),
+								string(automationrules.IncidentSeverityLow),
+								string(automationrules.IncidentSeverityMedium),
 							}, false),
 						},
 					},
@@ -278,21 +279,21 @@ func resourceSentinelAutomationRuleCreateUpdate(d *pluginsdk.ResourceData, meta 
 	defer cancel()
 
 	name := d.Get("name").(string)
-	workspaceId, err := loganalyticsParse.LogAnalyticsWorkspaceID(d.Get("log_analytics_workspace_id").(string))
+	workspaceId, err := automationrules.ParseWorkspaceID(d.Get("log_analytics_workspace_id").(string))
 	if err != nil {
 		return err
 	}
-	id := parse.NewAutomationRuleID(workspaceId.SubscriptionId, workspaceId.ResourceGroup, workspaceId.WorkspaceName, name)
+	id := automationrules.NewAutomationRuleID(workspaceId.SubscriptionId, workspaceId.ResourceGroupName, workspaceId.WorkspaceName, name)
 
 	if d.IsNewResource() {
-		resp, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
+		resp, err := client.AutomationRulesGet(ctx, id)
 		if err != nil {
-			if !utils.ResponseWasNotFound(resp.Response) {
+			if !response.WasNotFound(resp.HttpResponse) {
 				return fmt.Errorf("checking for existing %s: %+v", id, err)
 			}
 		}
 
-		if !utils.ResponseWasNotFound(resp.Response) {
+		if !response.WasNotFound(resp.HttpResponse) {
 			return tf.ImportAsExistsError("azurerm_sentinel_automation_rule", id.ID())
 		}
 	}
@@ -301,26 +302,26 @@ func resourceSentinelAutomationRuleCreateUpdate(d *pluginsdk.ResourceData, meta 
 	if err != nil {
 		return err
 	}
-	params := securityinsight.AutomationRule{
-		AutomationRuleProperties: &securityinsight.AutomationRuleProperties{
-			DisplayName: utils.String(d.Get("display_name").(string)),
-			Order:       utils.Int32(int32(d.Get("order").(int))),
-			TriggeringLogic: &securityinsight.AutomationRuleTriggeringLogic{
-				IsEnabled:    utils.Bool(d.Get("enabled").(bool)),
-				TriggersOn:   utils.String("Incidents"), // This is the only supported enum for now. The reason why there is no enum in SDK, see: https://github.com/Azure/azure-sdk-for-go/issues/14589
-				TriggersWhen: utils.String("Created"),   // This is the only supported enum for now. The reason why there is no enum in SDK, see: https://github.com/Azure/azure-sdk-for-go/issues/14589
+	params := automationrules.AutomationRule{
+		Properties: automationrules.AutomationRuleProperties{
+			DisplayName: d.Get("display_name").(string),
+			Order:       int64(d.Get("order").(int)),
+			TriggeringLogic: automationrules.AutomationRuleTriggeringLogic{
+				IsEnabled:    d.Get("enabled").(bool),
+				TriggersOn:   "Incidents", // This is the only supported enum for now. The reason why there is no enum in SDK, see: https://github.com/Azure/azure-sdk-for-go/issues/14589
+				TriggersWhen: "Created",   // This is the only supported enum for now. The reason why there is no enum in SDK, see: https://github.com/Azure/azure-sdk-for-go/issues/14589
 				Conditions:   expandAutomationRuleConditions(d.Get("condition").([]interface{})),
 			},
-			Actions: actions,
+			Actions: *actions,
 		},
 	}
 
 	if expiration := d.Get("expiration").(string); expiration != "" {
 		t, _ := time.Parse(time.RFC3339, expiration)
-		params.AutomationRuleProperties.TriggeringLogic.ExpirationTimeUtc = &date.Time{Time: t}
+		params.Properties.TriggeringLogic.ExpirationTimeUtc = utils.String(date.Time{Time: t}.String())
 	}
 
-	_, err = client.CreateOrUpdate(ctx, id.ResourceGroup, id.WorkspaceName, id.Name, params)
+	_, err = client.AutomationRulesCreateOrUpdate(ctx, id, params)
 	if err != nil {
 		return fmt.Errorf("creating %s: %+v", id, err)
 	}
@@ -335,14 +336,14 @@ func resourceSentinelAutomationRuleRead(d *pluginsdk.ResourceData, meta interfac
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	id, err := parse.AutomationRuleID(d.Id())
+	id, err := automationrules.ParseAutomationRuleID(d.Id())
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
+	resp, err := client.AutomationRulesGet(ctx, *id)
 	if err != nil {
-		if utils.ResponseWasNotFound(resp.Response) {
+		if response.WasNotFound(resp.HttpResponse) {
 			log.Printf("[DEBUG] %s was not found - removing from state!", id)
 			d.SetId("")
 			return nil
@@ -351,43 +352,47 @@ func resourceSentinelAutomationRuleRead(d *pluginsdk.ResourceData, meta interfac
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	d.Set("name", id.Name)
-	d.Set("log_analytics_workspace_id", loganalyticsParse.NewLogAnalyticsWorkspaceID(id.SubscriptionId, id.ResourceGroup, id.WorkspaceName).ID())
-	if prop := resp.AutomationRuleProperties; prop != nil {
-		d.Set("display_name", prop.DisplayName)
+	model := resp.Model
+	if model == nil {
+		return fmt.Errorf("retrieving %s: model is nil", id)
+	}
 
-		var order int
-		if prop.Order != nil {
-			order = int(*prop.Order)
+	d.Set("name", model.Name)
+	d.Set("log_analytics_workspace_id", loganalyticsParse.NewLogAnalyticsWorkspaceID(id.SubscriptionId, id.ResourceGroupName, id.WorkspaceName).ID())
+
+	prop := model.Properties
+	d.Set("display_name", prop.DisplayName)
+
+	var order int
+	order = int(prop.Order)
+	d.Set("order", order)
+
+	tl := prop.TriggeringLogic
+	enabled := tl.IsEnabled
+
+	d.Set("enabled", enabled)
+
+	var expiration string
+	if tl.ExpirationTimeUtc != nil {
+		t, err := time.Parse(time.RFC3339, *tl.ExpirationTimeUtc)
+		if err != nil {
+			expiration = t.Format(time.RFC3339)
 		}
-		d.Set("order", order)
+	}
 
-		if tl := prop.TriggeringLogic; tl != nil {
-			var enabled bool
-			if tl.IsEnabled != nil {
-				enabled = *tl.IsEnabled
-			}
-			d.Set("enabled", enabled)
+	d.Set("expiration", expiration)
 
-			var expiration string
-			if tl.ExpirationTimeUtc != nil {
-				expiration = tl.ExpirationTimeUtc.Format(time.RFC3339)
-			}
-			d.Set("expiration", expiration)
+	if err := d.Set("condition", flattenAutomationRuleConditions(tl.Conditions)); err != nil {
+		return fmt.Errorf("setting `condition`: %v", err)
+	}
 
-			if err := d.Set("condition", flattenAutomationRuleConditions(tl.Conditions)); err != nil {
-				return fmt.Errorf("setting `condition`: %v", err)
-			}
-		}
+	actionIncident, actionPlaybook := flattenAutomationRuleActions(&prop.Actions)
 
-		actionIncident, actionPlaybook := flattenAutomationRuleActions(prop.Actions)
-
-		if err := d.Set("action_incident", actionIncident); err != nil {
-			return fmt.Errorf("setting `action_incident`: %v", err)
-		}
-		if err := d.Set("action_playbook", actionPlaybook); err != nil {
-			return fmt.Errorf("setting `action_playbook`: %v", err)
-		}
+	if err := d.Set("action_incident", actionIncident); err != nil {
+		return fmt.Errorf("setting `action_incident`: %v", err)
+	}
+	if err := d.Set("action_playbook", actionPlaybook); err != nil {
+		return fmt.Errorf("setting `action_playbook`: %v", err)
 	}
 
 	return nil
@@ -398,12 +403,12 @@ func resourceSentinelAutomationRuleDelete(d *pluginsdk.ResourceData, meta interf
 	ctx, cancel := timeouts.ForDelete(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	id, err := parse.AutomationRuleID(d.Id())
+	id, err := automationrules.ParseAutomationRuleID(d.Id())
 	if err != nil {
 		return err
 	}
 
-	_, err = client.Delete(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
+	_, err = client.AutomationRulesDelete(ctx, *id)
 	if err != nil {
 		return fmt.Errorf("deleting %s: %+v", id, err)
 	}
@@ -411,45 +416,50 @@ func resourceSentinelAutomationRuleDelete(d *pluginsdk.ResourceData, meta interf
 	return nil
 }
 
-func expandAutomationRuleConditions(input []interface{}) *[]securityinsight.BasicAutomationRuleCondition {
+func expandAutomationRuleConditions(input []interface{}) *[]automationrules.AutomationRuleCondition {
 	if len(input) == 0 {
 		return nil
 	}
 
-	out := make([]securityinsight.BasicAutomationRuleCondition, 0, len(input))
+	out := make([]automationrules.AutomationRuleCondition, 0, len(input))
 	for _, b := range input {
 		b := b.(map[string]interface{})
-
-		out = append(out, &securityinsight.AutomationRulePropertyValuesCondition{
-			ConditionProperties: &securityinsight.AutomationRulePropertyValuesConditionConditionProperties{
-				PropertyName:   securityinsight.AutomationRulePropertyConditionSupportedProperty(b["property"].(string)),
-				Operator:       securityinsight.AutomationRulePropertyConditionSupportedOperator(b["operator"].(string)),
-				PropertyValues: utils.ExpandStringSlice(b["values"].([]interface{})),
-			},
-			ConditionType: securityinsight.ConditionTypeProperty,
+		operator := automationrules.AutomationRulePropertyConditionSupportedOperator(b["operator"].(string))
+		name := automationrules.AutomationRulePropertyConditionSupportedProperty(b["property"].(string))
+		out = append(out, &automationrules.AutomationRulePropertyValuesCondition{
+			Operator:       &operator,
+			PropertyName:   &name,
+			PropertyValues: utils.ExpandStringSlice(b["values"].([]interface{})),
 		})
 	}
 	return &out
 }
 
-func flattenAutomationRuleConditions(conditions *[]securityinsight.BasicAutomationRuleCondition) interface{} {
+func flattenAutomationRuleConditions(conditions *[]automationrules.AutomationRuleCondition) interface{} {
 	if conditions == nil {
 		return nil
 	}
 
 	out := make([]interface{}, 0, len(*conditions))
 	for _, condition := range *conditions {
-		condition := condition.(securityinsight.AutomationRulePropertyValuesCondition)
+		condition := condition.(automationrules.AutomationRulePropertyValuesCondition)
 
 		var (
 			property string
 			operator string
 			values   []interface{}
 		)
-		if p := condition.ConditionProperties; p != nil {
-			property = string(p.PropertyName)
-			operator = string(p.Operator)
-			values = utils.FlattenStringSlice(p.PropertyValues)
+
+		if condition.PropertyName != nil {
+			property = string(*condition.PropertyName)
+		}
+
+		if condition.Operator != nil {
+			operator = string(*condition.Operator)
+		}
+
+		if condition.PropertyValues != nil {
+			values = utils.FlattenStringSlice(condition.PropertyValues)
 		}
 
 		out = append(out, map[string]interface{}{
@@ -461,7 +471,7 @@ func flattenAutomationRuleConditions(conditions *[]securityinsight.BasicAutomati
 	return out
 }
 
-func expandAutomationRuleActions(d *pluginsdk.ResourceData, defaultTenantId string) (*[]securityinsight.BasicAutomationRuleAction, error) {
+func expandAutomationRuleActions(d *pluginsdk.ResourceData, defaultTenantId string) (*[]automationrules.AutomationRuleAction, error) {
 	actionIncident, err := expandAutomationRuleActionIncident(d.Get("action_incident").([]interface{}))
 	if err != nil {
 		return nil, err
@@ -472,13 +482,13 @@ func expandAutomationRuleActions(d *pluginsdk.ResourceData, defaultTenantId stri
 		return nil, nil
 	}
 
-	out := make([]securityinsight.BasicAutomationRuleAction, 0, len(actionIncident)+len(actionPlaybook))
+	out := make([]automationrules.AutomationRuleAction, 0, len(actionIncident)+len(actionPlaybook))
 	out = append(out, actionIncident...)
 	out = append(out, actionPlaybook...)
 	return &out, nil
 }
 
-func flattenAutomationRuleActions(input *[]securityinsight.BasicAutomationRuleAction) (actionIncident []interface{}, actionPlaybook []interface{}) {
+func flattenAutomationRuleActions(input *[]automationrules.AutomationRuleAction) (actionIncident []interface{}, actionPlaybook []interface{}) {
 	if input == nil {
 		return nil, nil
 	}
@@ -488,9 +498,9 @@ func flattenAutomationRuleActions(input *[]securityinsight.BasicAutomationRuleAc
 
 	for _, action := range *input {
 		switch action := action.(type) {
-		case securityinsight.AutomationRuleModifyPropertiesAction:
+		case automationrules.AutomationRuleModifyPropertiesAction:
 			actionIncident = append(actionIncident, flattenAutomationRuleActionIncident(action))
-		case securityinsight.AutomationRuleRunPlaybookAction:
+		case automationrules.AutomationRuleRunPlaybookAction:
 			actionPlaybook = append(actionPlaybook, flattenAutomationRuleActionPlaybook(action))
 		}
 	}
@@ -498,16 +508,16 @@ func flattenAutomationRuleActions(input *[]securityinsight.BasicAutomationRuleAc
 	return
 }
 
-func expandAutomationRuleActionIncident(input []interface{}) ([]securityinsight.BasicAutomationRuleAction, error) {
+func expandAutomationRuleActionIncident(input []interface{}) ([]automationrules.AutomationRuleAction, error) {
 	if len(input) == 0 {
 		return nil, nil
 	}
 
-	out := make([]securityinsight.BasicAutomationRuleAction, 0, len(input))
+	out := make([]automationrules.AutomationRuleAction, 0, len(input))
 	for _, b := range input {
 		b := b.(map[string]interface{})
 
-		status := securityinsight.IncidentStatus(b["status"].(string))
+		status := automationrules.IncidentStatus(b["status"].(string))
 		l := strings.Split(b["classification"].(string), "_")
 		classification, clr := l[0], ""
 		if len(l) == 2 {
@@ -516,10 +526,10 @@ func expandAutomationRuleActionIncident(input []interface{}) ([]securityinsight.
 		classificationComment := b["classification_comment"].(string)
 
 		// sanity check on classification
-		if status == securityinsight.IncidentStatusClosed && classification == "" {
+		if status == automationrules.IncidentStatusClosed && classification == "" {
 			return nil, fmt.Errorf("`classification` is required when `status` is set to `Closed`")
 		}
-		if status != securityinsight.IncidentStatusClosed {
+		if status != automationrules.IncidentStatusClosed {
 			if classification != "" {
 				return nil, fmt.Errorf("`classification` can't be set when `status` is not set to `Closed`")
 			}
@@ -528,25 +538,25 @@ func expandAutomationRuleActionIncident(input []interface{}) ([]securityinsight.
 			}
 		}
 
-		var labelsPtr *[]securityinsight.IncidentLabel
+		var labelsPtr *[]automationrules.IncidentLabel
 		if labelStrsPtr := utils.ExpandStringSlice(b["labels"].([]interface{})); labelStrsPtr != nil && len(*labelStrsPtr) > 0 {
-			labels := make([]securityinsight.IncidentLabel, 0, len(*labelStrsPtr))
+			labels := make([]automationrules.IncidentLabel, 0, len(*labelStrsPtr))
 			for _, label := range *labelStrsPtr {
-				labels = append(labels, securityinsight.IncidentLabel{
-					LabelName: utils.String(label),
+				labels = append(labels, automationrules.IncidentLabel{
+					LabelName: label,
 				})
 			}
 			labelsPtr = &labels
 		}
 
-		var ownerPtr *securityinsight.IncidentOwnerInfo
+		var ownerPtr *automationrules.IncidentOwnerInfo
 		if ownerIdStr := b["owner_id"].(string); ownerIdStr != "" {
 			ownerId, err := uuid.FromString(ownerIdStr)
 			if err != nil {
 				return nil, fmt.Errorf("getting `owner_id`: %v", err)
 			}
-			ownerPtr = &securityinsight.IncidentOwnerInfo{
-				ObjectID: &ownerId,
+			ownerPtr = &automationrules.IncidentOwnerInfo{
+				ObjectId: utils.String(ownerId.String()),
 			}
 		}
 
@@ -557,17 +567,20 @@ func expandAutomationRuleActionIncident(input []interface{}) ([]securityinsight.
 			return nil, fmt.Errorf("at least one of `severity`, `owner_id`, `labels` or `status` should be specified")
 		}
 
-		out = append(out, securityinsight.AutomationRuleModifyPropertiesAction{
-			ActionType: securityinsight.ActionTypeModifyProperties,
-			Order:      utils.Int32(int32(b["order"].(int))),
-			ActionConfiguration: &securityinsight.AutomationRuleModifyPropertiesActionActionConfiguration{
-				Status:                status,
-				Classification:        securityinsight.IncidentClassification(classification),
+		tCls := automationrules.IncidentClassification(classification)
+		tClr := automationrules.IncidentClassificationReason(clr)
+		tSvy := automationrules.IncidentSeverity(severity)
+
+		out = append(out, automationrules.AutomationRuleModifyPropertiesAction{
+			Order: int64(b["order"].(int)),
+			ActionConfiguration: &automationrules.IncidentPropertiesAction{
+				Status:                &status,
+				Classification:        &tCls,
 				ClassificationComment: &classificationComment,
-				ClassificationReason:  securityinsight.IncidentClassificationReason(clr),
+				ClassificationReason:  &tClr,
 				Labels:                labelsPtr,
 				Owner:                 ownerPtr,
-				Severity:              securityinsight.IncidentSeverity(severity),
+				Severity:              &tSvy,
 			},
 		})
 	}
@@ -575,11 +588,8 @@ func expandAutomationRuleActionIncident(input []interface{}) ([]securityinsight.
 	return out, nil
 }
 
-func flattenAutomationRuleActionIncident(input securityinsight.AutomationRuleModifyPropertiesAction) map[string]interface{} {
-	var order int
-	if input.Order != nil {
-		order = int(*input.Order)
-	}
+func flattenAutomationRuleActionIncident(input automationrules.AutomationRuleModifyPropertiesAction) map[string]interface{} {
+	order := int(input.Order)
 
 	var (
 		status      string
@@ -592,26 +602,24 @@ func flattenAutomationRuleActionIncident(input securityinsight.AutomationRuleMod
 	)
 
 	if cfg := input.ActionConfiguration; cfg != nil {
-		status = string(cfg.Status)
-		clsf = string(cfg.Classification)
+		status = string(*cfg.Status)
+		clsf = string(*cfg.Classification)
 		if cfg.ClassificationComment != nil {
 			clsfComment = *cfg.ClassificationComment
 		}
-		clsfReason = string(cfg.ClassificationReason)
+		clsfReason = string(*cfg.ClassificationReason)
 
 		if cfg.Labels != nil {
 			for _, label := range *cfg.Labels {
-				if label.LabelName != nil {
-					labels = append(labels, *label.LabelName)
-				}
+				labels = append(labels, label.LabelName)
 			}
 		}
 
-		if cfg.Owner != nil && cfg.Owner.ObjectID != nil {
-			owner = cfg.Owner.ObjectID.String()
+		if cfg.Owner != nil && cfg.Owner.ObjectId != nil {
+			owner = *cfg.Owner.ObjectId
 		}
 
-		severity = string(cfg.Severity)
+		severity = string(*cfg.Severity)
 	}
 
 	classification := clsf
@@ -630,12 +638,12 @@ func flattenAutomationRuleActionIncident(input securityinsight.AutomationRuleMod
 	}
 }
 
-func expandAutomationRuleActionPlaybook(input []interface{}, defaultTenantId string) []securityinsight.BasicAutomationRuleAction {
+func expandAutomationRuleActionPlaybook(input []interface{}, defaultTenantId string) []automationrules.AutomationRuleAction {
 	if len(input) == 0 {
 		return nil
 	}
 
-	out := make([]securityinsight.BasicAutomationRuleAction, 0, len(input))
+	out := make([]automationrules.AutomationRuleAction, 0, len(input))
 	for _, b := range input {
 		b := b.(map[string]interface{})
 
@@ -644,24 +652,19 @@ func expandAutomationRuleActionPlaybook(input []interface{}, defaultTenantId str
 			tenantId = tid
 		}
 
-		out = append(out, securityinsight.AutomationRuleRunPlaybookAction{
-			ActionType: securityinsight.ActionTypeRunPlaybook,
-			Order:      utils.Int32(int32(b["order"].(int))),
-			ActionConfiguration: &securityinsight.AutomationRuleRunPlaybookActionActionConfiguration{
-				LogicAppResourceID: utils.String(b["logic_app_id"].(string)),
-				TenantID:           &tenantId,
+		out = append(out, automationrules.AutomationRuleRunPlaybookAction{
+			Order: int64(b["order"].(int)),
+			ActionConfiguration: &automationrules.PlaybookActionProperties{
+				LogicAppResourceId: utils.String(b["logic_app_id"].(string)),
+				TenantId:           &tenantId,
 			},
 		})
 	}
 	return out
 }
 
-func flattenAutomationRuleActionPlaybook(input securityinsight.AutomationRuleRunPlaybookAction) map[string]interface{} {
-	var order int
-
-	if input.Order != nil {
-		order = int(*input.Order)
-	}
+func flattenAutomationRuleActionPlaybook(input automationrules.AutomationRuleRunPlaybookAction) map[string]interface{} {
+	order := int(input.Order)
 
 	var (
 		logicAppId string
@@ -669,12 +672,12 @@ func flattenAutomationRuleActionPlaybook(input securityinsight.AutomationRuleRun
 	)
 
 	if cfg := input.ActionConfiguration; cfg != nil {
-		if cfg.LogicAppResourceID != nil {
-			logicAppId = *cfg.LogicAppResourceID
+		if cfg.LogicAppResourceId != nil {
+			logicAppId = *cfg.LogicAppResourceId
 		}
 
-		if cfg.TenantID != nil {
-			tenantId = *cfg.TenantID
+		if cfg.TenantId != nil {
+			tenantId = *cfg.TenantId
 		}
 	}
 

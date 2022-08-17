@@ -3,14 +3,14 @@ package sentinel
 import (
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-azure-helpers/lang/response"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/securityinsights/2022-07-01-preview/watchlists"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/preview/securityinsight/mgmt/2021-09-01-preview/securityinsight"
 	commonValidate "github.com/hashicorp/terraform-provider-azurerm/helpers/validate"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/sdk"
 	loganalyticsParse "github.com/hashicorp/terraform-provider-azurerm/internal/services/loganalytics/parse"
 	loganalyticsValidate "github.com/hashicorp/terraform-provider-azurerm/internal/services/loganalytics/validate"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/sentinel/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/sentinel/validate"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/validation"
@@ -113,43 +113,43 @@ func (r WatchlistResource) Create() sdk.ResourceFunc {
 				return fmt.Errorf("parsing Log Analytics Workspace ID: %w", err)
 			}
 
-			id := parse.NewWatchlistID(workspaceId.SubscriptionId, workspaceId.ResourceGroup, workspaceId.WorkspaceName, model.Name)
+			id := watchlists.NewWatchlistID(workspaceId.SubscriptionId, workspaceId.ResourceGroup, workspaceId.WorkspaceName, model.Name)
 
-			existing, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
+			existing, err := client.Get(ctx, id)
 			if err != nil {
-				if !utils.ResponseWasNotFound(existing.Response) {
+				if !response.WasNotFound(existing.HttpResponse) {
 					return fmt.Errorf("checking for presence of existing %s: %+v", id, err)
 				}
 			}
-			if !utils.ResponseWasNotFound(existing.Response) {
+			if !response.WasNotFound(existing.HttpResponse) {
 				return metadata.ResourceRequiresImport(r.ResourceType(), id)
 			}
 
-			param := securityinsight.Watchlist{
-				WatchlistProperties: &securityinsight.WatchlistProperties{
-					DisplayName: &model.DisplayName,
+			param := watchlists.Watchlist{
+				Properties: &watchlists.WatchlistProperties{
+					DisplayName: model.DisplayName,
 					// The only supported provider for now is "Microsoft"
-					Provider: utils.String("Microsoft"),
+					Provider: "Microsoft",
 
 					// The "source" represent the source file name which contains the watchlist items.
 					// Setting them here is merely to make the API happy.
-					Source: securityinsight.Source("a.csv"),
+					Source: utils.String("a.csv"),
 
-					ItemsSearchKey: utils.String(model.ItemSearchKey),
+					ItemsSearchKey: model.ItemSearchKey,
 				},
 			}
 
 			if model.Description != "" {
-				param.WatchlistProperties.Description = &model.Description
+				param.Properties.Description = &model.Description
 			}
 			if len(model.Labels) != 0 {
-				param.WatchlistProperties.Labels = &model.Labels
+				param.Properties.Labels = &model.Labels
 			}
 			if model.DefaultDuration != "" {
-				param.WatchlistProperties.DefaultDuration = &model.DefaultDuration
+				param.Properties.DefaultDuration = &model.DefaultDuration
 			}
 
-			_, err = client.CreateOrUpdate(ctx, id.ResourceGroup, id.WorkspaceName, id.Name, param)
+			_, err = client.CreateOrUpdate(ctx, id, param)
 			if err != nil {
 				return fmt.Errorf("creating %s: %+v", id, err)
 			}
@@ -166,43 +166,48 @@ func (r WatchlistResource) Read() sdk.ResourceFunc {
 
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
 			client := metadata.Client.Sentinel.WatchlistsClient
-			id, err := parse.WatchlistID(metadata.ResourceData.Id())
+			id, err := watchlists.ParseWatchlistID(metadata.ResourceData.Id())
 			if err != nil {
 				return err
 			}
 
-			resp, err := client.Get(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
+			resp, err := client.Get(ctx, *id)
 			if err != nil {
-				if utils.ResponseWasNotFound(resp.Response) {
+				if response.WasNotFound(resp.HttpResponse) {
 					return metadata.MarkAsGone(id)
 				}
 				return fmt.Errorf("retrieving %s: %+v", id, err)
 			}
 
-			model := WatchlistModel{
-				Name:                    id.Name,
-				LogAnalyticsWorkspaceId: loganalyticsParse.NewLogAnalyticsWorkspaceID(id.SubscriptionId, id.ResourceGroup, id.WorkspaceName).ID(),
+			model := resp.Model
+			if model == nil {
+				return fmt.Errorf("retrieving %s: model is nil", id)
 			}
 
-			if props := resp.WatchlistProperties; props != nil {
-				if props.DisplayName != nil {
-					model.DisplayName = *props.DisplayName
+			watchlistModel := WatchlistModel{
+				Name:                    *model.Name,
+				LogAnalyticsWorkspaceId: loganalyticsParse.NewLogAnalyticsWorkspaceID(id.SubscriptionId, id.ResourceGroupName, id.WorkspaceName).ID(),
+			}
+
+			if props := model.Properties; props != nil {
+				if props.DisplayName != "" {
+					watchlistModel.DisplayName = props.DisplayName
 				}
 				if props.Description != nil {
-					model.Description = *props.Description
+					watchlistModel.Description = *props.Description
 				}
 				if props.Labels != nil {
-					model.Labels = *props.Labels
+					watchlistModel.Labels = *props.Labels
 				}
 				if props.DefaultDuration != nil {
-					model.DefaultDuration = *props.DefaultDuration
+					watchlistModel.DefaultDuration = *props.DefaultDuration
 				}
-				if props.ItemsSearchKey != nil {
-					model.ItemSearchKey = *props.ItemsSearchKey
+				if props.ItemsSearchKey != "" {
+					watchlistModel.ItemSearchKey = props.ItemsSearchKey
 				}
 			}
 
-			return metadata.Encode(&model)
+			return metadata.Encode(&watchlistModel)
 		},
 	}
 }
@@ -213,12 +218,12 @@ func (r WatchlistResource) Delete() sdk.ResourceFunc {
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
 			client := metadata.Client.Sentinel.WatchlistsClient
 
-			id, err := parse.WatchlistID(metadata.ResourceData.Id())
+			id, err := watchlists.ParseWatchlistID(metadata.ResourceData.Id())
 			if err != nil {
 				return err
 			}
 
-			if _, err := client.Delete(ctx, id.ResourceGroup, id.WorkspaceName, id.Name); err != nil {
+			if _, err := client.Delete(ctx, *id); err != nil {
 				return fmt.Errorf("deleting %s: %+v", id, err)
 			}
 
