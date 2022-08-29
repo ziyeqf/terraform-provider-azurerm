@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/go-azure-sdk/resource-manager/compute/2022-01-03/galleries"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/acceptance/check"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/compute/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
@@ -69,18 +69,33 @@ func TestAccSharedImageGallery_complete(t *testing.T) {
 	})
 }
 
+func TestAccSharedImageGallery_withCommunityShare(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azurerm_shared_image_gallery", "test")
+	r := SharedImageGalleryResource{}
+
+	data.ResourceTest(t, r, []acceptance.TestStep{
+		{
+			Config: r.withCommunityShare(data),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
 func (t SharedImageGalleryResource) Exists(ctx context.Context, clients *clients.Client, state *pluginsdk.InstanceState) (*bool, error) {
-	id, err := parse.SharedImageGalleryID(state.ID)
+	id, err := galleries.ParseGalleriesID(state.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, err := clients.Compute.GalleriesClient.Get(ctx, id.ResourceGroup, id.GalleryName, "", "")
-	if err != nil {
+	resp, err := clients.Compute.GalleriesClient.Get(ctx, *id, galleries.DefaultGetOperationOptions())
+	if err != nil || resp.Model == nil {
 		return nil, fmt.Errorf("retrieving Compute Shared Image Gallery %q", id.String())
 	}
 
-	return utils.Bool(resp.ID != nil), nil
+	return utils.Bool(resp.Model.Id != nil), nil
 }
 
 func (SharedImageGalleryResource) basic(data acceptance.TestData) string {
@@ -137,4 +152,38 @@ resource "azurerm_shared_image_gallery" "test" {
   }
 }
 `, data.RandomInteger, data.Locations.Primary, data.RandomInteger)
+}
+
+func (SharedImageGalleryResource) withCommunityShare(data acceptance.TestData) string {
+	return fmt.Sprintf(`
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_resource_group" "test" {
+  name     = "acctestRG-%d"
+  location = "%s"
+}
+
+resource "azurerm_shared_image_gallery" "test" {
+  name                = "acctestsig%d"
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
+  description         = "Shared images and things."
+  permissions = "Community"
+
+  publisher {
+		email = "acctestsig%d@acctest.com"
+		uri = "%s"
+	}
+
+	public_name_prefix = "acctest%d"
+	eula = "https://%s"
+
+  tags = {
+    Hello = "There"
+    World = "Example"
+  }
+}
+`, data.RandomInteger, data.Locations.Primary, data.RandomInteger, data.RandomInteger, data.RandomString, data.RandomInteger, data.RandomString)
 }

@@ -24,6 +24,14 @@ resource "azurerm_shared_image_gallery" "example" {
   resource_group_name = azurerm_resource_group.example.name
   location            = azurerm_resource_group.example.location
   description         = "Shared images and things."
+  permissions         = "Community"
+  public_name_prefix = "gallery_prefix"
+  eula = "eula_example"
+
+  publisher = {
+    email = "publisher@example.com"
+    name = "publisherContact"
+  }
 
   tags = {
     Hello = "There"
@@ -44,7 +52,25 @@ The following arguments are supported:
 
 * `description` - (Optional) A description for this Shared Image Gallery.
 
+* `permissions` - (Optional) Specifies the permission of sharing gallery. Possible values: `Community`, `Groups` and `Private`.
+
+* `public_name_prefix` - (Optional) Community gallery public name prefix.
+
+* `publisher` - (Optional) A publisher block defined below.
+
+* `eula` - (Optional) Community gallery publisher eula.
+
 * `tags` - (Optional) A mapping of tags to assign to the Shared Image Gallery.
+
+---
+
+A `publisher` block exports the following:
+
+* `email` - (Optional) Community gallery publisher contact email.
+
+* `uri` - (Optional) Community gallery publisher uri.
+
+
 
 ## Attributes Reference
 

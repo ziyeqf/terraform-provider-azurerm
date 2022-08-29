@@ -113,12 +113,54 @@ func TestAccSharedImage_specialized(t *testing.T) {
 	})
 }
 
-func TestAccSharedImage_withTrustedLaunchEnabled(t *testing.T) {
+func TestAccSharedImage_withSecurityTypeTrustedLaunch(t *testing.T) {
 	data := acceptance.BuildTestData(t, "azurerm_shared_image", "test")
 	r := SharedImageResource{}
 	data.ResourceTest(t, r, []acceptance.TestStep{
 		{
-			Config: r.withTrustedLaunchEnabled(data),
+			Config: r.withSecurityType(data, "TrustedLaunch"),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
+func TestAccSharedImage_withSecurityTypeConfidentialVmSupported(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azurerm_shared_image", "test")
+	r := SharedImageResource{}
+	data.ResourceTest(t, r, []acceptance.TestStep{
+		{
+			Config: r.withSecurityType(data, "ConfidentialVmSupported"),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
+func TestAccSharedImage_withSecurityTypeConfidentialVM(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azurerm_shared_image", "test")
+	r := SharedImageResource{}
+	data.ResourceTest(t, r, []acceptance.TestStep{
+		{
+			Config: r.withSecurityType(data, "ConfidentialVM"),
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+			),
+		},
+		data.ImportStep(),
+	})
+}
+
+func TestAccSharedImage_withHibernateSupported(t *testing.T) {
+	data := acceptance.BuildTestData(t, "azurerm_shared_image", "test")
+	r := SharedImageResource{}
+	data.ResourceTest(t, r, []acceptance.TestStep{
+		{
+			Config: r.withHibernateSupported(data),
 			Check: acceptance.ComposeTestCheckFunc(
 				check.That(data.ResourceName).ExistsInAzure(r),
 			),
@@ -501,7 +543,7 @@ resource "azurerm_shared_image" "test" {
 `, data.RandomInteger, data.Locations.Primary, data.RandomInteger, data.RandomInteger, hyperVGen, data.RandomInteger, data.RandomInteger, data.RandomInteger)
 }
 
-func (SharedImageResource) withTrustedLaunchEnabled(data acceptance.TestData) string {
+func (SharedImageResource) withSecurityType(data acceptance.TestData, securityType string) string {
 	return fmt.Sprintf(`
 provider "azurerm" {
   features {}
@@ -525,7 +567,7 @@ resource "azurerm_shared_image" "test" {
   location               = azurerm_resource_group.test.location
   os_type                = "Linux"
   hyper_v_generation     = "V2"
-  trusted_launch_enabled = true
+  security_type = "%s"
 
   identifier {
     publisher = "AccTesPublisher%d"
@@ -533,7 +575,7 @@ resource "azurerm_shared_image" "test" {
     sku       = "AccTesSku%d"
   }
 }
-`, data.RandomInteger, data.Locations.Primary, data.RandomInteger, data.RandomInteger, data.RandomInteger, data.RandomInteger, data.RandomInteger)
+`, data.RandomInteger, data.Locations.Primary, data.RandomInteger, data.RandomInteger, securityType, data.RandomInteger, data.RandomInteger, data.RandomInteger)
 }
 
 func (SharedImageResource) withAcceleratedNetworkSupportEnabled(data acceptance.TestData) string {
@@ -569,6 +611,41 @@ resource "azurerm_shared_image" "test" {
   }
 }
 `, data.RandomInteger, data.Locations.Primary, data.RandomInteger, data.RandomInteger, data.RandomInteger, data.RandomInteger, data.RandomInteger)
+}
+
+func (SharedImageResource) withHibernateSupported(data acceptance.TestData) string {
+	return fmt.Sprintf(`
+provider "azurerm" {
+  features {}
+}
+
+resource "azurerm_resource_group" "test" {
+  name     = "acctestRG-%[2]d"
+  location = "%[1]s"
+}
+
+resource "azurerm_shared_image_gallery" "test" {
+  name                = "acctestsig%[2]d"
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
+}
+
+resource "azurerm_shared_image" "test" {
+  name                = "acctestimg%[2]d"
+  gallery_name        = azurerm_shared_image_gallery.test.name
+  resource_group_name = azurerm_resource_group.test.name
+  location            = azurerm_resource_group.test.location
+  os_type             = "Linux"
+  description         = "image description"
+  is_hibernate_supported = true
+
+  identifier {
+    publisher = "AccTesPublisher%[2]d"
+    offer     = "AccTesOffer%[2]d"
+    sku       = "AccTesSku%[2]d"
+  }
+}
+`, data.Locations.Primary, data.RandomInteger)
 }
 
 func (SharedImageResource) description(data acceptance.TestData) string {

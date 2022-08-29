@@ -5,15 +5,18 @@ import (
 	"log"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2021-11-01/compute"
 	"github.com/hashicorp/go-azure-helpers/lang/response"
+	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
+	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
+	"github.com/hashicorp/go-azure-helpers/resourcemanager/tags"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/compute/2022-01-03/galleries"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/azure"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/compute/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/compute/validate"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/tags"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/validation"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/timeouts"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
@@ -44,20 +47,59 @@ func resourceSharedImageGallery() *pluginsdk.Resource {
 				ValidateFunc: validate.SharedImageGalleryName,
 			},
 
-			"resource_group_name": azure.SchemaResourceGroupName(),
+			"resource_group_name": commonschema.ResourceGroupName(),
 
-			"location": azure.SchemaLocation(),
+			"location": commonschema.Location(),
 
 			"description": {
 				Type:     pluginsdk.TypeString,
 				Optional: true,
 			},
 
-			"tags": tags.Schema(),
+			"tags": commonschema.Tags(),
 
 			"unique_name": {
 				Type:     pluginsdk.TypeString,
 				Computed: true,
+			},
+
+			"permissions": {
+				Type:     pluginsdk.TypeString,
+				Optional: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					string(galleries.GallerySharingPermissionTypesCommunity),
+					string(galleries.GallerySharingPermissionTypesPrivate),
+					string(galleries.GallerySharingPermissionTypesGroups),
+				}, false),
+			},
+
+			"publisher": {
+				Type:     pluginsdk.TypeList,
+				Optional: true,
+				Elem: &pluginsdk.Resource{
+					Schema: map[string]*pluginsdk.Schema{
+						"email": {
+							Optional: true,
+							Type:     pluginsdk.TypeString,
+						},
+						"uri": {
+							Optional: true,
+							Type:     pluginsdk.TypeString,
+						},
+					},
+				},
+			},
+
+			"public_name_prefix": {
+				Type:         pluginsdk.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+
+			"eula": {
+				Type:         pluginsdk.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
 	}
@@ -71,39 +113,47 @@ func resourceSharedImageGalleryCreateUpdate(d *pluginsdk.ResourceData, meta inte
 
 	log.Printf("[INFO] preparing arguments for Image Gallery creation.")
 
-	id := parse.NewSharedImageGalleryID(subscriptionId, d.Get("resource_group_name").(string), d.Get("name").(string))
-	location := azure.NormalizeLocation(d.Get("location").(string))
+	id := galleries.NewGalleriesID(subscriptionId, d.Get("resource_group_name").(string), d.Get("name").(string))
 	description := d.Get("description").(string)
 	t := d.Get("tags").(map[string]interface{})
 
 	if d.IsNewResource() {
-		existing, err := client.Get(ctx, id.ResourceGroup, id.GalleryName, "", "")
-		if err != nil {
-			if !utils.ResponseWasNotFound(existing.Response) {
-				return fmt.Errorf("checking for presence of existing %s: %+v", id, err)
-			}
+		existing, err := client.Get(ctx, id, galleries.DefaultGetOperationOptions())
+		if !response.WasNotFound(existing.HttpResponse) {
+			return fmt.Errorf("checking for presence of existing %s: %+v", id, err)
 		}
 
-		if !utils.ResponseWasNotFound(existing.Response) {
+		if !response.WasNotFound(existing.HttpResponse) {
 			return tf.ImportAsExistsError("azurerm_shared_image_gallery", id.ID())
 		}
 	}
 
-	gallery := compute.Gallery{
-		Location: utils.String(location),
-		GalleryProperties: &compute.GalleryProperties{
+	gallery := galleries.Gallery{
+		Location: location.Normalize(d.Get("location").(string)),
+		Properties: &galleries.GalleryProperties{
 			Description: utils.String(description),
 		},
 		Tags: tags.Expand(t),
 	}
 
-	future, err := client.CreateOrUpdate(ctx, id.ResourceGroup, id.GalleryName, gallery)
-	if err != nil {
-		return fmt.Errorf("creating/updating %s: %+v", id, err)
+	prop := *gallery.Properties
+
+	if p,ok := d.GetOk("permissions"); ok {
+		permission := galleries.GallerySharingPermissionTypes(p.(string)) 
+		prop.SharingProfile.Permissions = &permission
 	}
 
-	if err = future.WaitForCompletionRef(ctx, client.Client); err != nil {
-		return fmt.Errorf("waiting for creation/update of %s: %+v", id, err)
+	if p,ok := d.GetOk("publisher");ok {
+		publisher := p.(map[string]interface{})
+		email := publisher["email"].(string)
+		uri := publisher["uri"].(string)
+		prop.SharingProfile.CommunityGalleryInfo.PublisherContact = utils.String(email)
+		prop.SharingProfile.CommunityGalleryInfo.PublisherUri = utils.String(uri)
+	}
+
+	err := client.CreateOrUpdateThenPoll(ctx, id, gallery)
+	if err != nil {
+		return fmt.Errorf("creating/updating %s: %+v", id, err)
 	}
 
 	d.SetId(id.ID())
@@ -116,36 +166,43 @@ func resourceSharedImageGalleryRead(d *pluginsdk.ResourceData, meta interface{})
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	id, err := parse.SharedImageGalleryID(d.Id())
+	id, err := galleries.ParseGalleriesID(d.Id())
 	if err != nil {
 		return err
 	}
 
-	resp, err := client.Get(ctx, id.ResourceGroup, id.GalleryName, "", "")
+	resp, err := client.Get(ctx, *id, galleries.DefaultGetOperationOptions())
 	if err != nil {
-		if utils.ResponseWasNotFound(resp.Response) {
-			log.Printf("[DEBUG] Shared Image Gallery %q (Resource Group %q) was not found - removing from state", id.GalleryName, id.ResourceGroup)
+		if response.WasNotFound(resp.HttpResponse) {
+			log.Printf("[DEBUG] Shared Image Gallery %q (Resource Group %q) was not found - removing from state", id.GalleryName, id.ResourceGroupName)
 			d.SetId("")
 			return nil
 		}
 
-		return fmt.Errorf("making Read request on Shared Image Gallery %q (Resource Group %q): %+v", id.GalleryName, id.ResourceGroup, err)
+		return fmt.Errorf("making Read request on Shared Image Gallery %q (Resource Group %q): %+v", id.GalleryName, id.ResourceGroupName, err)
 	}
 
 	d.Set("name", id.GalleryName)
-	d.Set("resource_group_name", id.ResourceGroup)
-	if location := resp.Location; location != nil {
-		d.Set("location", azure.NormalizeLocation(*location))
+	d.Set("resource_group_name", id.ResourceGroupName)
+
+	model := resp.Model
+
+	if model == nil {
+		return fmt.Errorf("reading Shared Image Gallery %q (Resource Group %q): empty response", id.GalleryName, id.ResourceGroupName)
 	}
 
-	if props := resp.GalleryProperties; props != nil {
+	if location := model.Location; location != "" {
+		d.Set("location", azure.NormalizeLocation(location))
+	}
+
+	if props := model.Properties; props != nil {
 		d.Set("description", props.Description)
 		if identifier := props.Identifier; identifier != nil {
 			d.Set("unique_name", identifier.UniqueName)
 		}
 	}
 
-	return tags.FlattenAndSet(d, resp.Tags)
+	return tags.FlattenAndSet(d, model.Tags)
 }
 
 func resourceSharedImageGalleryDelete(d *pluginsdk.ResourceData, meta interface{}) error {
@@ -153,20 +210,14 @@ func resourceSharedImageGalleryDelete(d *pluginsdk.ResourceData, meta interface{
 	ctx, cancel := timeouts.ForDelete(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	id, err := parse.SharedImageGalleryID(d.Id())
+	id, err := galleries.ParseGalleriesID(d.Id())
 	if err != nil {
 		return err
 	}
 
-	future, err := client.Delete(ctx, id.ResourceGroup, id.GalleryName)
+	err = client.DeleteThenPoll(ctx, *id)
 	if err != nil {
-		return fmt.Errorf("deleting Shared Image Gallery %q (Resource Group %q): %+v", id.GalleryName, id.ResourceGroup, err)
-	}
-
-	if err = future.WaitForCompletionRef(ctx, client.Client); err != nil {
-		if !response.WasNotFound(future.Response()) {
-			return fmt.Errorf("waiting for the deletion of Shared Image Gallery %q (Resource Group %q): %+v", id.GalleryName, id.ResourceGroup, err)
-		}
+		return fmt.Errorf("deleting Shared Image Gallery %q (Resource Group %q): %+v", id.GalleryName, id.ResourceGroupName, err)
 	}
 
 	return nil

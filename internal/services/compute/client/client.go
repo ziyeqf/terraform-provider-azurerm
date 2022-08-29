@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/go-azure-sdk/resource-manager/compute/2021-11-01/dedicatedhosts"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/compute/2021-11-01/proximityplacementgroups"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/compute/2021-11-01/sshpublickeys"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/compute/2022-01-03/galleries"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/common"
 )
 
@@ -20,7 +21,7 @@ type Client struct {
 	DisksClient                      *compute.DisksClient
 	DiskAccessClient                 *compute.DiskAccessesClient
 	DiskEncryptionSetsClient         *compute.DiskEncryptionSetsClient
-	GalleriesClient                  *compute.GalleriesClient
+	GalleriesClient                  *galleries.GalleriesClient
 	GalleryApplicationsClient        *compute.GalleryApplicationsClient
 	GalleryApplicationVersionsClient *compute.GalleryApplicationVersionsClient
 	GalleryImagesClient              *compute.GalleryImagesClient
@@ -66,7 +67,7 @@ func NewClient(o *common.ClientOptions) *Client {
 	diskEncryptionSetsClient := compute.NewDiskEncryptionSetsClientWithBaseURI(o.ResourceManagerEndpoint, o.SubscriptionId)
 	o.ConfigureClient(&diskEncryptionSetsClient.Client, o.ResourceManagerAuthorizer)
 
-	galleriesClient := compute.NewGalleriesClientWithBaseURI(o.ResourceManagerEndpoint, o.SubscriptionId)
+	galleriesClient := galleries.NewGalleriesClientWithBaseURI(o.ResourceManagerEndpoint)
 	o.ConfigureClient(&galleriesClient.Client, o.ResourceManagerAuthorizer)
 
 	galleryApplicationsClient := compute.NewGalleryApplicationsClientWithBaseURI(o.ResourceManagerEndpoint, o.SubscriptionId)

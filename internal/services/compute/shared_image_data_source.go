@@ -103,6 +103,7 @@ func dataSourceSharedImage() *pluginsdk.Resource {
 			},
 
 			"tags": tags.SchemaDataSource(),
+			//TODO zhen: make sure if there is features returned by API, if so, add SecurityType, accelerated_network_support_enabled and is_hibernate_supported to data source
 		},
 	}
 }

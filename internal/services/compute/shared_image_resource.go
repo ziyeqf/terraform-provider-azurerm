@@ -219,16 +219,26 @@ func resourceSharedImage() *pluginsdk.Resource {
 				ForceNew: true,
 			},
 
-			"trusted_launch_enabled": {
-				Type:     pluginsdk.TypeBool,
+			"security_type": {
+				Type:     pluginsdk.TypeString,
 				Optional: true,
 				ForceNew: true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"TrustedLaunch",
+					"ConfidentialVM",
+					"ConfidentialVmSupported",
+				}, false),
 			},
 
 			"accelerated_network_support_enabled": {
 				Type:     pluginsdk.TypeBool,
 				Optional: true,
 				ForceNew: true,
+			},
+
+			"is_hibernate_supported": { //TODO zhen: test if it's force new.
+				Type:     pluginsdk.TypeBool,
+				Optional: true,
 			},
 
 			"tags": tags.Schema(),
@@ -265,12 +275,14 @@ func resourceSharedImageCreateUpdate(d *pluginsdk.ResourceData, meta interface{}
 	}
 
 	var features []compute.GalleryImageFeature
-	if d.Get("trusted_launch_enabled").(bool) {
+
+	if s, ok := d.GetOk("security_type"); ok {
 		features = append(features, compute.GalleryImageFeature{
 			Name:  utils.String("SecurityType"),
-			Value: utils.String("TrustedLaunch"),
+			Value: utils.String(s.(string)),
 		})
 	}
+
 	if d.Get("accelerated_network_support_enabled").(bool) {
 		features = append(features, compute.GalleryImageFeature{
 			Name:  utils.String("IsAcceleratedNetworkSupported"),
@@ -421,8 +433,9 @@ func resourceSharedImageRead(d *pluginsdk.ResourceData, meta interface{}) error 
 			return fmt.Errorf("setting `purchase_plan`: %+v", err)
 		}
 
-		trustedLaunchEnabled := false
+		securityType := ""
 		acceleratedNetworkSupportEnabled := false
+		isHibernateSupported := false
 		if features := props.Features; features != nil {
 			for _, feature := range *features {
 				if feature.Name == nil || feature.Value == nil {
@@ -430,16 +443,21 @@ func resourceSharedImageRead(d *pluginsdk.ResourceData, meta interface{}) error 
 				}
 
 				if strings.EqualFold(*feature.Name, "SecurityType") {
-					trustedLaunchEnabled = strings.EqualFold(*feature.Value, "TrustedLaunch")
+					securityType = *feature.Value
 				}
 
 				if strings.EqualFold(*feature.Name, "IsAcceleratedNetworkSupported") {
 					acceleratedNetworkSupportEnabled = strings.EqualFold(*feature.Value, "true")
 				}
+
+				if strings.EqualFold(*feature.Name, "IsHibernateSupported") {
+					isHibernateSupported = strings.EqualFold(*feature.Value, "true")
+				}
 			}
 		}
-		d.Set("trusted_launch_enabled", trustedLaunchEnabled)
+		d.Set("security_type", securityType)
 		d.Set("accelerated_network_support_enabled", acceleratedNetworkSupportEnabled)
+		d.Set("is_hibernate_supported", isHibernateSupported)
 	}
 
 	return tags.FlattenAndSet(d, resp.Tags)

@@ -94,7 +94,7 @@ The following arguments are supported:
 
 * `release_note_uri` - (Optional) The URI containing the Release Notes associated with this Shared Image.
 
-* `trusted_launch_enabled` - (Optional) Specifies if Trusted Launch has to be enabled for the Virtual Machine created from the Shared Image. Defaults to `false`. Changing this forces a new resource to be created.
+* `security_type` - (Optional) Specifies the Security Type for the Virtual Machine created from the Shared Image. Possible values are `TrustedLaunch`,  `ConfidentialVM` and `ConfidentialVmSupported`. Changing this forces a new resource to be created.
 
 * `accelerated_network_support_enabled` - (Optional) Specifies if the Shared Image supports Accelerated Network. Defaults to `false`. Changing this forces a new resource to be created.
 

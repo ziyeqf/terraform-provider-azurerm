@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-azure-helpers/lang/response"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
+	"github.com/hashicorp/go-azure-helpers/resourcemanager/tags"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/compute/2022-01-03/galleries"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/compute/parse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/compute/validate"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/tags"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/timeouts"
-	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
 
 func dataSourceSharedImageGallery() *pluginsdk.Resource {
@@ -44,7 +44,7 @@ func dataSourceSharedImageGallery() *pluginsdk.Resource {
 				Computed: true,
 			},
 
-			"tags": tags.SchemaDataSource(),
+			"tags": commonschema.Tags(),
 		},
 	}
 }
@@ -55,29 +55,33 @@ func dataSourceSharedImageGalleryRead(d *pluginsdk.ResourceData, meta interface{
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
-	id := parse.NewSharedImageGalleryID(subscriptionId, d.Get("resource_group_name").(string), d.Get("name").(string))
+	id := galleries.NewGalleriesID(d.Get("name").(string), d.Get("resource_group_name").(string), subscriptionId)
 
-	resp, err := client.Get(ctx, id.ResourceGroup, id.GalleryName, "", "")
+	resp, err := client.Get(ctx, id, galleries.DefaultGetOperationOptions())
 	if err != nil {
-		if utils.ResponseWasNotFound(resp.Response) {
+		if response.WasNotFound(resp.HttpResponse) {
 			return fmt.Errorf("%s was not found", id)
 		}
 
 		return fmt.Errorf("making Read request on %s: %+v", id, err)
 	}
 
+	model := resp.Model
+	if model == nil {
+		return fmt.Errorf("retrieving %s: `model` was nil", id)
+	}
+
 	d.SetId(id.ID())
 	d.Set("name", id.GalleryName)
-	d.Set("resource_group_name", id.ResourceGroup)
+	d.Set("resource_group_name", id.ResourceGroupName)
+	d.Set("location", location.NormalizeNilable(&model.Location))
 
-	d.Set("location", location.NormalizeNilable(resp.Location))
-
-	if props := resp.GalleryProperties; props != nil {
+	if props := model.Properties; props != nil {
 		d.Set("description", props.Description)
 		if identifier := props.Identifier; identifier != nil {
 			d.Set("unique_name", identifier.UniqueName)
 		}
 	}
 
-	return tags.FlattenAndSet(d, resp.Tags)
+	return tags.FlattenAndSet(d, model.Tags)
 }
