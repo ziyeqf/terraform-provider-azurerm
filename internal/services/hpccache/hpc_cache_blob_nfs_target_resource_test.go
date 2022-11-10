@@ -254,7 +254,7 @@ resource "azurerm_subnet" "test" {
 }
 
 data "azuread_service_principal" "test" {
-  display_name = "HPC Cache Resource Provider"
+  display_name = "StorageCache Resource Provider"
 }
 
 resource "azurerm_storage_account" "test" {

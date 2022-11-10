@@ -247,6 +247,9 @@ func (HPCCacheBlobTargetResource) template(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 provider "azurerm" {
   features {}
+  client_id               = ""
+  client_certificate_path = ""
+  client_secret           = ""
 }
 
 provider "azuread" {}
@@ -271,7 +274,7 @@ resource "azurerm_subnet" "test" {
 }
 
 data "azuread_service_principal" "test" {
-  display_name = "HPC Cache Resource Provider"
+  display_name = "StorageCache Resource Provider"
 }
 
 resource "azurerm_storage_account" "test" {
