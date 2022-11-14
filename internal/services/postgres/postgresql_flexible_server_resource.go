@@ -439,7 +439,9 @@ func resourcePostgresqlFlexibleServerRead(d *pluginsdk.ResourceData, meta interf
 				return fmt.Errorf("setting `high_availability`: %+v", err)
 			}
 
-			d.Set("auth_config", flattenFlexibleServerAuthConfig(props.AuthConfig))
+			if props.AuthConfig != nil {
+				d.Set("auth_config", flattenFlexibleServerAuthConfig(props.AuthConfig))
+			}
 		}
 
 		sku, err := flattenFlexibleServerSku(model.Sku)
