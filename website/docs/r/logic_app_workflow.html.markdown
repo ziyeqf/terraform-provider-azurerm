@@ -61,13 +61,13 @@ The following arguments are supported:
 
 A `access_control` block supports the following:
 
-* `action` - (Optional) A `action` block as defined below.
+* `action` - (Optional) A `action` block as defined below. Specifies the Schema to configure access control for accessing workflow actions.
 
-* `content` - (Optional) A `content` block as defined below.
+* `content` - (Optional) A `content` block as defined below. Specifies the Schema to configure access control for accessing workflow input and output messages from run history.
 
-* `trigger` - (Optional) A `trigger` block as defined below.
+* `trigger` - (Optional) A `trigger` block as defined below. Specifies the Schema to configure access control for invoking workflow triggers.
 
-* `workflow_management` - (Optional) A `workflow_management` block as defined below.
+* `workflow_management` - (Optional) A `workflow_management` block as defined below. Specifies the Schema to configure access control for workflow management.
 
 ---
 
