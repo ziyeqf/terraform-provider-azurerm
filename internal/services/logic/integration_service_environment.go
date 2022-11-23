@@ -40,10 +40,10 @@ func resourceIntegrationServiceEnvironment() *pluginsdk.Resource {
 		}),
 
 		Timeouts: &pluginsdk.ResourceTimeout{
-			Create: pluginsdk.DefaultTimeout(5 * time.Hour),
+			Create: pluginsdk.DefaultTimeout(8 * time.Hour),
 			Read:   pluginsdk.DefaultTimeout(5 * time.Minute),
-			Update: pluginsdk.DefaultTimeout(5 * time.Hour),
-			Delete: pluginsdk.DefaultTimeout(5 * time.Hour),
+			Update: pluginsdk.DefaultTimeout(8 * time.Hour),
+			Delete: pluginsdk.DefaultTimeout(8 * time.Hour),
 		},
 
 		Schema: map[string]*pluginsdk.Schema{

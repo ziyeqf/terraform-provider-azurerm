@@ -121,10 +121,10 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/language/resources/syntax#operation-timeouts) for certain actions:
 
-* `create` - (Defaults to 5 hours) Used when creating the Integration Service Environment.
+* `create` - (Defaults to 8 hours) Used when creating the Integration Service Environment.
 * `read` - (Defaults to 5 minutes) Used when retrieving the Integration Service Environment.
-* `update` - (Defaults to 5 hours) Used when updating the Integration Service Environment.
-* `delete` - (Defaults to 5 hours) Used when deleting the Integration Service Environment.
+* `update` - (Defaults to 8 hours) Used when updating the Integration Service Environment.
+* `delete` - (Defaults to 8 hours) Used when deleting the Integration Service Environment.
 
 ## Import
 
