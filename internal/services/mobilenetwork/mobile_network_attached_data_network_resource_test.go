@@ -124,7 +124,6 @@ resource "azurerm_mobile_network_data_network" "test" {
 }
 
 func (r MobileNetworkAttachedDataNetworkResource) basic(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 				%s
 
@@ -136,11 +135,10 @@ resource "azurerm_mobile_network_attached_data_network" "test" {
 
   depends_on = [azurerm_mobile_network_data_network.test]
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }
 
 func (r MobileNetworkAttachedDataNetworkResource) withDataInterface(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 				%s
 
@@ -159,7 +157,7 @@ resource "azurerm_mobile_network_attached_data_network" "test" {
 
   depends_on = [azurerm_mobile_network_data_network.test]
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }
 
 func (r MobileNetworkAttachedDataNetworkResource) requiresImport(data acceptance.TestData) string {
@@ -186,7 +184,6 @@ resource "azurerm_mobile_network_attached_data_network" "import" {
 }
 
 func (r MobileNetworkAttachedDataNetworkResource) complete(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 			%s
 
@@ -231,11 +228,10 @@ resource "azurerm_mobile_network_attached_data_network" "test" {
   depends_on = [azurerm_mobile_network_data_network.test]
 
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }
 
 func (r MobileNetworkAttachedDataNetworkResource) update(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 			%s
 
@@ -276,5 +272,5 @@ resource "azurerm_mobile_network_attached_data_network" "test" {
   depends_on = [azurerm_mobile_network_data_network.test]
 
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }

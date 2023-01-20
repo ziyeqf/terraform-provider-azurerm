@@ -300,7 +300,6 @@ resource "azurerm_mobile_network_sim_policy" "test" {
 }
 
 func (r MobileNetworkSimResource) basic(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 				%[1]s
 
@@ -312,11 +311,10 @@ resource "azurerm_mobile_network_sim" "test" {
   international_mobile_subscriber_identity = "000000000000000"
   operator_key_code                        = "00000000000000000000000000000000"
 }
-`, template, data.RandomInteger)
+`, r.template(data), data.RandomInteger)
 }
 
 func (r MobileNetworkSimResource) withSimPolicy(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 				%[1]s
 resource "azurerm_mobile_network_sim" "test" {
@@ -328,11 +326,10 @@ resource "azurerm_mobile_network_sim" "test" {
   operator_key_code                        = "d3c97eed4e5a00726ad8a26d5918aa2f"
   sim_policy_id                            = azurerm_mobile_network_sim_policy.test.id
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }
 
 func (r MobileNetworkSimResource) withStaticIpConfiguration(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 				%[1]s
 
@@ -349,7 +346,7 @@ resource "azurerm_mobile_network_sim" "test" {
     static_ipv4_address      = "2.4.0.1"
   }
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }
 
 func (r MobileNetworkSimResource) requiresImport(data acceptance.TestData) string {
@@ -371,7 +368,6 @@ resource "azurerm_mobile_network_sim" "import" {
 }
 
 func (r MobileNetworkSimResource) complete(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 				%[1]s
 
@@ -390,11 +386,10 @@ resource "azurerm_mobile_network_sim" "test" {
     static_ipv4_address      = "2.4.0.1"
   }
 }
-`, template, data.RandomInteger)
+`, r.template(data), data.RandomInteger)
 }
 
 func (r MobileNetworkSimResource) update(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 			%s
 
@@ -413,5 +408,5 @@ resource "azurerm_mobile_network_sim" "test" {
     static_ipv4_address      = "2.4.0.1"
   }
 }
-`, template, data.RandomInteger)
+`, r.template(data), data.RandomInteger)
 }

@@ -157,7 +157,6 @@ resource "azurerm_mobile_network_data_network" "test" {
 }
 
 func (r MobileNetworkSimPolicyResource) basic(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 				%s
 
@@ -196,7 +195,7 @@ resource "azurerm_mobile_network_sim_policy" "test" {
   }
 
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }
 
 func (r MobileNetworkSimPolicyResource) requiresImport(data acceptance.TestData) string {
@@ -243,7 +242,6 @@ resource "azurerm_mobile_network_sim_policy" "import" {
 }
 
 func (r MobileNetworkSimPolicyResource) complete(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 			%s
 
@@ -283,11 +281,10 @@ resource "azurerm_mobile_network_sim_policy" "test" {
   }
 
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }
 
 func (r MobileNetworkSimPolicyResource) update(data acceptance.TestData) string {
-	template := r.template(data)
 	return fmt.Sprintf(`
 			%s
 
@@ -327,5 +324,5 @@ resource "azurerm_mobile_network_sim_policy" "test" {
   }
 
 }
-`, template, data.RandomInteger, data.Locations.Primary)
+`, r.template(data), data.RandomInteger, data.Locations.Primary)
 }
