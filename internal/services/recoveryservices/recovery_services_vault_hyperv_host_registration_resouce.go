@@ -176,6 +176,16 @@ func (h HyperVHostRegistrationKeyResource) Read() sdk.ResourceFunc {
 				return resourceRecoveryServicesVaultHyperVHostRegistrationKeyCreateInternal(ctx, *id, metadata)
 			}
 
+			// check if the vault exists
+			vaultId := vaults.NewVaultID(id.SubscriptionId, id.ResourceGroupName, id.VaultName)
+			vaultClient := metadata.Client.RecoveryServices.VaultsClient
+			if resp, err := vaultClient.Get(ctx, vaultId); err != nil {
+				if response.WasNotFound(resp.HttpResponse) {
+					return metadata.MarkAsGone(id)
+				}
+				return fmt.Errorf("checking for presence of existing Recovery Services Vault %q: %+v", vaultId, err)
+			}
+
 			return metadata.Encode(&metaModel)
 		},
 	}
