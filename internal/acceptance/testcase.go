@@ -136,5 +136,13 @@ func (td TestData) externalProviders() map[string]resource.ExternalProvider {
 			VersionConstraint: "=2.8.0",
 			Source:            "registry.terraform.io/hashicorp/azuread",
 		},
+		"random": {
+			VersionConstraint: "~> 3.0",
+			Source:            "registry.terraform.io/hashicorp/random",
+		},
+		"null": {
+			VersionConstraint: "~> 3.0",
+			Source:            "registry.terraform.io/hashicorp/null",
+		},
 	}
 }
