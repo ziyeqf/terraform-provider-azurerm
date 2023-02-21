@@ -234,7 +234,7 @@ resource "azurerm_network_security_group" "hybrid" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    source_address_prefix      = "167.220.255.65"
+    source_address_prefix      = "167.220.255.66"
     destination_address_prefix = "*"
   }
 
@@ -246,7 +246,7 @@ resource "azurerm_network_security_group" "hybrid" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "5986"
-    source_address_prefix      = "167.220.255.65"
+    source_address_prefix      = "167.220.255.66"
     destination_address_prefix = "*"
   }
 
@@ -279,9 +279,8 @@ resource "azurerm_site_recovery_services_vault_hyperv_site" "hybrid" {
   recovery_vault_id = azurerm_recovery_services_vault.hybrid.id
 }
 
-resource "azurerm_recovery_services_vault_hyperv_host_registration_key" "hybrid" {
+data "azurerm_recovery_services_vault_hyperv_host_registration_key" "hybrid" {
   site_recovery_services_vault_hyperv_site_id = azurerm_site_recovery_services_vault_hyperv_site.hybrid.id
-  validate_in_hours                           = 120
 }
 
 `)
@@ -289,15 +288,6 @@ resource "azurerm_recovery_services_vault_hyperv_host_registration_key" "hybrid"
 
 func (r HyperVHostTestResource) setupTemplate(data acceptance.TestData) string {
 	return fmt.Sprintf(`
-terraform {
-  required_providers {
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.0"
-    }
-  }
-}
-
 provider "azurerm" {
   features {}
 }
@@ -429,7 +419,6 @@ resource "azurerm_windows_virtual_machine" "host" {
     use_ntlm = true
     insecure = true
     timeout  = "60m"
-    # script_path = "c:/windows/temp/terraform_%%RAND%%.ps1"
   }
 
   provisioner "remote-exec" {
@@ -464,12 +453,11 @@ resource "null_resource" "setup_provider" {
     https    = true
     use_ntlm = true
     insecure = true
-    # script_path = "c:/windows/temp/terraform_%%RAND%%.ps1"
     timeout = "60m"
   }
 
   provisioner "file" {
-    content     = azurerm_recovery_services_vault_hyperv_host_registration_key.hybrid.xml_content
+    content     = data.azurerm_recovery_services_vault_hyperv_host_registration_key.hybrid.xml_content
     destination = "c:/temp/hyperv-credential"
   }
 
