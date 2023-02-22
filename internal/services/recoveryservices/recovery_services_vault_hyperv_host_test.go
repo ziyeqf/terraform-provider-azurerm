@@ -74,54 +74,59 @@ func (HyperVHostTestResource) virtualMachineExists(ctx context.Context, client *
 	return nil
 }
 
-func (HyperVHostTestResource) rebootVirtualMachine() func(context.Context, *clients.Client, *pluginsdk.InstanceState) error {
-	return func(ctx context.Context, clients *clients.Client, state *pluginsdk.InstanceState) error {
-		client := clients.Compute.VMClient
-		id, err := parse.VirtualMachineID(state.ID)
-		if err != nil {
-			return err
-		}
-
-		future, err := client.Restart(ctx, id.ResourceGroup, id.Name)
-		if err != nil {
-			return fmt.Errorf("restart %s: %+v", id, err)
-		}
-
-		if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
-			return fmt.Errorf("waiting for restart of %s: %+v", id, err)
-		}
-
-		return nil
+func (HyperVHostTestResource) rebootVirtualMachine(ctx context.Context, clients *clients.Client, state *pluginsdk.InstanceState) error {
+	client := clients.Compute.VMClient
+	id, err := parse.VirtualMachineID(state.ID)
+	if err != nil {
+		return err
 	}
+
+	future, err := client.Restart(ctx, id.ResourceGroup, id.Name)
+	if err != nil {
+		return fmt.Errorf("restart %s: %+v", id, err)
+	}
+
+	if err := future.WaitForCompletionRef(ctx, client.Client); err != nil {
+		return fmt.Errorf("waiting for restart of %s: %+v", id, err)
+	}
+
+	return nil
 }
 
 func TestAccSiteRecoveryHyperTest_basic(t *testing.T) {
 	data := acceptance.BuildTestData(t, "azurerm_site_recovery_services_vault_hyperv_site", "hybrid")
 	r := HyperVHostTestResource{}
 
+	registrationKey := ""
+
 	data.ResourceTest(t, r, []acceptance.TestStep{
-		{
-			Config: r.hyperVTemplate(data),
+		{Config: r.recovery(data),
 			Check: acceptance.ComposeTestCheckFunc(
-				data.CheckWithClientForResource(r.virtualMachineExists, "azurerm_windows_virtual_machine.host"),
-				data.CheckWithClientForResource(r.rebootVirtualMachine(), "azurerm_windows_virtual_machine.host"),
+				data.CheckWithClientForResource(r.generateHyperVHostRegistrationCert(&registrationKey), "azurerm_site_recovery_services_vault_hyperv_site.hybrid"),
 			),
 		},
 		{
-			Config: r.template(data),
+			Config: r.hyperVTemplate(data, registrationKey),
+			Check: acceptance.ComposeTestCheckFunc(
+				data.CheckWithClientForResource(r.virtualMachineExists, "azurerm_windows_virtual_machine.host"),
+				data.CheckWithClientForResource(r.rebootVirtualMachine, "azurerm_windows_virtual_machine.host"),
+			),
 		},
 		{
-			Config: r.basic(data),
-			Check:  acceptance.ComposeTestCheckFunc(),
+			Config: r.template(data, registrationKey),
 		},
+		//{
+		//	Config: r.basic(data),
+		//	Check:  acceptance.ComposeTestCheckFunc(),
+		//},
 	})
 }
 
-func (r HyperVHostTestResource) basic(data acceptance.TestData) string {
-	return fmt.Sprintf(`
-%s
-`, r.template(data))
-}
+//func (r HyperVHostTestResource) basic(data acceptance.TestData) string {
+//	return fmt.Sprintf(`
+//%s
+//`, r.template(data))
+//}
 
 func (HyperVHostTestResource) keyVault(data acceptance.TestData) string {
 	return fmt.Sprintf(`
@@ -300,14 +305,11 @@ resource "azurerm_site_recovery_services_vault_hyperv_site" "hybrid" {
   recovery_vault_id = azurerm_recovery_services_vault.hybrid.id
 }
 
-data "azurerm_recovery_services_vault_hyperv_host_registration_key" "hybrid" {
-  site_recovery_services_vault_hyperv_site_id = azurerm_site_recovery_services_vault_hyperv_site.hybrid.id
-}
 
 `)
 }
 
-func (r HyperVHostTestResource) hyperVTemplate(data acceptance.TestData) string {
+func (r HyperVHostTestResource) hyperVTemplate(data acceptance.TestData, registrationKey string) string {
 	adminPwd := generateRandomPassword(10)
 	return fmt.Sprintf(`
 provider "azurerm" {
@@ -437,7 +439,7 @@ resource "azurerm_windows_virtual_machine" "host" {
   }
 
   provisioner "file" {
-    content     = data.azurerm_recovery_services_vault_hyperv_host_registration_key.hybrid.xml_content
+    content     = "%[4]s"
     destination = "c:/temp/hyperv-credential"
   }
 
@@ -455,15 +457,15 @@ resource "azurerm_windows_virtual_machine" "host" {
 
 }
 
-%[4]s
-
 %[5]s
 
 %[6]s
-`, data.RandomInteger, data.Locations.Primary, data.RandomString, r.recovery(data), r.keyVault(data), r.securityGroup(data), adminPwd)
+
+%[7]s
+`, data.RandomInteger, data.Locations.Primary, data.RandomString, r.recovery(data), registrationKey, r.keyVault(data), r.securityGroup(data), adminPwd)
 }
 
-func (r HyperVHostTestResource) template(data acceptance.TestData) string {
+func (r HyperVHostTestResource) template(data acceptance.TestData, registrationKey string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -535,5 +537,5 @@ resource "azurerm_virtual_machine_extension" "script" {
   ]
 }
 
-`, r.hyperVTemplate(data), HostName)
+`, r.hyperVTemplate(data, registrationKey), HostName)
 }
