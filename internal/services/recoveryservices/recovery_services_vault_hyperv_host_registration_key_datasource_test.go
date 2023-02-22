@@ -39,7 +39,7 @@ func (RecoveryServicesVaultHyperVHostRegistrationKeyDataSource) basic(data accep
 %s
 
 data "azurerm_recovery_services_vault_hyperv_host_registration_key" "test" {
-	site_recovery_services_vault_hyperv_site_id = azurerm_site_recovery_services_vault_hyperv_site.test.id
+  site_recovery_services_vault_hyperv_site_id = azurerm_site_recovery_services_vault_hyperv_site.test.id
 }
 `, HyperVSiteResource{}.basic(data))
 }

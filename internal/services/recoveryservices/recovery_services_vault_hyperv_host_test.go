@@ -3,6 +3,7 @@ package recoveryservices_test
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/hashicorp/go-azure-sdk/resource-manager/recoveryservicessiterecovery/2022-10-01/replicationrecoveryservicesproviders"
@@ -12,6 +13,26 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
+
+const LetterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const NumberBytes = "1234567890"
+const SpecialBytes = "!@#$%^()"
+
+func generateRandomPassword(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		r := rand.Int()
+		switch r % 3 {
+		case 0:
+			b[i] = LetterBytes[rand.Intn(len(LetterBytes))]
+		case 1:
+			b[i] = SpecialBytes[rand.Intn(len(SpecialBytes))]
+		case 2:
+			b[i] = NumberBytes[rand.Intn(len(NumberBytes))]
+		}
+	}
+	return string(b)
+}
 
 const HostName = "acctest-nested-server"
 
@@ -80,7 +101,7 @@ func TestAccSiteRecoveryHyperTest_basic(t *testing.T) {
 
 	data.ResourceTest(t, r, []acceptance.TestStep{
 		{
-			Config: r.setupTemplate(data),
+			Config: r.hyperVTemplate(data),
 			Check: acceptance.ComposeTestCheckFunc(
 				data.CheckWithClientForResource(r.virtualMachineExists, "azurerm_windows_virtual_machine.host"),
 				data.CheckWithClientForResource(r.rebootVirtualMachine(), "azurerm_windows_virtual_machine.host"),
@@ -286,13 +307,12 @@ data "azurerm_recovery_services_vault_hyperv_host_registration_key" "hybrid" {
 `)
 }
 
-func (r HyperVHostTestResource) setupTemplate(data acceptance.TestData) string {
+func (r HyperVHostTestResource) hyperVTemplate(data acceptance.TestData) string {
+	adminPwd := generateRandomPassword(10)
 	return fmt.Sprintf(`
 provider "azurerm" {
   features {}
 }
-
-provider "random" {}
 
 locals {
   rg_name             = "acctest-nested-rg-%[1]d"
@@ -308,6 +328,7 @@ locals {
   recovery_site_name  = "acctest-nested-recovery-site-%[1]d"
   admin_name          = "acctestadmin"
   cert_name           = "acctestcert"
+  storage_account_name = "acctestsa%[3]s"
 }
 
 resource "azurerm_resource_group" "hybrid" {
@@ -351,19 +372,13 @@ resource "azurerm_network_interface" "host" {
   }
 }
 
-resource "random_password" "host" {
-  length           = 16
-  special          = true
-  override_special = "!#$%%*()-_=+[]{}:?"
-}
-
 resource "azurerm_windows_virtual_machine" "host" {
   name                = local.vm_name
   resource_group_name = azurerm_resource_group.hybrid.name
   location            = azurerm_resource_group.hybrid.location
   size                = "Standard_D8as_v5"
   admin_username      = local.admin_name
-  admin_password      = random_password.host.result
+  admin_password      = "%[7]s"
   computer_name       = "nested-Host"
 
   network_interface_ids = [
@@ -392,7 +407,7 @@ resource "azurerm_windows_virtual_machine" "host" {
 
   additional_unattend_content {
     setting = "AutoLogon"
-    content = "<AutoLogon><Password><Value>${random_password.host.result}</Value></Password><Enabled>true</Enabled><LogonCount>1</LogonCount><Username>${local.admin_name}</Username></AutoLogon>"
+    content = "<AutoLogon><Password><Value>%[7]s</Value></Password><Enabled>true</Enabled><LogonCount>1</LogonCount><Username>${local.admin_name}</Username></AutoLogon>"
   }
 
   winrm_listener {
@@ -421,62 +436,104 @@ resource "azurerm_windows_virtual_machine" "host" {
     timeout  = "60m"
   }
 
+  provisioner "file" {
+    content     = data.azurerm_recovery_services_vault_hyperv_host_registration_key.hybrid.xml_content
+    destination = "c:/temp/hyperv-credential"
+  }
+
   provisioner "remote-exec" {
     inline = [
       "powershell -command \"Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private\"",
       "mkdir c:\\Disks",
       "mkdir C:\\Machines",
+      "curl -o C:\\Disks\\VM1.vhd \"https://software-static.download.prss.microsoft.com/pr/download/17763.737.amd64fre.rs5_release_svc_refresh.190906-2324_server_serverdatacentereval_en-us_1.vhd\" -L",
+      "curl -o C:\\AzureSiteRecoveryProvider.exe \"https://aka.ms/downloaddra_eus\" -L",
+      "C:\\AzureSiteRecoveryProvider.exe /x:C:\\AzureSiteRecoveryProvider /q",
       "powershell -command \"Install-WindowsFeature -Name Hyper-V,Hyper-V-Powershell,Hyper-V-Tools -IncludeManagementTools\"",
     ]
   }
-}
 
-%[3]s
+}
 
 %[4]s
 
 %[5]s
-`, data.RandomInteger, data.Locations.Primary, r.recovery(data), r.keyVault(data), r.securityGroup(data))
+
+%[6]s
+`, data.RandomInteger, data.Locations.Primary, data.RandomString, r.recovery(data), r.keyVault(data), r.securityGroup(data), adminPwd)
 }
 
 func (r HyperVHostTestResource) template(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 %s
 
-resource "null_resource" "setup_provider" {
-  connection {
-    host     = azurerm_windows_virtual_machine.host.public_ip_address
-    type     = "winrm"
-    user     = azurerm_windows_virtual_machine.host.admin_username
-    password = azurerm_windows_virtual_machine.host.admin_password
-    port     = 5986
-    https    = true
-    use_ntlm = true
-    insecure = true
-    timeout = "60m"
-  }
+resource "azurerm_storage_account" "hybrid" {
+  name                     = local.storage_account_name
+  resource_group_name      = azurerm_resource_group.hybrid.name
+  location                 = azurerm_resource_group.hybrid.location
+  account_tier             = "Standard"
+  account_kind             = "StorageV2"
+  account_replication_type = "LRS"
+}
 
-  provisioner "file" {
-    content     = data.azurerm_recovery_services_vault_hyperv_host_registration_key.hybrid.xml_content
-    destination = "c:/temp/hyperv-credential"
-  }
+resource "azurerm_storage_container" "hybrid" {
+  name                  = "hyperv-setup"
+  storage_account_name  = azurerm_storage_account.hybrid.name
+  container_access_type = "private"
+}
 
-  provisioner "file" {
-    source      = "./scripts/01-provider_setup.ps1"
-    destination = "c:/temp/01-provider_setup.ps1"
-  }
+resource "azurerm_role_assignment" "hybrid" {
+  scope                = azurerm_storage_account.hybrid.id
+  role_definition_name = "Storage Blob Data Reader"
+  principal_id         = azurerm_windows_virtual_machine.host.identity.0.principal_id
+}
 
-  provisioner "remote-exec" {
-    inline = [
-      "curl -o C:\\Disks\\VM1.vhd \"https://software-static.download.prss.microsoft.com/pr/download/17763.737.amd64fre.rs5_release_svc_refresh.190906-2324_server_serverdatacentereval_en-us_1.vhd\" -L",
-      "curl -o C:\\AzureSiteRecoveryProvider.exe \"https://aka.ms/downloaddra_eus\" -L",
-      "cd c:\\temp",
-      "powershell -ExecutionPolicy Bypass -File 01-provider_setup.ps1",
-      "C:\\AzureSiteRecoveryProvider.exe /x:C:\\AzureSiteRecoveryProvider /q",
-      "C:\\AzureSiteRecoveryProvider\\SETUPDR.EXE /i",
-      "cd \"C:\\Program Files\\Microsoft Azure Site Recovery Provider\"",
-      ".\\DRConfigurator.exe /r /Friendlyname \"%s\" /Credentials \"C:\\temp\\hyperv-credential\""
-    ]
-  }
-}`, r.setupTemplate(data), HostName)
+resource "azurerm_storage_blob" "setup_script" {
+  name                   = "setup_script.ps1"
+  storage_account_name   = azurerm_storage_account.hybrid.name
+  storage_container_name = azurerm_storage_container.hybrid.name
+  type                   = "Block"
+  source_content         = <<EOF
+Set-VMHost -VirtualHardDiskPath c:\Disks -VirtualMachinePath c:\Machines
+New-VMSwitch -Name HyperV-NAT -SwitchType Internal
+$switchIndex=(Get-NetAdapter -Name "vEthernet (HyperV-NAT)").ifIndex
+New-NetIPAddress -IPAddress 192.168.0.1 -PrefixLength 24 -InterfaceIndex $switchIndex
+New-NetNat -Name HyperV-NAT -InternalIPInterfaceAddressPrefix 192.168.0.0/24
+Install-WindowsFeature -Name DHCP -IncludeManagementTools
+Add-DhcpServerv4Scope -Name "Hyper-V NAT" -StartRange 192.168.0.100 -EndRange 192.168.0.199 -SubnetMask 255.255.255.0 -LeaseDuration 0.00:59:00
+Set-DhcpServerv4OptionValue -ScopeId 192.168.0.0 -DnsServer 168.63.129.16 -Router 192.168.0.1
+New-NetFirewallRule -DisplayName "Allow all guest traffic" -Direction Inbound -RemoteAddress 192.168.0.0/24 -Profile Any -Action Allow
+New-VM -Name VM1 -Generation 1 -MemoryStartupBytes 16GB -BootDevice VHD -VHDPath C:\Disks\VM1.vhd -SwitchName HyperV-NAT
+Start-VM -Name VM1
+
+C:\\AzureSiteRecoveryProvider\\SETUPDR.EXE /i
+cd "C:\Program Files\Microsoft Azure Site Recovery Provider\"
+.\DRConfigurator.exe /r /Friendlyname "%[2]s" /Credentials "C:\temp\hyperv-credential"
+EOF
+}
+
+resource "azurerm_virtual_machine_extension" "script" {
+  name                       = "setup-provider"
+  publisher                  = "Microsoft.Compute"
+  type                       = "CustomScriptExtension"
+  type_handler_version       = "1.9"
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_windows_virtual_machine.host.id
+
+  protected_settings = jsonencode(
+    {
+      "commandToExecute" = "powershell -ExecutionPolicy Unrestricted -File ${azurerm_storage_blob.setup_script.name}",
+      "fileUris" = [
+        azurerm_storage_blob.setup_script.url,
+      ],
+      "managedIdentity" = {}
+    }
+  )
+
+  depends_on = [
+    azurerm_role_assignment.hybrid
+  ]
+}
+
+`, r.hyperVTemplate(data), HostName)
 }
