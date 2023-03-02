@@ -175,14 +175,6 @@ In addition, one of either `identity` or `service_principal` blocks must be spec
 
 -> **Note:** If you use BYO DNS Zone, the AKS cluster should either use a User Assigned Identity or a service principal (which is deprecated) with the `Private DNS Zone Contributor` role and access to this Private DNS Zone. If `UserAssigned` identity is used - to prevent improper resource order destruction - the cluster should depend on the role assignment, like in this example:
 
-* `workload_autoscaler_profile` - (Optional) A `workload_autoscaler_profile` block defined below.
-
-* `workload_identity_enabled` - (Optional) Specifies whether Azure AD Workload Identity should be enabled for the Cluster. Defaults to `false`.
-
--> **Note** To enable Azure AD Workload Identity `oidc_issuer_enabled` must be set to `true`.
-
--> **Note** This requires that the Preview Feature `Microsoft.ContainerService/EnableWorkloadIdentityPreview` is enabled and the Resource Provider is re-registered, see [the documentation](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag) for more information.
-
 ```hcl
 resource "azurerm_resource_group" "example" {
   name     = "example"
@@ -222,6 +214,14 @@ resource "azurerm_kubernetes_cluster" "example" {
 }
 
 ```
+
+* `workload_autoscaler_profile` - (Optional) A `workload_autoscaler_profile` block defined below.
+
+* `workload_identity_enabled` - (Optional) Specifies whether Azure AD Workload Identity should be enabled for the Cluster. Defaults to `false`.
+
+-> **Note** To enable Azure AD Workload Identity `oidc_issuer_enabled` must be set to `true`.
+
+-> **Note** This requires that the Preview Feature `Microsoft.ContainerService/EnableWorkloadIdentityPreview` is enabled and the Resource Provider is re-registered, see [the documentation](https://learn.microsoft.com/en-us/azure/aks/workload-identity-deploy-cluster#register-the-enableworkloadidentitypreview-feature-flag) for more information.
 
 * `public_network_access_enabled` - (Optional) Whether public network access is allowed for this Kubernetes Cluster. Defaults to `true`. Changing this forces a new resource to be created.
 
@@ -485,6 +485,8 @@ A `key_vault_secrets_provider` block supports the following:
 * `secret_rotation_enabled` - (Optional) Is secret rotation enabled?
 
 * `secret_rotation_interval` - (Optional) The interval to poll for secret rotation. This attribute is only set when `secret_rotation` is true and defaults to `2m`.
+
+-> **NOTE:** To enable`key_vault_secrets_provider` either `secret_rotation_enabled` or `secret_rotation_interval` must be specified.
 
 ---
 
@@ -792,7 +794,7 @@ A `sysctl_config` block supports the following:
 
 A `web_app_routing` block supports the following:
 
-* `dns_zone_id` - (Required) Specifies the ID of the DNS Zone in which DNS entries are created for applications deployed to the cluster when Web App Routing is enabled.
+* `dns_zone_id` - (Required) Specifies the ID of the DNS Zone in which DNS entries are created for applications deployed to the cluster when Web App Routing is enabled. For Bring-Your-Own DNS zones this property should be set to an empty string `""`.
 
 ---
 

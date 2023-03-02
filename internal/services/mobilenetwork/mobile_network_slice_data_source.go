@@ -36,14 +36,12 @@ func (r SliceDataSource) Arguments() map[string]*pluginsdk.Schema {
 		"name": {
 			Type:         pluginsdk.TypeString,
 			Required:     true,
-			ForceNew:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 
 		"mobile_network_id": {
 			Type:         pluginsdk.TypeString,
 			Required:     true,
-			ForceNew:     true,
 			ValidateFunc: mobilenetwork.ValidateMobileNetworkID,
 		},
 	}
@@ -92,7 +90,7 @@ func (r SliceDataSource) Read() sdk.ResourceFunc {
 			}
 
 			client := metadata.Client.MobileNetwork.SliceClient
-			mobileNetworkId, err := mobilenetwork.ParseMobileNetworkID(metaModel.MobileNetworkMobileNetworkId)
+			mobileNetworkId, err := mobilenetwork.ParseMobileNetworkID(metaModel.MobileNetworkId)
 			if err != nil {
 				return err
 			}
@@ -102,31 +100,32 @@ func (r SliceDataSource) Read() sdk.ResourceFunc {
 			resp, err := client.Get(ctx, id)
 			if err != nil {
 				if response.WasNotFound(resp.HttpResponse) {
-					return metadata.MarkAsGone(id)
+					return fmt.Errorf("%s was not found", id)
 				}
 
 				return fmt.Errorf("retrieving %s: %+v", id, err)
 			}
 
-			model := resp.Model
-			if model == nil {
+			if resp.Model == nil {
 				return fmt.Errorf("retrieving %s: model was nil", id)
 			}
 
+			model := *resp.Model
+
 			state := SliceModel{
-				Name:                         id.SliceName,
-				MobileNetworkMobileNetworkId: mobilenetwork.NewMobileNetworkID(id.SubscriptionId, id.ResourceGroupName, id.MobileNetworkName).ID(),
-				Location:                     location.Normalize(model.Location),
+				Name:            id.SliceName,
+				MobileNetworkId: mobileNetworkId.ID(),
+				Location:        location.Normalize(model.Location),
 			}
 
-			properties := &model.Properties
+			properties := model.Properties
 			if properties.Description != nil {
 				state.Description = *properties.Description
 			}
 
 			state.Snssai = flattenSnssaiModel(properties.Snssai)
 
-			if model.Tags != nil {
+			if resp.Model.Tags != nil {
 				state.Tags = *model.Tags
 			}
 

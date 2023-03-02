@@ -97,7 +97,7 @@ func (r DataNetworkResource) Create() sdk.ResourceFunc {
 				return metadata.ResourceRequiresImport(r.ResourceType(), id)
 			}
 
-			properties := &datanetwork.DataNetwork{
+			properties := datanetwork.DataNetwork{
 				Location:   location.Normalize(model.Location),
 				Properties: &datanetwork.DataNetworkPropertiesFormat{},
 				Tags:       &model.Tags,
@@ -107,7 +107,7 @@ func (r DataNetworkResource) Create() sdk.ResourceFunc {
 				properties.Properties.Description = &model.Description
 			}
 
-			if err := client.CreateOrUpdateThenPoll(ctx, id, *properties); err != nil {
+			if err := client.CreateOrUpdateThenPoll(ctx, id, properties); err != nil {
 				return fmt.Errorf("creating %s: %+v", id, err)
 			}
 
@@ -119,7 +119,7 @@ func (r DataNetworkResource) Create() sdk.ResourceFunc {
 
 func (r DataNetworkResource) Update() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
-		Timeout: 180 * time.Minute,
+		Timeout: 30 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
 			client := metadata.Client.MobileNetwork.DataNetworkClient
 
@@ -138,26 +138,21 @@ func (r DataNetworkResource) Update() sdk.ResourceFunc {
 				return fmt.Errorf("retrieving %s: %+v", *id, err)
 			}
 
-			properties := resp.Model
-			if properties == nil {
-				return fmt.Errorf("retrieving %s: properties was nil", id)
+			if resp.Model == nil {
+				return fmt.Errorf("retrieving %s: model was nil", id)
 			}
+
+			properties := *resp.Model
 
 			if metadata.ResourceData.HasChange("description") {
-				if model.Description != "" {
-					properties.Properties.Description = &model.Description
-				} else {
-					properties.Properties.Description = nil
-				}
+				properties.Properties.Description = &model.Description
 			}
-
-			properties.SystemData = nil
 
 			if metadata.ResourceData.HasChange("tags") {
 				properties.Tags = &model.Tags
 			}
 
-			if err := client.CreateOrUpdateThenPoll(ctx, *id, *properties); err != nil {
+			if err := client.CreateOrUpdateThenPoll(ctx, *id, properties); err != nil {
 				return fmt.Errorf("updating %s: %+v", *id, err)
 			}
 
@@ -186,24 +181,22 @@ func (r DataNetworkResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("retrieving %s: %+v", *id, err)
 			}
 
-			model := resp.Model
-			if model == nil {
-				return fmt.Errorf("retrieving %s: model was nil", id)
-			}
-
 			state := DataNetworkModel{
 				Name:                         id.DataNetworkName,
 				MobileNetworkMobileNetworkId: mobilenetwork.NewMobileNetworkID(id.SubscriptionId, id.ResourceGroupName, id.MobileNetworkName).ID(),
-				Location:                     location.Normalize(model.Location),
 			}
 
-			if properties := model.Properties; properties != nil {
-				if properties.Description != nil {
-					state.Description = *properties.Description
+			if model := resp.Model; model != nil {
+				state.Location = location.Normalize(model.Location)
+
+				if properties := model.Properties; properties != nil {
+					if properties.Description != nil {
+						state.Description = *properties.Description
+					}
 				}
-			}
-			if model.Tags != nil {
-				state.Tags = *model.Tags
+				if model.Tags != nil {
+					state.Tags = *model.Tags
+				}
 			}
 
 			return metadata.Encode(&state)

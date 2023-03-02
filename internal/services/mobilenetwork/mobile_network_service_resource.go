@@ -21,30 +21,30 @@ type ServiceModel struct {
 	Name                         string                      `tfschema:"name"`
 	MobileNetworkMobileNetworkId string                      `tfschema:"mobile_network_id"`
 	Location                     string                      `tfschema:"location"`
-	PccRules                     []PccRuleConfigurationModel `tfschema:"pcc_rules"`
+	PccRules                     []PccRuleConfigurationModel `tfschema:"pcc_rule"`
 	ServicePrecedence            int64                       `tfschema:"service_precedence"`
 	ServiceQosPolicy             []QosPolicyModel            `tfschema:"service_qos_policy"`
 	Tags                         map[string]string           `tfschema:"tags"`
 }
 
 type PccRuleConfigurationModel struct {
-	RuleName                 string                         `tfschema:"rule_name"`
-	RulePrecedence           int64                          `tfschema:"rule_precedence"`
-	RuleQosPolicy            []PccRuleQosPolicyModel        `tfschema:"rule_qos_policy"`
-	ServiceDataFlowTemplates []ServiceDataFlowTemplateModel `tfschema:"service_data_flow_templates"`
+	RuleName                 string                         `tfschema:"name"`
+	RulePrecedence           int64                          `tfschema:"precedence"`
+	RuleQosPolicy            []PccRuleQosPolicyModel        `tfschema:"qos_policy"`
+	ServiceDataFlowTemplates []ServiceDataFlowTemplateModel `tfschema:"service_data_flow_template"`
 	TrafficControlEnabled    bool                           `tfschema:"traffic_control_enabled"`
 }
 
 type PccRuleQosPolicyModel struct {
-	AllocationAndRetentionPriorityLevel int64             `tfschema:"allocation_and_retention_priority_level"`
-	QosIdentifier                       int64             `tfschema:"qos_indicator"`
-	GuaranteedBitRate                   []maxBitRateModel `tfschema:"guaranteed_bit_rate"`
-	MaximumBitRate                      []maxBitRateModel `tfschema:"maximum_bit_rate"`
-	PreemptionCapability                string            `tfschema:"preemption_capability"`
-	PreemptionVulnerability             string            `tfschema:"preemption_vulnerability"`
+	AllocationAndRetentionPriorityLevel int64          `tfschema:"allocation_and_retention_priority_level"`
+	QosIdentifier                       int64          `tfschema:"qos_indicator"`
+	GuaranteedBitRate                   []BitRateModel `tfschema:"guaranteed_bit_rate"`
+	MaximumBitRate                      []BitRateModel `tfschema:"maximum_bit_rate"`
+	PreemptionCapability                string         `tfschema:"preemption_capability"`
+	PreemptionVulnerability             string         `tfschema:"preemption_vulnerability"`
 }
 
-type maxBitRateModel struct {
+type BitRateModel struct {
 	Downlink string `tfschema:"downlink"`
 	Uplink   string `tfschema:"uplink"`
 }
@@ -54,15 +54,15 @@ type ServiceDataFlowTemplateModel struct {
 	Ports        []string `tfschema:"ports"`
 	Protocol     []string `tfschema:"protocol"`
 	RemoteIPList []string `tfschema:"remote_ip_list"`
-	TemplateName string   `tfschema:"template_name"`
+	TemplateName string   `tfschema:"name"`
 }
 
 type QosPolicyModel struct {
-	AllocationAndRetentionPriorityLevel int64             `tfschema:"allocation_and_retention_priority_level"`
-	QosIdentifier                       int64             `tfschema:"qos_indicator"`
-	MaximumBitRate                      []maxBitRateModel `tfschema:"maximum_bit_rate"`
-	PreemptionCapability                string            `tfschema:"preemption_capability"`
-	PreemptionVulnerability             string            `tfschema:"preemption_vulnerability"`
+	AllocationAndRetentionPriorityLevel int64          `tfschema:"allocation_and_retention_priority_level"`
+	QosIdentifier                       int64          `tfschema:"qos_indicator"`
+	MaximumBitRate                      []BitRateModel `tfschema:"maximum_bit_rate"`
+	PreemptionCapability                string         `tfschema:"preemption_capability"`
+	PreemptionVulnerability             string         `tfschema:"preemption_vulnerability"`
 }
 
 type MobileNetworkServiceResource struct{}
@@ -99,24 +99,24 @@ func (r MobileNetworkServiceResource) Arguments() map[string]*pluginsdk.Schema {
 
 		"location": commonschema.Location(),
 
-		"pcc_rules": {
+		"pcc_rule": {
 			Type:     pluginsdk.TypeList,
 			Required: true,
 			Elem: &pluginsdk.Resource{
 				Schema: map[string]*pluginsdk.Schema{
-					"rule_name": {
+					"name": {
 						Type:         pluginsdk.TypeString,
 						Required:     true,
 						ValidateFunc: validation.StringLenBetween(1, 64),
 					},
 
-					"rule_precedence": {
+					"precedence": {
 						Type:         pluginsdk.TypeInt,
 						Required:     true,
 						ValidateFunc: validation.IntBetween(0, 255),
 					},
 
-					"rule_qos_policy": {
+					"qos_policy": {
 						Type:     pluginsdk.TypeList,
 						Optional: true,
 						MaxItems: 1,
@@ -206,7 +206,7 @@ func (r MobileNetworkServiceResource) Arguments() map[string]*pluginsdk.Schema {
 						},
 					},
 
-					"service_data_flow_templates": {
+					"service_data_flow_template": {
 						Type:     pluginsdk.TypeList,
 						Required: true,
 						Elem: &pluginsdk.Resource{
@@ -245,7 +245,7 @@ func (r MobileNetworkServiceResource) Arguments() map[string]*pluginsdk.Schema {
 									},
 								},
 
-								"template_name": {
+								"name": {
 									Type:         pluginsdk.TypeString,
 									Required:     true,
 									ValidateFunc: validation.StringIsNotEmpty,
@@ -367,7 +367,7 @@ func (r MobileNetworkServiceResource) Create() sdk.ResourceFunc {
 				return metadata.ResourceRequiresImport(r.ResourceType(), id)
 			}
 
-			properties := &service.Service{
+			properties := service.Service{
 				Location: location.Normalize(model.Location),
 				Properties: service.ServicePropertiesFormat{
 					ServicePrecedence: model.ServicePrecedence,
@@ -377,7 +377,7 @@ func (r MobileNetworkServiceResource) Create() sdk.ResourceFunc {
 				Tags: &model.Tags,
 			}
 
-			if err := client.CreateOrUpdateThenPoll(ctx, id, *properties); err != nil {
+			if err := client.CreateOrUpdateThenPoll(ctx, id, properties); err != nil {
 				return fmt.Errorf("creating %s: %+v", id, err)
 			}
 
@@ -408,12 +408,13 @@ func (r MobileNetworkServiceResource) Update() sdk.ResourceFunc {
 				return fmt.Errorf("retrieving %s: %+v", *id, err)
 			}
 
-			properties := resp.Model
-			if properties == nil {
+			if resp.Model == nil {
 				return fmt.Errorf("retrieving %s: properties was nil", id)
 			}
 
-			if metadata.ResourceData.HasChange("pcc_rules") {
+			properties := *resp.Model
+
+			if metadata.ResourceData.HasChange("pcc_rule") {
 				properties.Properties.PccRules = expandPccRuleConfigurationModel(model.PccRules)
 			}
 
@@ -431,7 +432,7 @@ func (r MobileNetworkServiceResource) Update() sdk.ResourceFunc {
 				properties.Tags = &model.Tags
 			}
 
-			if err := client.CreateOrUpdateThenPoll(ctx, *id, *properties); err != nil {
+			if err := client.CreateOrUpdateThenPoll(ctx, *id, properties); err != nil {
 				return fmt.Errorf("updating %s: %+v", *id, err)
 			}
 
@@ -460,10 +461,11 @@ func (r MobileNetworkServiceResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("retrieving %s: %+v", *id, err)
 			}
 
-			model := resp.Model
-			if model == nil {
+			if resp.Model == nil {
 				return fmt.Errorf("retrieving %s: model was nil", id)
 			}
+
+			model := *resp.Model
 
 			state := ServiceModel{
 				Name:                         id.ServiceName,
@@ -471,7 +473,7 @@ func (r MobileNetworkServiceResource) Read() sdk.ResourceFunc {
 				Location:                     location.Normalize(model.Location),
 			}
 
-			properties := &model.Properties
+			properties := model.Properties
 
 			state.PccRules = flattenPccRuleConfigurationModel(properties.PccRules)
 
@@ -546,18 +548,18 @@ func expandPccRuleQosPolicyModel(inputList []PccRuleQosPolicyModel) *service.Pcc
 	}
 
 	input := &inputList[0]
-	cap := service.PreemptionCapability(input.PreemptionCapability)
+	capability := service.PreemptionCapability(input.PreemptionCapability)
 	vulnerability := service.PreemptionVulnerability(input.PreemptionVulnerability)
 	output := service.PccRuleQosPolicy{
 		AllocationAndRetentionPriorityLevel: &input.AllocationAndRetentionPriorityLevel,
 		Fiveqi:                              &input.QosIdentifier,
-		PreemptionCapability:                &cap,
+		PreemptionCapability:                &capability,
 		PreemptionVulnerability:             &vulnerability,
 	}
 
-	output.GuaranteedBitRate = expandMaxBitRateModel(input.GuaranteedBitRate)
+	output.GuaranteedBitRate = expandBitRateModel(input.GuaranteedBitRate)
 
-	if v := expandMaxBitRateModel(input.MaximumBitRate); v != nil {
+	if v := expandBitRateModel(input.MaximumBitRate); v != nil {
 		output.MaximumBitRate = *v
 	}
 
@@ -588,16 +590,16 @@ func expandQosPolicyModel(inputList []QosPolicyModel) *service.QosPolicy {
 	}
 
 	input := &inputList[0]
-	cap := service.PreemptionCapability(input.PreemptionCapability)
+	capability := service.PreemptionCapability(input.PreemptionCapability)
 	vulnerability := service.PreemptionVulnerability(input.PreemptionVulnerability)
 	output := service.QosPolicy{
 		AllocationAndRetentionPriorityLevel: &input.AllocationAndRetentionPriorityLevel,
 		Fiveqi:                              &input.QosIdentifier,
-		PreemptionCapability:                &cap,
+		PreemptionCapability:                &capability,
 		PreemptionVulnerability:             &vulnerability,
 	}
 
-	if v := expandMaxBitRateModel(input.MaximumBitRate); v != nil {
+	if v := expandBitRateModel(input.MaximumBitRate); v != nil {
 		output.MaximumBitRate = *v
 	}
 
@@ -643,9 +645,9 @@ func flattenPccRuleQosPolicyModel(input *service.PccRuleQosPolicy) []PccRuleQosP
 		output.QosIdentifier = *input.Fiveqi
 	}
 
-	output.GuaranteedBitRate = flattenMaxBitRateModel(input.GuaranteedBitRate)
+	output.GuaranteedBitRate = flattenBitRateModel(input.GuaranteedBitRate)
 
-	output.MaximumBitRate = flattenMaxBitRateModel(&input.MaximumBitRate)
+	output.MaximumBitRate = flattenBitRateModel(&input.MaximumBitRate)
 
 	if input.PreemptionCapability != nil {
 		output.PreemptionCapability = string(*input.PreemptionCapability)
@@ -698,7 +700,7 @@ func flattenQosPolicyModel(input *service.QosPolicy) []QosPolicyModel {
 		output.QosIdentifier = *input.Fiveqi
 	}
 
-	output.MaximumBitRate = flattenMaxBitRateModel(&input.MaximumBitRate)
+	output.MaximumBitRate = flattenBitRateModel(&input.MaximumBitRate)
 
 	if input.PreemptionCapability != nil {
 		output.PreemptionCapability = string(*input.PreemptionCapability)
@@ -712,7 +714,7 @@ func flattenQosPolicyModel(input *service.QosPolicy) []QosPolicyModel {
 }
 
 // make it return a pointer because some property accept nil value
-func expandMaxBitRateModel(inputList []maxBitRateModel) *service.Ambr {
+func expandBitRateModel(inputList []BitRateModel) *service.Ambr {
 	if len(inputList) == 0 {
 		return nil
 	}
@@ -726,13 +728,13 @@ func expandMaxBitRateModel(inputList []maxBitRateModel) *service.Ambr {
 	return &output
 }
 
-func flattenMaxBitRateModel(input *service.Ambr) []maxBitRateModel {
-	var outputList []maxBitRateModel
+func flattenBitRateModel(input *service.Ambr) []BitRateModel {
+	var outputList []BitRateModel
 	if input == nil {
 		return outputList
 	}
 
-	output := maxBitRateModel{
+	output := BitRateModel{
 		Downlink: input.Downlink,
 		Uplink:   input.Uplink,
 	}

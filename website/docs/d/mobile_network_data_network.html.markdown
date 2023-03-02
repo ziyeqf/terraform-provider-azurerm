@@ -28,9 +28,9 @@ data "azurerm_mobile_network_data_network" "example" {
 
 The following arguments are supported:
 
-* `name` - (Required) Specifies the name which should be used for this Mobile Network Data Network. Changing this forces a new Mobile Network Data Network to be created.
+* `name` - (Required) Specifies the name which should be used for this Mobile Network Data Network. 
 
-* `mobile_network_id` - (Required) Specifies the ID of the Mobile Network. Changing this forces a new Mobile Network Data Network to be created.
+* `mobile_network_id` - (Required) Specifies the ID of the Mobile Network. 
 
 ## Attributes Reference
 
@@ -38,9 +38,9 @@ In addition to the Arguments listed above - the following Attributes are exporte
 
 * `id` - The ID of the Mobile Network Data Network.
 
-* `location` - The Azure Region where the Mobile Network Data Network should exist. 
+* `location` - The Azure Region where the Mobile Network Data Network exists. 
 
-* `description` - An optional description for this data network.
+* `description` - The description for this Mobile Network Data Network.
 
 * `tags` - A mapping of tags which should be assigned to the Mobile Network Data Network.
 
@@ -50,7 +50,3 @@ In addition to the Arguments listed above - the following Attributes are exporte
 The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/docs/configuration/resources.html#timeouts) for certain actions:
 
 * `read` - (Defaults to 5 minutes) Used when retrieving the Mobile Network Data Network.
-
-## Import
-
-Mobile Network Data Network can be imported using the `resource id`, e.g.

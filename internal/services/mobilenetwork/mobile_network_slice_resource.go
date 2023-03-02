@@ -18,12 +18,12 @@ import (
 )
 
 type SliceModel struct {
-	Name                         string            `tfschema:"name"`
-	MobileNetworkMobileNetworkId string            `tfschema:"mobile_network_id"`
-	Description                  string            `tfschema:"description"`
-	Location                     string            `tfschema:"location"`
-	Snssai                       []SnssaiModel     `tfschema:"single_network_slice_selection_assistance_information"`
-	Tags                         map[string]string `tfschema:"tags"`
+	Name            string            `tfschema:"name"`
+	MobileNetworkId string            `tfschema:"mobile_network_id"`
+	Description     string            `tfschema:"description"`
+	Location        string            `tfschema:"location"`
+	Snssai          []SnssaiModel     `tfschema:"single_network_slice_selection_assistance_information"`
+	Tags            map[string]string `tfschema:"tags"`
 }
 
 type SnssaiModel struct {
@@ -113,7 +113,7 @@ func (r SliceResource) Create() sdk.ResourceFunc {
 			}
 
 			client := metadata.Client.MobileNetwork.SliceClient
-			mobileNetworkId, err := mobilenetwork.ParseMobileNetworkID(model.MobileNetworkMobileNetworkId)
+			mobileNetworkId, err := mobilenetwork.ParseMobileNetworkID(model.MobileNetworkId)
 			if err != nil {
 				return err
 			}
@@ -128,7 +128,7 @@ func (r SliceResource) Create() sdk.ResourceFunc {
 				return metadata.ResourceRequiresImport(r.ResourceType(), id)
 			}
 
-			properties := &slice.Slice{
+			properties := slice.Slice{
 				Location:   location.Normalize(model.Location),
 				Properties: slice.SlicePropertiesFormat{},
 				Tags:       &model.Tags,
@@ -140,7 +140,7 @@ func (r SliceResource) Create() sdk.ResourceFunc {
 
 			properties.Properties.Snssai = expandSnssaiModel(model.Snssai)
 
-			if err := client.CreateOrUpdateThenPoll(ctx, id, *properties); err != nil {
+			if err := client.CreateOrUpdateThenPoll(ctx, id, properties); err != nil {
 				return fmt.Errorf("creating %s: %+v", id, err)
 			}
 
@@ -171,30 +171,31 @@ func (r SliceResource) Update() sdk.ResourceFunc {
 				return fmt.Errorf("retrieving %s: %+v", *id, err)
 			}
 
-			properties := resp.Model
-			if properties == nil {
-				return fmt.Errorf("retrieving %s: properties was nil", id)
+			if resp.Model == nil {
+				return fmt.Errorf("retrieving %s: properties were nil", id)
 			}
+
+			updateModel := resp.Model
 
 			if metadata.ResourceData.HasChange("description") {
 				if model.Description != "" {
-					properties.Properties.Description = &model.Description
+					updateModel.Properties.Description = &model.Description
 				} else {
-					properties.Properties.Description = nil
+					updateModel.Properties.Description = nil
 				}
 			}
 
 			if metadata.ResourceData.HasChange("snssai") {
-				properties.Properties.Snssai = expandSnssaiModel(model.Snssai)
+				updateModel.Properties.Snssai = expandSnssaiModel(model.Snssai)
 			}
 
-			properties.SystemData = nil
+			updateModel.SystemData = nil
 
 			if metadata.ResourceData.HasChange("tags") {
-				properties.Tags = &model.Tags
+				updateModel.Tags = &model.Tags
 			}
 
-			if err := client.CreateOrUpdateThenPoll(ctx, *id, *properties); err != nil {
+			if err := client.CreateOrUpdateThenPoll(ctx, *id, *updateModel); err != nil {
 				return fmt.Errorf("updating %s: %+v", *id, err)
 			}
 
@@ -223,18 +224,19 @@ func (r SliceResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("retrieving %s: %+v", *id, err)
 			}
 
-			model := resp.Model
-			if model == nil {
+			if resp.Model == nil {
 				return fmt.Errorf("retrieving %s: model was nil", id)
 			}
 
+			model := *resp.Model
+
 			state := SliceModel{
-				Name:                         id.SliceName,
-				MobileNetworkMobileNetworkId: mobilenetwork.NewMobileNetworkID(id.SubscriptionId, id.ResourceGroupName, id.MobileNetworkName).ID(),
-				Location:                     location.Normalize(model.Location),
+				Name:            id.SliceName,
+				MobileNetworkId: mobilenetwork.NewMobileNetworkID(id.SubscriptionId, id.ResourceGroupName, id.MobileNetworkName).ID(),
+				Location:        location.Normalize(model.Location),
 			}
 
-			properties := &model.Properties
+			properties := model.Properties
 			if properties.Description != nil {
 				state.Description = *properties.Description
 			}
@@ -281,7 +283,7 @@ func expandSnssaiModel(inputList []SnssaiModel) slice.Snssai {
 	if len(inputList) == 0 {
 		return output
 	}
-	input := &inputList[0]
+	input := inputList[0]
 
 	output.Sst = input.Sst
 
