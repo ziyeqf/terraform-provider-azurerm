@@ -743,7 +743,7 @@ resource "azurerm_hpc_cache" "test" {
   subnet_id           = azurerm_subnet.test.id
   sku_name            = "Standard_2G"
 
-  depends_on = [azurerm_linux_virtual_machine.test]
+  depends_on = [azurerm_virtual_machine_extension.test]
 }
 `, r.directoryLdapTemplate(data), data.RandomInteger)
 }
@@ -768,7 +768,7 @@ resource "azurerm_hpc_cache" "test" {
     }
   }
 
-  depends_on = [azurerm_linux_virtual_machine.test]
+  depends_on = [azurerm_virtual_machine_extension.test]
 }
 `, r.directoryLdapTemplate(data), data.RandomInteger)
 }
@@ -796,7 +796,7 @@ resource "azurerm_hpc_cache" "test" {
     }
   }
 
-  depends_on = [azurerm_linux_virtual_machine.test]
+  depends_on = [azurerm_virtual_machine_extension.test]
 }
 `, r.directoryLdapTemplate(data), data.RandomInteger)
 }
@@ -861,6 +861,7 @@ nohup python3 -m http.server 8000 &
 CUSTOMDATA
 }
 
+
 resource "azurerm_linux_virtual_machine" "test" {
   name                            = "acctest-vm-%d"
   resource_group_name             = azurerm_resource_group.test.name
@@ -884,7 +885,20 @@ resource "azurerm_linux_virtual_machine" "test" {
     sku       = "18.04-LTS"
     version   = "latest"
   }
-  custom_data = base64encode(local.custom_data)
+}
+
+resource "azurerm_virtual_machine_extension" "test" {
+  name                       = "ldap-init"
+  publisher                  = "Microsoft.Azure.Extensions"
+  type                       = "CustomScript"
+  type_handler_version       = "2.1"
+  auto_upgrade_minor_version = true
+  virtual_machine_id         = azurerm_linux_virtual_machine.test.id
+  protected_settings = jsonencode(
+    {
+      script = base64encode(local.custom_data)
+    }
+  )
 }
 `, r.directoryTemplate(data), data.RandomInteger)
 }
