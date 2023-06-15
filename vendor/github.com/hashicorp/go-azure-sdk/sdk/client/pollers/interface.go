@@ -6,9 +6,8 @@ package pollers
 import (
 	"context"
 	"fmt"
-	"time"
-
 	"github.com/hashicorp/go-azure-sdk/sdk/client"
+	"time"
 )
 
 // PollerType allows custom pollers to be created to determine when a particular Operation has
