@@ -16,18 +16,19 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 )
 
-type TrafficControllerResource struct{}
+type ContainerApplicationGatewayResource struct{}
 
-type TrafficControllerModel struct {
-	ResourceGroupName string            `tfschema:"resource_group_name"`
-	Name              string            `tfschema:"name"`
-	Location          string            `tfschema:"location"`
-	Tags              map[string]string `tfschema:"tags"`
+type ContainerApplicationGatewayModel struct {
+	Name                   string            `tfschema:"name"`
+	ResourceGroupName      string            `tfschema:"resource_group_name"`
+	Location               string            `tfschema:"location"`
+	ConfigurationEndpoints []string          `tfschema:"configuration_endpoint"`
+	Tags                   map[string]string `tfschema:"tags"`
 }
 
-var _ sdk.ResourceWithUpdate = TrafficControllerResource{}
+var _ sdk.ResourceWithUpdate = ContainerApplicationGatewayResource{}
 
-func (t TrafficControllerResource) Arguments() map[string]*schema.Schema {
+func (t ContainerApplicationGatewayResource) Arguments() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"name": {
 			Type:     pluginsdk.TypeString,
@@ -43,27 +44,35 @@ func (t TrafficControllerResource) Arguments() map[string]*schema.Schema {
 	}
 }
 
-func (t TrafficControllerResource) Attributes() map[string]*schema.Schema {
-	return map[string]*schema.Schema{}
+func (t ContainerApplicationGatewayResource) Attributes() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"configuration_endpoint": {
+			Type:     pluginsdk.TypeList,
+			Computed: true,
+			Elem: &pluginsdk.Schema{
+				Type: pluginsdk.TypeString,
+			},
+		},
+	}
 }
 
-func (t TrafficControllerResource) ModelObject() interface{} {
-	return &TrafficControllerModel{}
+func (t ContainerApplicationGatewayResource) ModelObject() interface{} {
+	return &ContainerApplicationGatewayModel{}
 }
 
-func (t TrafficControllerResource) ResourceType() string {
-	return "azurerm_service_networking_adp"
+func (t ContainerApplicationGatewayResource) ResourceType() string {
+	return "azurerm_service_networking_container_application_gateway"
 }
 
-func (t TrafficControllerResource) IDValidationFunc() pluginsdk.SchemaValidateFunc {
+func (t ContainerApplicationGatewayResource) IDValidationFunc() pluginsdk.SchemaValidateFunc {
 	return trafficcontrollerinterface.ValidateTrafficControllerID
 }
 
-func (t TrafficControllerResource) Create() sdk.ResourceFunc {
+func (t ContainerApplicationGatewayResource) Create() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
 		Timeout: 30 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
-			var plan TrafficControllerModel
+			var plan ContainerApplicationGatewayModel
 			if err := metadata.Decode(&plan); err != nil {
 				return fmt.Errorf("decoding %v", err)
 			}
@@ -76,7 +85,7 @@ func (t TrafficControllerResource) Create() sdk.ResourceFunc {
 			existing, err := client.TrafficControllerInterface.Get(ctx, id)
 			if err != nil {
 				if !response.WasNotFound(existing.HttpResponse) {
-					return fmt.Errorf("checking for presence of existing Traffic Controller %s: %+v", id, err)
+					return fmt.Errorf("checking for presence of existing %s: %+v", id, err)
 				}
 			}
 
@@ -89,8 +98,7 @@ func (t TrafficControllerResource) Create() sdk.ResourceFunc {
 				Tags:     pointer.To(plan.Tags),
 			}
 
-			err = client.TrafficControllerInterface.CreateOrUpdateThenPoll(ctx, id, controller)
-			if err != nil {
+			if err = client.TrafficControllerInterface.CreateOrUpdateThenPoll(ctx, id, controller); err != nil {
 				return fmt.Errorf("creating %s: %+v", id, err)
 			}
 
@@ -100,7 +108,7 @@ func (t TrafficControllerResource) Create() sdk.ResourceFunc {
 	}
 }
 
-func (t TrafficControllerResource) Read() sdk.ResourceFunc {
+func (t ContainerApplicationGatewayResource) Read() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
 		Timeout: 5 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
@@ -119,7 +127,7 @@ func (t TrafficControllerResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("reading %s: %+v", metadata.ResourceData.Id(), err)
 			}
 
-			state := TrafficControllerModel{
+			state := ContainerApplicationGatewayModel{
 				Name:              id.TrafficControllerName,
 				ResourceGroupName: id.ResourceGroupName,
 			}
@@ -127,6 +135,10 @@ func (t TrafficControllerResource) Read() sdk.ResourceFunc {
 			if model := resp.Model; model != nil {
 				state.Location = model.Location
 				state.Tags = pointer.From(model.Tags)
+
+				if prop := model.Properties; prop != nil {
+					state.ConfigurationEndpoints = pointer.From(prop.ConfigurationEndpoints)
+				}
 			}
 
 			return metadata.Encode(&state)
@@ -134,11 +146,11 @@ func (t TrafficControllerResource) Read() sdk.ResourceFunc {
 	}
 }
 
-func (t TrafficControllerResource) Update() sdk.ResourceFunc {
+func (t ContainerApplicationGatewayResource) Update() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
 		Timeout: 30 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
-			var plan TrafficControllerModel
+			var plan ContainerApplicationGatewayModel
 			if err := metadata.Decode(&plan); err != nil {
 				return fmt.Errorf("decoding %v", err)
 			}
@@ -161,11 +173,14 @@ func (t TrafficControllerResource) Update() sdk.ResourceFunc {
 			controller := existing.Model
 
 			if metadata.ResourceData.HasChange("tags") {
-				controller.Tags = pointer.To(plan.Tags)
+				if len(plan.Tags) > 0 {
+					controller.Tags = pointer.To(plan.Tags)
+				} else {
+					controller.Tags = nil
+				}
 			}
 
-			err = client.TrafficControllerInterface.CreateOrUpdateThenPoll(ctx, *id, *controller)
-			if err != nil {
+			if err = client.TrafficControllerInterface.CreateOrUpdateThenPoll(ctx, *id, *controller); err != nil {
 				return fmt.Errorf("updating %s: %+v", id, err)
 			}
 
@@ -174,7 +189,7 @@ func (t TrafficControllerResource) Update() sdk.ResourceFunc {
 	}
 }
 
-func (t TrafficControllerResource) Delete() sdk.ResourceFunc {
+func (t ContainerApplicationGatewayResource) Delete() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
 		Timeout: 30 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
@@ -183,9 +198,9 @@ func (t TrafficControllerResource) Delete() sdk.ResourceFunc {
 				return fmt.Errorf("parsing %s: %+v", metadata.ResourceData.Id(), err)
 			}
 
-			client := metadata.Client.ServiceNetworking.ServiceNetworkingClient
-			err = client.TrafficControllerInterface.DeleteThenPoll(ctx, *id)
-			if err != nil {
+			client := metadata.Client.ServiceNetworking.ServiceNetworkingClient.TrafficControllerInterface
+
+			if err = client.DeleteThenPoll(ctx, *id); err != nil {
 				return fmt.Errorf("deleting %s: %+v", metadata.ResourceData.Id(), err)
 			}
 
