@@ -23,7 +23,7 @@ type TrafficControllerAssociationResource struct{}
 type AssociationModel struct {
 	Name                          string            `tfschema:"name"`
 	ContainerApplicationGatewayId string            `tfschema:"container_application_gateway_id"`
-	SubnetId                      string            `tfschema:"subnet_id""`
+	SubnetId                      string            `tfschema:"subnet_id"`
 	Location                      string            `tfschema:"location"`
 	Tags                          map[string]string `tfschema:"tags"`
 }
@@ -68,7 +68,7 @@ func (t TrafficControllerAssociationResource) ModelObject() interface{} {
 }
 
 func (t TrafficControllerAssociationResource) ResourceType() string {
-	return "azurerm_service_networking_association"
+	return "azurerm_alb_association"
 }
 
 func (t TrafficControllerAssociationResource) IDValidationFunc() pluginsdk.SchemaValidateFunc {

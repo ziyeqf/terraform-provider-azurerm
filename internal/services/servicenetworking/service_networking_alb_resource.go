@@ -61,7 +61,7 @@ func (t ContainerApplicationGatewayResource) ModelObject() interface{} {
 }
 
 func (t ContainerApplicationGatewayResource) ResourceType() string {
-	return "azurerm_service_networking_container_application_gateway"
+	return "azurerm_alb"
 }
 
 func (t ContainerApplicationGatewayResource) IDValidationFunc() pluginsdk.SchemaValidateFunc {

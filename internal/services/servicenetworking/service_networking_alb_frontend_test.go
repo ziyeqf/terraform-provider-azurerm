@@ -33,7 +33,7 @@ func (r FrontendResource) Exists(ctx context.Context, clients *clients.Client, s
 }
 
 func TestAccServiceNetworkingFrontend_basic(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_frontend", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb_frontend", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -51,7 +51,7 @@ func TestAccServiceNetworkingFrontend_basic(t *testing.T) {
 }
 
 func TestAccServiceNetworkingFrontend_complete(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_frontend", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb_frontend", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -69,7 +69,7 @@ func TestAccServiceNetworkingFrontend_complete(t *testing.T) {
 }
 
 func TestAccServiceNetworkingFrontend_update(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_frontend", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb_frontend", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -98,10 +98,10 @@ func (r FrontendResource) basic(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 	%s
 
-resource "azurerm_service_networking_frontend" "test" {
+resource "azurerm_alb_frontend" "test" {
   name                             = "acct-frnt-%d"
-  container_application_gateway_id = azurerm_service_networking_container_application_gateway.test.id
-  location                         = azurerm_service_networking_container_application_gateway.test.location
+  container_application_gateway_id = azurerm_alb.test.id
+  location                         = azurerm_alb.test.location
 }
 `, TrafficControllerResource{}.basic(data), data.RandomInteger)
 }
@@ -110,10 +110,10 @@ func (r FrontendResource) complete(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 	%s
 
-resource "azurerm_service_networking_frontend" "test" {
+resource "azurerm_alb_frontend" "test" {
   name                             = "acct-frnt-%d"
-  container_application_gateway_id = azurerm_service_networking_container_application_gateway.test.id
-  location                         = azurerm_service_networking_container_application_gateway.test.location
+  container_application_gateway_id = azurerm_alb.test.id
+  location                         = azurerm_alb.test.location
   tags = {
     "tag1" = "value1"
   }

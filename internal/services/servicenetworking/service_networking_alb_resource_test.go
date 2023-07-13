@@ -33,7 +33,7 @@ func (r TrafficControllerResource) Exists(ctx context.Context, clients *clients.
 }
 
 func TestAccServiceNetworkingContainerApplicationGateway_basic(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_container_application_gateway", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -51,7 +51,7 @@ func TestAccServiceNetworkingContainerApplicationGateway_basic(t *testing.T) {
 }
 
 func TestAccServiceNetworkingContainerApplicationGateway_complete(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_container_application_gateway", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -69,7 +69,7 @@ func TestAccServiceNetworkingContainerApplicationGateway_complete(t *testing.T) 
 }
 
 func TestAccServiceNetworkingContainerApplicationGateway_update(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_container_application_gateway", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -115,7 +115,7 @@ func (r TrafficControllerResource) basic(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 	%s
 
-resource "azurerm_service_networking_container_application_gateway" "test" {
+resource "azurerm_alb" "test" {
   name                = "acct-%d"
   location            = "%s"
   resource_group_name = azurerm_resource_group.test.name
@@ -127,7 +127,7 @@ func (r TrafficControllerResource) complete(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 	%s
 
-resource "azurerm_service_networking_container_application_gateway" "test" {
+resource "azurerm_alb" "test" {
   name                = "acct-%d"
   location            = "%s"
   resource_group_name = azurerm_resource_group.test.name

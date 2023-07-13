@@ -33,7 +33,7 @@ func (r AssociationResource) Exists(ctx context.Context, clients *clients.Client
 }
 
 func TestAccServiceNetworkingAssociation_basic(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_association", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb_association", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -50,7 +50,7 @@ func TestAccServiceNetworkingAssociation_basic(t *testing.T) {
 }
 
 func TestAccServiceNetworkingAssociation_update(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_association", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb_association", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -74,7 +74,7 @@ func TestAccServiceNetworkingAssociation_update(t *testing.T) {
 }
 
 func TestAccServiceNetworkingAssociation_complete(t *testing.T) {
-	data := acceptance.BuildTestData(t, "azurerm_service_networking_association", "test")
+	data := acceptance.BuildTestData(t, "azurerm_alb_association", "test")
 
 	// for preview only, remove before merge
 	data.Locations.Primary = "northeurope"
@@ -124,11 +124,11 @@ func (r AssociationResource) basic(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 	%s
 
-resource "azurerm_service_networking_association" "test" {
+resource "azurerm_alb_association" "test" {
   name                             = "acct-%d"
-  container_application_gateway_id = azurerm_service_networking_container_application_gateway.test.id
+  container_application_gateway_id = azurerm_alb.test.id
   subnet_id                        = azurerm_subnet.test.id
-  location                         = azurerm_service_networking_container_application_gateway.test.location
+  location                         = azurerm_alb.test.location
 }
 `, r.template(data), data.RandomInteger)
 }
@@ -137,11 +137,11 @@ func (r AssociationResource) complete(data acceptance.TestData) string {
 	return fmt.Sprintf(`
 	%s
 
-resource "azurerm_service_networking_association" "test" {
+resource "azurerm_alb_association" "test" {
   name                             = "acct-%d"
-  container_application_gateway_id = azurerm_service_networking_container_application_gateway.test.id
+  container_application_gateway_id = azurerm_alb.test.id
   subnet_id                        = azurerm_subnet.test.id
-  location                         = azurerm_service_networking_container_application_gateway.test.location
+  location                         = azurerm_alb.test.location
   tags = {
     key = "value"
   }

@@ -66,7 +66,7 @@ func (f FrontendsResource) ModelObject() interface{} {
 }
 
 func (f FrontendsResource) ResourceType() string {
-	return "azurerm_service_networking_frontend"
+	return "azurerm_alb_frontend"
 }
 
 func (f FrontendsResource) IDValidationFunc() pluginsdk.SchemaValidateFunc {
@@ -174,11 +174,11 @@ func (f FrontendsResource) Update() sdk.ResourceFunc {
 
 			resp, err := client.Get(ctx, *id)
 			if err != nil {
-				return fmt.Errorf("retiring `azurerm_service_networking_frontend` %s: %+v", *id, err)
+				return fmt.Errorf("retiring `azurerm_alb_frontend` %s: %+v", *id, err)
 			}
 
 			if resp.Model == nil {
-				return fmt.Errorf("retiring `azurerm_service_networking_frontend` %s: Model was nil", *id)
+				return fmt.Errorf("retiring `azurerm_alb_frontend` %s: Model was nil", *id)
 			}
 
 			model := *resp.Model
@@ -188,7 +188,7 @@ func (f FrontendsResource) Update() sdk.ResourceFunc {
 			}
 
 			if err := client.CreateOrUpdateThenPoll(ctx, *id, model); err != nil {
-				return fmt.Errorf("updating `azurerm_service_networking_frontend` %s: %+v", *id, err)
+				return fmt.Errorf("updating `azurerm_alb_frontend` %s: %+v", *id, err)
 			}
 
 			return nil
