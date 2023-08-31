@@ -104,32 +104,42 @@ func TestAccSecurityCenterSubscriptionPricing_cloudPostureExtension(t *testing.T
 
 	data.ResourceSequentialTestSkipCheckDestroyed(t, []acceptance.TestStep{
 		{
-			Config: r.cloudPostureExtension(),
+			Config: r.cloudPostureExtension(false, true), // create with ignore_changes to use default values.
 			Check: acceptance.ComposeTestCheckFunc(
 				check.That(data.ResourceName).ExistsInAzure(r),
 				check.That(data.ResourceName).Key("tier").HasValue("Standard"),
 				check.That(data.ResourceName).Key("resource_type").HasValue("CloudPosture"),
-				check.That(data.ResourceName).Key("extension.#").HasValue("2"),
+				check.That(data.ResourceName).Key("extension.#").HasValue("0"),
 			),
 		},
 		data.ImportStep(),
 		{
-			Config: r.cloudPostureExtensionUpdated(),
+			Config: r.cloudPostureExtension(true, false), // update to validate default values
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+				check.That(data.ResourceName).Key("tier").HasValue("Standard"),
+				check.That(data.ResourceName).Key("resource_type").HasValue("CloudPosture"),
+				check.That(data.ResourceName).Key("extension.#").HasValue("4"),
+			),
+		},
+		data.ImportStep(),
+		{
+			Config: r.cloudPostureExtension(false, false), // update to turn off all default values.
+			Check: acceptance.ComposeTestCheckFunc(
+				check.That(data.ResourceName).ExistsInAzure(r),
+				check.That(data.ResourceName).Key("tier").HasValue("Standard"),
+				check.That(data.ResourceName).Key("resource_type").HasValue("CloudPosture"),
+				check.That(data.ResourceName).Key("extension.#").HasValue("0"),
+			),
+		},
+		data.ImportStep(),
+		{
+			Config: r.cloudPostureExtensionUpdated(), // update to values different from default values.
 			Check: acceptance.ComposeTestCheckFunc(
 				check.That(data.ResourceName).ExistsInAzure(r),
 				check.That(data.ResourceName).Key("tier").HasValue("Standard"),
 				check.That(data.ResourceName).Key("resource_type").HasValue("CloudPosture"),
 				check.That(data.ResourceName).Key("extension.#").HasValue("3"),
-			),
-		},
-		data.ImportStep(),
-		{
-			Config: r.cloudPostureExtension(),
-			Check: acceptance.ComposeTestCheckFunc(
-				check.That(data.ResourceName).ExistsInAzure(r),
-				check.That(data.ResourceName).Key("tier").HasValue("Standard"),
-				check.That(data.ResourceName).Key("resource_type").HasValue("CloudPosture"),
-				check.That(data.ResourceName).Key("extension.#").HasValue("2"),
 			),
 		},
 	})
@@ -176,8 +186,41 @@ resource "azurerm_security_center_subscription_pricing" "test" {
 `
 }
 
-func (SecurityCenterSubscriptionPricingResource) cloudPostureExtension() string {
-	return `
+func (SecurityCenterSubscriptionPricingResource) cloudPostureExtension(defaultExtensions bool, ignoreChanges bool) string {
+	ignoreBlock := ""
+	if ignoreChanges {
+		ignoreBlock = `
+lifecycle {
+	ignore_changes = [extension]
+}
+`
+	}
+
+	defaultExtensionBlock := ""
+	if defaultExtensions {
+		defaultExtensionBlock = `
+ extension {
+    name = "SensitiveDataDiscovery"
+  }
+
+  extension {
+    name = "ContainerRegistriesVulnerabilityAssessments"
+  }
+
+  extension {
+    name = "AgentlessVmScanning"
+    additional_extension_properties = {
+      ExclusionTags = "[]"
+    }
+  }
+
+  extension {
+    name = "AgentlessDiscoveryForKubernetes"
+  }
+`
+	}
+
+	return fmt.Sprintf(`
 provider "azurerm" {
   features {
 
@@ -188,18 +231,10 @@ resource "azurerm_security_center_subscription_pricing" "test" {
   tier          = "Standard"
   resource_type = "CloudPosture"
 
-  extension {
-    name = "SensitiveDataDiscovery"
-  }
+%s
 
-  extension {
-    name = "AgentlessVmScanning"
-    additional_extension_properties = {
-      ExclusionTags = "[]"
-    }
-  }
-}
-`
+%s
+}`, defaultExtensionBlock, ignoreBlock)
 }
 
 func (SecurityCenterSubscriptionPricingResource) cloudPostureExtensionUpdated() string {
