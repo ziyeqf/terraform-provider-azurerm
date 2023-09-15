@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"runtime"
 	"time"
@@ -84,11 +83,8 @@ func (c *Client) getMetaDataFrom2022API(ctx context.Context, name string) (*meta
 	}
 	client := &http.Client{
 		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				d := &net.Dialer{Resolver: &net.Resolver{}}
-				return d.DialContext(ctx, network, addr)
-			},
+			Proxy:                 http.ProxyFromEnvironment,
+			DialContext:           GetDialContext(),
 			TLSClientConfig:       &tlsConfig,
 			MaxIdleConns:          100,
 			IdleConnTimeout:       90 * time.Second,
@@ -137,11 +133,8 @@ func (c *Client) getMetaDataFrom2019API(ctx context.Context, name string) (*meta
 	}
 	client := &http.Client{
 		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				d := &net.Dialer{Resolver: &net.Resolver{}}
-				return d.DialContext(ctx, network, addr)
-			},
+			Proxy:                 http.ProxyFromEnvironment,
+			DialContext:           GetDialContext(),
 			TLSClientConfig:       &tlsConfig,
 			MaxIdleConns:          100,
 			IdleConnTimeout:       90 * time.Second,

@@ -27,7 +27,7 @@ type RPCClient struct {
 // to be successfully started already with a lock held.
 func newRPCClient(c *Client) (*RPCClient, error) {
 	// Connect to the client
-	conn, err := net.Dial(c.address.Network(), c.address.String())
+	conn, err := rpcDial(c)
 	if err != nil {
 		return nil, err
 	}

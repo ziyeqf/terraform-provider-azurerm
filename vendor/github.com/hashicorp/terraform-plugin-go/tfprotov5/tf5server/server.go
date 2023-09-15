@@ -273,6 +273,7 @@ func Serve(name string, serverFactory func() tfprotov5.ProviderServer, opts ...S
 
 			return grpc.NewServer(opts...)
 		},
+		WASMConnectStr: "plugin-connect",
 	}
 
 	if conf.logger != nil {

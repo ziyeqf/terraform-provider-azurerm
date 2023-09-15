@@ -1,6 +1,8 @@
 // Copyright (c) HashiCorp, Inc.
 // SPDX-License-Identifier: MPL-2.0
 
+//go:build !wasm
+
 package plugin
 
 import (
@@ -26,10 +28,16 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-hclog"
-	"github.com/hashicorp/go-plugin/internal/cmdrunner"
-	"github.com/hashicorp/go-plugin/runner"
 	"google.golang.org/grpc"
 )
+
+const unrecognizedRemotePluginMessage = `Unrecognized remote plugin message: %s
+This usually means
+  the plugin was not compiled for this architecture,
+  the plugin is missing dynamic-link libraries necessary to run,
+  the plugin is not executable by this process due to file permissions, or
+  the plugin failed to negotiate the initial go-plugin protocol handshake
+%s`
 
 // If this is 1, then we've called CleanupClients. This can be used
 // by plugin RPC implementations to change error behavior since you
@@ -46,7 +54,7 @@ var managedClientsLock sync.Mutex
 var (
 	// ErrProcessNotFound is returned when a client is instantiated to
 	// reattach to an existing process and it isn't found.
-	ErrProcessNotFound = cmdrunner.ErrProcessNotFound
+	ErrProcessNotFound = errors.New("Reattachment process not found")
 
 	// ErrChecksumsDoNotMatch is returned when binary's checksum doesn't match
 	// the one provided in the SecureConfig.
@@ -81,7 +89,7 @@ type Client struct {
 	exited            bool
 	l                 sync.Mutex
 	address           net.Addr
-	runner            runner.AttachedRunner
+	process           *os.Process
 	client            ClientProtocol
 	protocol          Protocol
 	logger            hclog.Logger
@@ -100,27 +108,12 @@ type Client struct {
 	// processKilled is used for testing only, to flag when the process was
 	// forcefully killed.
 	processKilled bool
-
-	unixSocketCfg UnixSocketConfig
 }
 
 // NegotiatedVersion returns the protocol version negotiated with the server.
 // This is only valid after Start() is called.
 func (c *Client) NegotiatedVersion() int {
 	return c.negotiatedVersion
-}
-
-// ID returns a unique ID for the running plugin. By default this is the process
-// ID (pid), but it could take other forms if RunnerFunc was provided.
-func (c *Client) ID() string {
-	c.l.Lock()
-	defer c.l.Unlock()
-
-	if c.runner != nil {
-		return c.runner.ID()
-	}
-
-	return ""
 }
 
 // ClientConfig is the configuration used to initialize a new
@@ -149,13 +142,6 @@ type ClientConfig struct {
 	// that is already running. This isn't common.
 	Cmd      *exec.Cmd
 	Reattach *ReattachConfig
-
-	// RunnerFunc allows consumers to provide their own implementation of
-	// runner.Runner and control the context within which a plugin is executed.
-	// The cmd argument will have been copied from the config and populated with
-	// environment variables that a go-plugin server expects to read such as
-	// AutoMTLS certs and the magic cookie key.
-	RunnerFunc func(l hclog.Logger, cmd *exec.Cmd, tmpDir string) (runner.Runner, error)
 
 	// SecureConfig is configuration for verifying the integrity of the
 	// executable. It can not be used with Reattach.
@@ -236,32 +222,6 @@ type ClientConfig struct {
 	// to create gRPC connections. This only affects plugins using the gRPC
 	// protocol.
 	GRPCDialOptions []grpc.DialOption
-
-	// SkipHostEnv allows plugins to run without inheriting the parent process'
-	// environment variables.
-	SkipHostEnv bool
-
-	// UnixSocketConfig configures additional options for any Unix sockets
-	// that are created. Not normally required. Not supported on Windows.
-	UnixSocketConfig *UnixSocketConfig
-}
-
-type UnixSocketConfig struct {
-	// If set, go-plugin will change the owner of any Unix sockets created to
-	// this group, and set them as group-writable. Can be a name or gid. The
-	// client process must be a member of this group or chown will fail.
-	Group string
-
-	// The directory to create Unix sockets in. Internally managed by go-plugin
-	// and deleted when the plugin is killed.
-	directory string
-}
-
-func unixSocketConfigFromEnv() UnixSocketConfig {
-	return UnixSocketConfig{
-		Group:     os.Getenv(EnvUnixSocketGroup),
-		directory: os.Getenv(EnvUnixSocketDir),
-	}
 }
 
 // ReattachConfig is used to configure a client to reattach to an
@@ -272,11 +232,6 @@ type ReattachConfig struct {
 	ProtocolVersion int
 	Addr            net.Addr
 	Pid             int
-
-	// ReattachFunc allows consumers to provide their own implementation of
-	// runner.AttachedRunner and attach to something other than a plain process.
-	// At least one of Pid or ReattachFunc must be set.
-	ReattachFunc runner.ReattachFunc
 
 	// Test is set to true if this is reattaching to to a plugin in "test mode"
 	// (see ServeConfig.Test). In this mode, client.Kill will NOT kill the
@@ -357,7 +312,7 @@ func CleanupClients() {
 // plugin and gets the address for the RPC connection.
 //
 // The client must be cleaned up at some point by calling Kill(). If
-// the client is a managed client (created with ClientConfig.Managed) you
+// the client is a managed client (created with NewManagedClient) you
 // can just call CleanupClients at the end of your program and they will
 // be properly cleaned.
 func NewClient(config *ClientConfig) (c *Client) {
@@ -465,13 +420,12 @@ func (c *Client) killed() bool {
 func (c *Client) Kill() {
 	// Grab a lock to read some private fields.
 	c.l.Lock()
-	runner := c.runner
+	process := c.process
 	addr := c.address
-	hostSocketDir := c.unixSocketCfg.directory
 	c.l.Unlock()
 
-	// If there is no runner or ID, there is nothing to kill.
-	if runner == nil || runner.ID() == "" {
+	// If there is no process, there is nothing to kill.
+	if process == nil {
 		return
 	}
 
@@ -479,14 +433,10 @@ func (c *Client) Kill() {
 		// Wait for the all client goroutines to finish.
 		c.clientWaitGroup.Wait()
 
-		if hostSocketDir != "" {
-			os.RemoveAll(hostSocketDir)
-		}
-
 		// Make sure there is no reference to the old process after it has been
 		// killed.
 		c.l.Lock()
-		c.runner = nil
+		c.process = nil
 		c.l.Unlock()
 	}()
 
@@ -529,13 +479,21 @@ func (c *Client) Kill() {
 
 	// If graceful exiting failed, just kill it
 	c.logger.Warn("plugin failed to exit gracefully")
-	if err := runner.Kill(context.Background()); err != nil {
-		c.logger.Debug("error killing plugin", "error", err)
-	}
+	process.Kill()
 
 	c.l.Lock()
 	c.processKilled = true
 	c.l.Unlock()
+}
+
+// peTypes is a list of Portable Executable (PE) machine types from https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
+// mapped to GOARCH types. It is not comprehensive, and only includes machine types that Go supports.
+var peTypes = map[uint16]string{
+	0x14c:  "386",
+	0x1c0:  "arm",
+	0x6264: "loong64",
+	0x8664: "amd64",
+	0xaa64: "arm64",
 }
 
 // Start the underlying subprocess, communicating with it to negotiate
@@ -556,21 +514,14 @@ func (c *Client) Start() (addr net.Addr, err error) {
 	// this in a {} for scoping reasons, and hopeful that the escape
 	// analysis will pop the stack here.
 	{
-		var mutuallyExclusiveOptions int
-		if c.config.Cmd != nil {
-			mutuallyExclusiveOptions += 1
-		}
-		if c.config.Reattach != nil {
-			mutuallyExclusiveOptions += 1
-		}
-		if c.config.RunnerFunc != nil {
-			mutuallyExclusiveOptions += 1
-		}
-		if mutuallyExclusiveOptions != 1 {
-			return nil, fmt.Errorf("exactly one of Cmd, or Reattach, or RunnerFunc must be set")
+		cmdSet := c.config.Cmd != nil
+		attachSet := c.config.Reattach != nil
+		secureSet := c.config.SecureConfig != nil
+		if cmdSet == attachSet {
+			return nil, fmt.Errorf("Only one of Cmd or Reattach must be set")
 		}
 
-		if c.config.SecureConfig != nil && c.config.Reattach != nil {
+		if secureSet && attachSet {
 			return nil, ErrSecureConfigAndReattach
 		}
 	}
@@ -606,17 +557,18 @@ func (c *Client) Start() (addr net.Addr, err error) {
 	}
 
 	cmd := c.config.Cmd
-	if cmd == nil {
-		// It's only possible to get here if RunnerFunc is non-nil, but we'll
-		// still use cmd as a spec to populate metadata for the external
-		// implementation to consume.
-		cmd = exec.Command("")
-	}
-	if !c.config.SkipHostEnv {
-		cmd.Env = append(cmd.Env, os.Environ()...)
-	}
+	cmd.Env = append(cmd.Env, os.Environ()...)
 	cmd.Env = append(cmd.Env, env...)
 	cmd.Stdin = os.Stdin
+
+	cmdStdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+	cmdStderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, err
+	}
 
 	if c.config.SecureConfig != nil {
 		if ok, err := c.config.SecureConfig.Check(cmd.Path); err != nil {
@@ -651,62 +603,26 @@ func (c *Client) Start() (addr net.Addr, err error) {
 		}
 	}
 
-	if c.config.UnixSocketConfig != nil {
-		c.unixSocketCfg.Group = c.config.UnixSocketConfig.Group
-	}
-
-	if c.unixSocketCfg.Group != "" {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", EnvUnixSocketGroup, c.unixSocketCfg.Group))
-	}
-
-	var runner runner.Runner
-	switch {
-	case c.config.RunnerFunc != nil:
-		c.unixSocketCfg.directory, err = os.MkdirTemp("", "plugin-dir")
-		if err != nil {
-			return nil, err
-		}
-		// os.MkdirTemp creates folders with 0o700, so if we have a group
-		// configured we need to make it group-writable.
-		if c.unixSocketCfg.Group != "" {
-			err = setGroupWritable(c.unixSocketCfg.directory, c.unixSocketCfg.Group, 0o770)
-			if err != nil {
-				return nil, err
-			}
-		}
-		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", EnvUnixSocketDir, c.unixSocketCfg.directory))
-		c.logger.Trace("created temporary directory for unix sockets", "dir", c.unixSocketCfg.directory)
-
-		runner, err = c.config.RunnerFunc(c.logger, cmd, c.unixSocketCfg.directory)
-		if err != nil {
-			return nil, err
-		}
-	default:
-		runner, err = cmdrunner.NewCmdRunner(c.logger, cmd)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-
-	c.runner = runner
-	startCtx, startCtxCancel := context.WithTimeout(context.Background(), c.config.StartTimeout)
-	defer startCtxCancel()
-	err = runner.Start(startCtx)
+	c.logger.Debug("starting plugin", "path", cmd.Path, "args", cmd.Args)
+	err = cmd.Start()
 	if err != nil {
-		return nil, err
+		return
 	}
+
+	// Set the process
+	c.process = cmd.Process
+	c.logger.Debug("plugin started", "path", cmd.Path, "pid", c.process.Pid)
 
 	// Make sure the command is properly cleaned up if there is an error
 	defer func() {
-		rErr := recover()
+		r := recover()
 
-		if err != nil || rErr != nil {
-			runner.Kill(context.Background())
+		if err != nil || r != nil {
+			cmd.Process.Kill()
 		}
 
-		if rErr != nil {
-			panic(rErr)
+		if r != nil {
+			panic(r)
 		}
 	}()
 
@@ -717,7 +633,7 @@ func (c *Client) Start() (addr net.Addr, err error) {
 	c.clientWaitGroup.Add(1)
 	c.stderrWaitGroup.Add(1)
 	// logStderr calls Done()
-	go c.logStderr(runner.Name(), runner.Stderr())
+	go c.logStderr(cmdStderr)
 
 	c.clientWaitGroup.Add(1)
 	go func() {
@@ -726,17 +642,29 @@ func (c *Client) Start() (addr net.Addr, err error) {
 
 		defer c.clientWaitGroup.Done()
 
+		// get the cmd info early, since the process information will be removed
+		// in Kill.
+		pid := c.process.Pid
+		path := cmd.Path
+
 		// wait to finish reading from stderr since the stderr pipe reader
 		// will be closed by the subsequent call to cmd.Wait().
 		c.stderrWaitGroup.Wait()
 
 		// Wait for the command to end.
-		err := runner.Wait(context.Background())
+		err := cmd.Wait()
+
+		msgArgs := []interface{}{
+			"path", path,
+			"pid", pid,
+		}
 		if err != nil {
-			c.logger.Error("plugin process exited", "plugin", runner.Name(), "id", runner.ID(), "error", err.Error())
+			msgArgs = append(msgArgs,
+				[]interface{}{"error", err.Error()}...)
+			c.logger.Error("plugin process exited", msgArgs...)
 		} else {
 			// Log and make sure to flush the logs right away
-			c.logger.Info("plugin process exited", "plugin", runner.Name(), "id", runner.ID())
+			c.logger.Info("plugin process exited", msgArgs...)
 		}
 
 		os.Stderr.Sync()
@@ -755,12 +683,9 @@ func (c *Client) Start() (addr net.Addr, err error) {
 		defer c.clientWaitGroup.Done()
 		defer close(linesCh)
 
-		scanner := bufio.NewScanner(runner.Stdout())
+		scanner := bufio.NewScanner(cmdStdout)
 		for scanner.Scan() {
 			linesCh <- scanner.Text()
-		}
-		if scanner.Err() != nil {
-			c.logger.Error("error encountered while scanning stdout", "error", scanner.Err())
 		}
 	}()
 
@@ -781,27 +706,19 @@ func (c *Client) Start() (addr net.Addr, err error) {
 	timeout := time.After(c.config.StartTimeout)
 
 	// Start looking for the address
-	c.logger.Debug("waiting for RPC address", "plugin", runner.Name())
+	c.logger.Debug("waiting for RPC address", "path", cmd.Path)
 	select {
 	case <-timeout:
 		err = errors.New("timeout while waiting for plugin to start")
 	case <-c.doneCtx.Done():
 		err = errors.New("plugin exited before we could connect")
-	case line, ok := <-linesCh:
+	case line := <-linesCh:
 		// Trim the line and split by "|" in order to get the parts of
 		// the output.
 		line = strings.TrimSpace(line)
 		parts := strings.SplitN(line, "|", 6)
 		if len(parts) < 4 {
-			errText := fmt.Sprintf("Unrecognized remote plugin message: %s", line)
-			if !ok {
-				errText += "\n" + "Failed to read any lines from plugin's stdout"
-			}
-			additionalNotes := runner.Diagnose(context.Background())
-			if additionalNotes != "" {
-				errText += "\n" + additionalNotes
-			}
-			err = errors.New(errText)
+			err = fmt.Errorf(unrecognizedRemotePluginMessage, line, additionalNotesAboutCommand(cmd.Path))
 			return
 		}
 
@@ -836,18 +753,13 @@ func (c *Client) Start() (addr net.Addr, err error) {
 		c.negotiatedVersion = version
 		c.logger.Debug("using plugin", "version", version)
 
-		network, address, err := runner.PluginToHost(parts[2], parts[3])
-		if err != nil {
-			return addr, err
-		}
-
-		switch network {
+		switch parts[2] {
 		case "tcp":
-			addr, err = net.ResolveTCPAddr("tcp", address)
+			addr, err = net.ResolveTCPAddr("tcp", parts[3])
 		case "unix":
-			addr, err = net.ResolveUnixAddr("unix", address)
+			addr, err = net.ResolveUnixAddr("unix", parts[3])
 		default:
-			err = fmt.Errorf("Unknown address type: %s", address)
+			err = fmt.Errorf("Unknown address type: %s", parts[3])
 		}
 
 		// If we have a server type, then record that. We default to net/rpc
@@ -908,30 +820,39 @@ func (c *Client) loadServerCert(cert string) error {
 }
 
 func (c *Client) reattach() (net.Addr, error) {
-	reattachFunc := c.config.Reattach.ReattachFunc
-	// For backwards compatibility default to cmdrunner.ReattachFunc
-	if reattachFunc == nil {
-		reattachFunc = cmdrunner.ReattachFunc(c.config.Reattach.Pid, c.config.Reattach.Addr)
+	// Verify the process still exists. If not, then it is an error
+	p, err := os.FindProcess(c.config.Reattach.Pid)
+	if err != nil {
+		// On Unix systems, FindProcess never returns an error.
+		// On Windows, for non-existent pids it returns:
+		// os.SyscallError - 'OpenProcess: the paremter is incorrect'
+		return nil, ErrProcessNotFound
 	}
 
-	r, err := reattachFunc()
+	// Attempt to connect to the addr since on Unix systems FindProcess
+	// doesn't actually return an error if it can't find the process.
+	conn, err := net.Dial(
+		c.config.Reattach.Addr.Network(),
+		c.config.Reattach.Addr.String())
 	if err != nil {
-		return nil, err
+		p.Kill()
+		return nil, ErrProcessNotFound
 	}
+	conn.Close()
 
 	// Create a context for when we kill
 	c.doneCtx, c.ctxCancel = context.WithCancel(context.Background())
 
 	c.clientWaitGroup.Add(1)
 	// Goroutine to mark exit status
-	go func(r runner.AttachedRunner) {
+	go func(pid int) {
 		defer c.clientWaitGroup.Done()
 
 		// ensure the context is cancelled when we're done
 		defer c.ctxCancel()
 
 		// Wait for the process to die
-		r.Wait(context.Background())
+		pidWait(pid)
 
 		// Log so we can see it
 		c.logger.Debug("reattached plugin process exited")
@@ -940,7 +861,7 @@ func (c *Client) reattach() (net.Addr, error) {
 		c.l.Lock()
 		defer c.l.Unlock()
 		c.exited = true
-	}(r)
+	}(p.Pid)
 
 	// Set the address and protocol
 	c.address = c.config.Reattach.Addr
@@ -958,7 +879,7 @@ func (c *Client) reattach() (net.Addr, error) {
 	// process being killed (the only purpose we have for c.process), since
 	// in test mode the process is responsible for exiting on its own.
 	if !c.config.Reattach.Test {
-		c.runner = r
+		c.process = p
 	}
 
 	return c.address, nil
@@ -997,9 +918,6 @@ func (c *Client) checkProtoVersion(protoVersion string) (int, PluginSet, error) 
 //
 // If this returns nil then the process hasn't been started yet. Please
 // call Start or Client before calling this.
-//
-// Clients who specified a RunnerFunc will need to populate their own
-// ReattachFunc in the returned ReattachConfig before it can be used.
 func (c *Client) ReattachConfig() *ReattachConfig {
 	c.l.Lock()
 	defer c.l.Unlock()
@@ -1017,16 +935,11 @@ func (c *Client) ReattachConfig() *ReattachConfig {
 		return c.config.Reattach
 	}
 
-	reattach := &ReattachConfig{
+	return &ReattachConfig{
 		Protocol: c.protocol,
 		Addr:     c.address,
+		Pid:      c.config.Cmd.Process.Pid,
 	}
-
-	if c.config.Cmd != nil && c.config.Cmd.Process != nil {
-		reattach.Pid = c.config.Cmd.Process.Pid
-	}
-
-	return reattach
 }
 
 // Protocol returns the protocol of server on the remote end. This will
@@ -1078,10 +991,10 @@ func (c *Client) dialer(_ string, timeout time.Duration) (net.Conn, error) {
 
 var stdErrBufferSize = 64 * 1024
 
-func (c *Client) logStderr(name string, r io.Reader) {
+func (c *Client) logStderr(r io.Reader) {
 	defer c.clientWaitGroup.Done()
 	defer c.stderrWaitGroup.Done()
-	l := c.logger.Named(filepath.Base(name))
+	l := c.logger.Named(filepath.Base(c.config.Cmd.Path))
 
 	reader := bufio.NewReaderSize(r, stdErrBufferSize)
 	// continuation indicates the previous line was a prefix

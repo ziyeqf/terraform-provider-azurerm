@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-plugin/internal/plugin"
-	"github.com/hashicorp/go-plugin/runner"
 
 	"github.com/oklog/run"
 	"google.golang.org/grpc"
@@ -268,9 +267,6 @@ type GRPCBroker struct {
 	doneCh   chan struct{}
 	o        sync.Once
 
-	unixSocketCfg  UnixSocketConfig
-	addrTranslator runner.AddrTranslator
-
 	sync.Mutex
 }
 
@@ -279,45 +275,13 @@ type gRPCBrokerPending struct {
 	doneCh chan struct{}
 }
 
-func newGRPCBroker(s streamer, tls *tls.Config, unixSocketCfg UnixSocketConfig, addrTranslator runner.AddrTranslator) *GRPCBroker {
+func newGRPCBroker(s streamer, tls *tls.Config) *GRPCBroker {
 	return &GRPCBroker{
 		streamer: s,
 		streams:  make(map[uint32]*gRPCBrokerPending),
 		tls:      tls,
 		doneCh:   make(chan struct{}),
-
-		unixSocketCfg:  unixSocketCfg,
-		addrTranslator: addrTranslator,
 	}
-}
-
-// Accept accepts a connection by ID.
-//
-// This should not be called multiple times with the same ID at one time.
-func (b *GRPCBroker) Accept(id uint32) (net.Listener, error) {
-	listener, err := serverListener(b.unixSocketCfg)
-	if err != nil {
-		return nil, err
-	}
-
-	advertiseNet := listener.Addr().Network()
-	advertiseAddr := listener.Addr().String()
-	if b.addrTranslator != nil {
-		advertiseNet, advertiseAddr, err = b.addrTranslator.HostToPlugin(advertiseNet, advertiseAddr)
-		if err != nil {
-			return nil, err
-		}
-	}
-	err = b.streamer.Send(&plugin.ConnInfo{
-		ServiceId: id,
-		Network:   advertiseNet,
-		Address:   advertiseAddr,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return listener, nil
 }
 
 // AcceptAndServe is used to accept a specific stream ID and immediately
@@ -394,20 +358,12 @@ func (b *GRPCBroker) Dial(id uint32) (conn *grpc.ClientConn, err error) {
 		return nil, fmt.Errorf("timeout waiting for connection info")
 	}
 
-	network, address := c.Network, c.Address
-	if b.addrTranslator != nil {
-		network, address, err = b.addrTranslator.PluginToHost(network, address)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	var addr net.Addr
-	switch network {
+	switch c.Network {
 	case "tcp":
-		addr, err = net.ResolveTCPAddr("tcp", address)
+		addr, err = net.ResolveTCPAddr("tcp", c.Address)
 	case "unix":
-		addr, err = net.ResolveUnixAddr("unix", address)
+		addr, err = net.ResolveUnixAddr("unix", c.Address)
 	default:
 		err = fmt.Errorf("Unknown address type: %s", c.Address)
 	}

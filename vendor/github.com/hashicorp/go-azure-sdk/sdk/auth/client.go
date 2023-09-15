@@ -4,11 +4,9 @@
 package auth
 
 import (
-	"context"
 	"crypto/tls"
 	"log"
 	"math"
-	"net"
 	"net/http"
 	"net/url"
 	"runtime"
@@ -107,11 +105,8 @@ func httpClient(params httpClientParams) *http.Client {
 	}
 	r.HTTPClient = &http.Client{
 		Transport: &http.Transport{
-			Proxy: proxyFunc,
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				d := &net.Dialer{Resolver: &net.Resolver{}}
-				return d.DialContext(ctx, network, addr)
-			},
+			Proxy:                 proxyFunc,
+			DialContext:           GetDialContext(),
 			MaxIdleConns:          100,
 			IdleConnTimeout:       90 * time.Second,
 			TLSClientConfig:       &tlsConfig,

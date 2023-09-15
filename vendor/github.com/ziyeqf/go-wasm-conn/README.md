@@ -1,0 +1,1 @@
+implements of `net.Conn` and `net.Listener` for [go-wasmww](github.com/magodo/go-wasmww) used to communicate between web-worker and main thread.

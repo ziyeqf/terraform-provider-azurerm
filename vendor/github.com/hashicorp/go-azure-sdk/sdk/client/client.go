@@ -13,7 +13,6 @@ import (
 	"io"
 	"log"
 	"math"
-	"net"
 	"net/http"
 	"net/url"
 	"runtime"
@@ -23,6 +22,7 @@ import (
 
 	"github.com/hashicorp/go-azure-sdk/sdk/auth"
 	"github.com/hashicorp/go-azure-sdk/sdk/internal/accept"
+	"github.com/hashicorp/go-azure-sdk/sdk/internal/metadata"
 	"github.com/hashicorp/go-azure-sdk/sdk/odata"
 	"github.com/hashicorp/go-retryablehttp"
 )
@@ -576,11 +576,8 @@ func (c *Client) retryableClient(checkRetry retryablehttp.CheckRetry) (r *retrya
 	}
 	r.HTTPClient = &http.Client{
 		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-				d := &net.Dialer{Resolver: &net.Resolver{}}
-				return d.DialContext(ctx, network, addr)
-			},
+			Proxy:                 http.ProxyFromEnvironment,
+			DialContext:           metadata.GetDialContext(),
 			TLSClientConfig:       &tlsConfig,
 			MaxIdleConns:          100,
 			IdleConnTimeout:       90 * time.Second,
