@@ -22,10 +22,10 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
 
-type ArmRoleDefinitionResource struct{}
+type RoleDefinitionResource struct{}
 
-var _ sdk.ResourceWithUpdate = ArmRoleDefinitionResource{}
-var _ sdk.ResourceWithStateMigration = ArmRoleDefinitionResource{}
+var _ sdk.ResourceWithUpdate = RoleDefinitionResource{}
+var _ sdk.ResourceWithStateMigration = RoleDefinitionResource{}
 
 type RoleDefinitionModel struct {
 	RoleDefinitionId         string            `tfschema:"role_definition_id"`
@@ -44,7 +44,7 @@ type PermissionModel struct {
 	NotDataActions []string `tfschema:"not_data_actions"`
 }
 
-func (r ArmRoleDefinitionResource) Arguments() map[string]*pluginsdk.Schema {
+func (r RoleDefinitionResource) Arguments() map[string]*pluginsdk.Schema {
 	return map[string]*pluginsdk.Schema{
 		"role_definition_id": {
 			Type:         pluginsdk.TypeString,
@@ -125,7 +125,7 @@ func (r ArmRoleDefinitionResource) Arguments() map[string]*pluginsdk.Schema {
 	}
 }
 
-func (r ArmRoleDefinitionResource) Attributes() map[string]*pluginsdk.Schema {
+func (r RoleDefinitionResource) Attributes() map[string]*pluginsdk.Schema {
 	return map[string]*pluginsdk.Schema{
 		"role_definition_resource_id": {
 			Type:     pluginsdk.TypeString,
@@ -134,15 +134,15 @@ func (r ArmRoleDefinitionResource) Attributes() map[string]*pluginsdk.Schema {
 	}
 }
 
-func (r ArmRoleDefinitionResource) ResourceType() string {
+func (r RoleDefinitionResource) ResourceType() string {
 	return "azurerm_role_definition"
 }
 
-func (r ArmRoleDefinitionResource) ModelObject() interface{} {
+func (r RoleDefinitionResource) ModelObject() interface{} {
 	return &RoleDefinitionModel{}
 }
 
-func (r ArmRoleDefinitionResource) IDValidationFunc() pluginsdk.SchemaValidateFunc {
+func (r RoleDefinitionResource) IDValidationFunc() pluginsdk.SchemaValidateFunc {
 	return func(input interface{}, key string) (warnings []string, errors []error) {
 		v, ok := input.(string)
 		if !ok {
@@ -159,7 +159,7 @@ func (r ArmRoleDefinitionResource) IDValidationFunc() pluginsdk.SchemaValidateFu
 	}
 }
 
-func (r ArmRoleDefinitionResource) Create() sdk.ResourceFunc {
+func (r RoleDefinitionResource) Create() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
 		Timeout: 30 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
@@ -210,7 +210,7 @@ func (r ArmRoleDefinitionResource) Create() sdk.ResourceFunc {
 				return err
 			}
 			if read.ID == nil || *read.ID == "" {
-				return fmt.Errorf("Cannot read Role Definition ID for %q (Scope %q)", config.Name, config.Scope)
+				return fmt.Errorf("cannot read Role Definition ID for %q (Scope %q)", config.Name, config.Scope)
 			}
 
 			parsedId := parse.RoleDefinitionID{
@@ -224,7 +224,7 @@ func (r ArmRoleDefinitionResource) Create() sdk.ResourceFunc {
 	}
 }
 
-func (r ArmRoleDefinitionResource) Read() sdk.ResourceFunc {
+func (r RoleDefinitionResource) Read() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
 		Timeout: 5 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
@@ -262,7 +262,7 @@ func (r ArmRoleDefinitionResource) Read() sdk.ResourceFunc {
 	}
 }
 
-func (r ArmRoleDefinitionResource) Update() sdk.ResourceFunc {
+func (r RoleDefinitionResource) Update() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
 		Timeout: 60 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
@@ -361,7 +361,7 @@ func (r ArmRoleDefinitionResource) Update() sdk.ResourceFunc {
 		},
 	}
 }
-func (r ArmRoleDefinitionResource) Delete() sdk.ResourceFunc {
+func (r RoleDefinitionResource) Delete() sdk.ResourceFunc {
 	return sdk.ResourceFunc{
 		Timeout: 30 * time.Minute,
 		Func: func(ctx context.Context, metadata sdk.ResourceMetaData) error {
@@ -408,7 +408,7 @@ func (r ArmRoleDefinitionResource) Delete() sdk.ResourceFunc {
 	}
 }
 
-func (ArmRoleDefinitionResource) StateUpgraders() sdk.StateUpgradeData {
+func (RoleDefinitionResource) StateUpgraders() sdk.StateUpgradeData {
 	return sdk.StateUpgradeData{
 		SchemaVersion: 1,
 		Upgraders: map[int]pluginsdk.StateUpgrade{
