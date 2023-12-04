@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -352,6 +353,15 @@ func azureProvider(supportLegacyTestSuite bool) *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("ARM_STORAGE_USE_AZUREAD", false),
 				Description: "Should the AzureRM Provider use AzureAD to access the Storage Data Plane API's?",
 			},
+
+			"custom_headers": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The custom headers that will be sent in the out going requests by each resource client",
+			},
 		},
 
 		DataSourcesMap: dataSources,
@@ -453,6 +463,13 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 func buildClient(ctx context.Context, p *schema.Provider, d *schema.ResourceData, authConfig *auth.Credentials) (*clients.Client, diag.Diagnostics) {
 	skipProviderRegistration := d.Get("skip_provider_registration").(bool)
 
+	customHeader := http.Header{}
+	if raw, ok := d.Get("custom_headers").(map[string]interface{}); ok {
+		for k, v := range raw {
+			customHeader[k] = []string{v.(string)}
+		}
+	}
+
 	clientBuilder := clients.ClientBuilder{
 		AuthConfig:                  authConfig,
 		DisableCorrelationRequestID: d.Get("disable_correlation_request_id").(bool),
@@ -468,6 +485,8 @@ func buildClient(ctx context.Context, p *schema.Provider, d *schema.ResourceData
 		// this field is intentionally not exposed in the provider block, since it's only used for
 		// platform level tracing
 		CustomCorrelationRequestID: os.Getenv("ARM_CORRELATION_REQUEST_ID"),
+
+		CustomHeader: customHeader,
 	}
 
 	//lint:ignore SA1019 SDKv2 migration - staticcheck's own linter directives are currently being ignored under golanci-lint

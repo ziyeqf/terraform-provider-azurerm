@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/hashicorp/go-azure-helpers/authentication"
@@ -34,6 +35,8 @@ type ClientBuilder struct {
 	PartnerID                  string
 	SubscriptionID             string
 	TerraformVersion           string
+
+	CustomHeader http.Header
 }
 
 const azureStackEnvironmentError = `
@@ -159,6 +162,8 @@ func Build(ctx context.Context, builder ClientBuilder) (*Client, error) {
 		// TODO: remove when `Azure/go-autorest` is no longer used
 		AzureEnvironment:        *azureEnvironment,
 		ResourceManagerEndpoint: *resourceManagerEndpoint,
+
+		CustomHeader: builder.CustomHeader,
 	}
 
 	if err := client.Build(ctx, o); err != nil {
