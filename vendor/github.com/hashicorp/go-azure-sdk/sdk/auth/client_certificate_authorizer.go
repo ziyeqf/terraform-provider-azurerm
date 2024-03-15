@@ -48,18 +48,10 @@ type ClientCertificateAuthorizerOptions struct {
 func NewClientCertificateAuthorizer(ctx context.Context, options ClientCertificateAuthorizerOptions) (Authorizer, error) {
 	if len(options.Pkcs12Data) == 0 {
 		var err error
-		b, err := os.ReadFile(options.Pkcs12Path)
+		options.Pkcs12Data, err = os.ReadFile(options.Pkcs12Path)
 		if err != nil {
 			return nil, fmt.Errorf("could not read PKCS#12 archive at %q: %s", options.Pkcs12Path, err)
 		}
-
-		// Try to base64 decode the content, in case it is encoded
-		buf := make([]byte, base64.StdEncoding.DecodedLen(len(b)))
-		if n, err := base64.StdEncoding.Decode(buf, b); err == nil {
-			b = buf[:n]
-		}
-
-		options.Pkcs12Data = b
 	}
 
 	certs, key, err := azidentity.ParseCertificates(options.Pkcs12Data, []byte(options.Pkcs12Pass))

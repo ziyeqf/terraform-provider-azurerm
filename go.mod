@@ -95,4 +95,4 @@ require (
 
 go 1.21
 
-replace github.com/hashicorp/go-azure-sdk => github.com/magodo/go-azure-sdk v0.0.0-20231201074610-a361a9afe305
+replace github.com/hashicorp/go-azure-sdk => github.com/magodo/go-azure-sdk v0.0.0-20240315064813-ca237345629f

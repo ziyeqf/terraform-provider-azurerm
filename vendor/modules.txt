@@ -213,7 +213,7 @@ github.com/hashicorp/go-azure-helpers/resourcemanager/tags
 github.com/hashicorp/go-azure-helpers/resourcemanager/zones
 github.com/hashicorp/go-azure-helpers/sender
 github.com/hashicorp/go-azure-helpers/storage
-# github.com/hashicorp/go-azure-sdk v0.20231129.1103252 => github.com/magodo/go-azure-sdk v0.0.0-20231201074610-a361a9afe305
+# github.com/hashicorp/go-azure-sdk v0.20231129.1103252 => github.com/magodo/go-azure-sdk v0.0.0-20240315064813-ca237345629f
 ## explicit; go 1.21
 github.com/hashicorp/go-azure-sdk/resource-manager/aad/2021-05-01/domainservices
 github.com/hashicorp/go-azure-sdk/resource-manager/aadb2c/2021-04-01-preview
@@ -1477,4 +1477,4 @@ google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# github.com/hashicorp/go-azure-sdk => github.com/magodo/go-azure-sdk v0.0.0-20231201074610-a361a9afe305
+# github.com/hashicorp/go-azure-sdk => github.com/magodo/go-azure-sdk v0.0.0-20240315064813-ca237345629f
