@@ -5,15 +5,11 @@ package auth
 
 import (
 	"context"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/base64"
-	"errors"
 	"fmt"
 	"os"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/hashicorp/go-azure-sdk/sdk/environments"
+	"software.sslmate.com/src/go-pkcs12"
 )
 
 type ClientCertificateAuthorizerOptions struct {
@@ -54,36 +50,10 @@ func NewClientCertificateAuthorizer(ctx context.Context, options ClientCertifica
 		}
 	}
 
-	certs, key, err := azidentity.ParseCertificates(options.Pkcs12Data, []byte(options.Pkcs12Pass))
+	// we aren't interested in the issuer chain, but we use the DecodeChain method to parse them out in case they are present
+	key, cert, _, err := pkcs12.DecodeChain(options.Pkcs12Data, options.Pkcs12Pass)
 	if err != nil {
 		return nil, fmt.Errorf("could not decode PKCS#12 archive: %s", err)
-	}
-
-	k, ok := key.(*rsa.PrivateKey)
-	if !ok {
-		return nil, errors.New("key must be an RSA key")
-	}
-	var (
-		certificate *x509.Certificate
-		x5c         []string
-	)
-	for _, cert := range certs {
-		if cert == nil {
-			// not returning an error here because certs may still contain a sufficient cert/key pair
-			continue
-		}
-		certKey, ok := cert.PublicKey.(*rsa.PublicKey)
-		if ok && k.E == certKey.E && k.N.Cmp(certKey.N) == 0 {
-			// We know this is the signing cert because its public key matches the given private key.
-			// This cert must be first in x5c.
-			certificate = cert
-			x5c = append([]string{base64.StdEncoding.EncodeToString(cert.Raw)}, x5c...)
-		} else {
-			x5c = append(x5c, base64.StdEncoding.EncodeToString(cert.Raw))
-		}
-	}
-	if certificate == nil {
-		return nil, fmt.Errorf("key doesn't match any certificate")
 	}
 
 	scope, err := environments.Scope(options.Api)
@@ -97,8 +67,7 @@ func NewClientCertificateAuthorizer(ctx context.Context, options ClientCertifica
 		AuxiliaryTenantIDs: options.AuxTenantIds,
 		ClientID:           options.ClientId,
 		PrivateKey:         key,
-		Certificate:        certificate,
-		X5C:                x5c,
+		Certificate:        cert,
 		Scopes: []string{
 			*scope,
 		},

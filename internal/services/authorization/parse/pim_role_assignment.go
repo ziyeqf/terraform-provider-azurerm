@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package parse
 
 import (
@@ -6,8 +9,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonids"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/authorization/2020-10-01/roleassignmentscheduleinstances"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/authorization/2020-10-01/roleeligibilityscheduleinstances"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/authorization/2020-10-01/roleeligibilityschedules"
 )
 
 type PimRoleAssignmentId struct {
@@ -58,29 +60,11 @@ func (id PimRoleAssignmentId) ScopeID() commonids.ScopeId {
 	return commonids.NewScopeID(id.Scope)
 }
 
-func RoleAssignmentScheduleID(input string) (*string, error) {
-	re := regexp.MustCompile(`^.+/providers/Microsoft.Authorization/roleEligibilitySchedules/(.+)`)
-	matches := re.FindStringSubmatch(input)
+func RoleEligibilityScheduleRequestIdFromSchedule(r *roleeligibilityschedules.RoleEligibilitySchedule) (*string, error) {
+	re := regexp.MustCompile(`^.+/providers/Microsoft.Authorization/roleEligibilityScheduleRequests/(.+)`)
+	matches := re.FindStringSubmatch(*r.Properties.RoleEligibilityScheduleRequestId)
 	if len(matches) != 2 {
-		return nil, fmt.Errorf("parsing %s", input)
-	}
-	return &matches[1], nil
-}
-
-func RoleAssignmentScheduleIdFromInstance(r *roleassignmentscheduleinstances.RoleAssignmentScheduleInstance) (*string, error) {
-	re := regexp.MustCompile(`^.+/providers/Microsoft.Authorization/roleAssignmentSchedules/(.+)`)
-	matches := re.FindStringSubmatch(*r.Properties.RoleAssignmentScheduleId)
-	if len(matches) != 2 {
-		return nil, fmt.Errorf("parsing %s", *r.Properties.RoleAssignmentScheduleId)
-	}
-	return &matches[1], nil
-}
-
-func RoleEligibilityScheduleIdFromInstance(r *roleeligibilityscheduleinstances.RoleEligibilityScheduleInstance) (*string, error) {
-	re := regexp.MustCompile(`^.+/providers/Microsoft.Authorization/roleEligibilitySchedules/(.+)`)
-	matches := re.FindStringSubmatch(*r.Properties.RoleEligibilityScheduleId)
-	if len(matches) != 2 {
-		return nil, fmt.Errorf("parsing %s", *r.Properties.RoleEligibilityScheduleId)
+		return nil, fmt.Errorf("parsing %s", *r.Properties.RoleEligibilityScheduleRequestId)
 	}
 	return &matches[1], nil
 }

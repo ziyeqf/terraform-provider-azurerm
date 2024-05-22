@@ -10,11 +10,9 @@ import (
 	"strings"
 
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/hashicorp/go-azure-helpers/sender"
 	"github.com/hashicorp/go-azure-sdk/sdk/auth"
 	"github.com/hashicorp/go-azure-sdk/sdk/client"
-	"github.com/hashicorp/go-azure-sdk/sdk/client/resourcemanager"
 	"github.com/hashicorp/go-azure-sdk/sdk/environments"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/meta"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/features"
@@ -37,6 +35,7 @@ type ApiAuthorizerFunc func(api environments.Api) (auth.Authorizer, error)
 
 type ClientOptions struct {
 	Authorizers *Authorizers
+	AuthConfig  *auth.Credentials
 	Environment environments.Environment
 	Features    features.UserFeatures
 
@@ -52,39 +51,34 @@ type ClientOptions struct {
 	SkipProviderReg           bool
 	StorageUseAzureAD         bool
 
-	// Keep these around for convenience with Autorest based clients, remove when we are no longer using autorest
-	AzureEnvironment        azure.Environment
 	ResourceManagerEndpoint string
 
 	// Legacy authorizers for go-autorest
-	AttestationAuthorizer     autorest.Authorizer
 	BatchManagementAuthorizer autorest.Authorizer
 	KeyVaultAuthorizer        autorest.Authorizer
 	ManagedHSMAuthorizer      autorest.Authorizer
 	ResourceManagerAuthorizer autorest.Authorizer
-	StorageAuthorizer         autorest.Authorizer
 	SynapseAuthorizer         autorest.Authorizer
 
 	CustomHeader http.Header
 }
 
 // Configure set up a resourcemanager.Client using an auth.Authorizer from hashicorp/go-azure-sdk
-func (o ClientOptions) Configure(c *resourcemanager.Client, authorizer auth.Authorizer) {
-	c.Authorizer = authorizer
-	c.UserAgent = userAgent(c.UserAgent, o.TerraformVersion, o.PartnerId, o.DisableTerraformPartnerID)
+func (o ClientOptions) Configure(c client.BaseClient, authorizer auth.Authorizer) {
+	c.SetAuthorizer(authorizer)
+	c.SetUserAgent(userAgent(c.GetUserAgent(), o.TerraformVersion, o.PartnerId, o.DisableTerraformPartnerID))
 
-	requestMiddlewares := make([]client.RequestMiddleware, 0)
 	if !o.DisableCorrelationRequestID {
 		id := o.CustomCorrelationRequestID
 		if id == "" {
 			id = correlationRequestID()
 		}
-		requestMiddlewares = append(requestMiddlewares, correlationRequestIDMiddleware(id))
+		c.AppendRequestMiddleware(correlationRequestIDMiddleware(id))
 	}
-	requestMiddlewares = append(requestMiddlewares, requestLoggerMiddleware("AzureRM"))
 
+	c.AppendRequestMiddleware(requestLoggerMiddleware("AzureRM"))
 	if len(o.CustomHeader) != 0 {
-		requestMiddlewares = append(requestMiddlewares, func(request *http.Request) (*http.Request, error) {
+		c.AppendRequestMiddleware(func(request *http.Request) (*http.Request, error) {
 			for k, vv := range o.CustomHeader {
 				for _, v := range vv {
 					request.Header.Add(k, v)
@@ -94,11 +88,7 @@ func (o ClientOptions) Configure(c *resourcemanager.Client, authorizer auth.Auth
 		})
 	}
 
-	c.RequestMiddlewares = &requestMiddlewares
-
-	c.ResponseMiddlewares = &[]client.ResponseMiddleware{
-		responseLoggerMiddleware("AzureRM"),
-	}
+	c.AppendResponseMiddleware(responseLoggerMiddleware("AzureRM"))
 }
 
 // ConfigureClient sets up an autorest.Client using an autorest.Authorizer

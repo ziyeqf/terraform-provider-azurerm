@@ -50,6 +50,7 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/dns"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/domainservices"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/elastic"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/elasticsan"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/eventgrid"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/eventhub"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/firewall"
@@ -69,12 +70,14 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/legacy"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/lighthouse"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/loadbalancer"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/loadtestservice"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/loganalytics"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/logic"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/logz"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/machinelearning"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/maintenance"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/managedapplications"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/managedhsm"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/managedidentity"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/managementgroup"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/maps"
@@ -102,6 +105,7 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/privatednsresolver"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/purview"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/recoveryservices"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/redhatopenshift"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/redis"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/redisenterprise"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/relay"
@@ -123,11 +127,13 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/streamanalytics"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/subscription"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/synapse"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/systemcentervirtualmachinemanager"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/trafficmanager"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/videoanalyzer"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/vmware"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/voiceservices"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/web"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/workloads"
 )
 
 //go:generate go run ../tools/generator-services/main.go -path=../../
@@ -158,9 +164,12 @@ func SupportedTypedServices() []sdk.TypedServiceRegistration {
 		databoxedge.Registration{},
 		databricks.Registration{},
 		datafactory.Registration{},
+		dataprotection.Registration{},
+		desktopvirtualization.Registration{},
 		digitaltwins.Registration{},
 		disks.Registration{},
 		domainservices.Registration{},
+		elasticsan.Registration{},
 		eventhub.Registration{},
 		fluidrelay.Registration{},
 		graphservices.Registration{},
@@ -172,9 +181,12 @@ func SupportedTypedServices() []sdk.TypedServiceRegistration {
 		kusto.Registration{},
 		labservice.Registration{},
 		loadbalancer.Registration{},
+		loadtestservice.Registration{},
 		loganalytics.Registration{},
-		media.Registration{},
 		machinelearning.Registration{},
+		maintenance.Registration{},
+		managedhsm.Registration{},
+		media.Registration{},
 		monitor.Registration{},
 		mobilenetwork.Registration{},
 		mssql.Registration{},
@@ -189,6 +201,8 @@ func SupportedTypedServices() []sdk.TypedServiceRegistration {
 		policy.Registration{},
 		privatednsresolver.Registration{},
 		recoveryservices.Registration{},
+		redis.Registration{},
+		redhatopenshift.Registration{},
 		resource.Registration{},
 		sentinel.Registration{},
 		serviceconnector.Registration{},
@@ -197,14 +211,17 @@ func SupportedTypedServices() []sdk.TypedServiceRegistration {
 		storage.Registration{},
 		storagemover.Registration{},
 		signalr.Registration{},
+		subscription.Registration{},
 		orbital.Registration{},
 		streamanalytics.Registration{},
 		search.Registration{},
 		springcloud.Registration{},
 		securitycenter.Registration{},
+		systemcentervirtualmachinemanager.Registration{},
 		vmware.Registration{},
 		voiceservices.Registration{},
 		web.Registration{},
+		workloads.Registration{},
 	}
 	services = append(services, autoRegisteredTypedServices()...)
 	return services
@@ -273,6 +290,7 @@ func SupportedUntypedServices() []sdk.UntypedServiceRegistration {
 			managedapplications.Registration{},
 			lighthouse.Registration{},
 			managementgroup.Registration{},
+			managedhsm.Registration{},
 			maps.Registration{},
 			mariadb.Registration{},
 			media.Registration{},
