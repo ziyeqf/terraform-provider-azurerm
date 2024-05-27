@@ -344,10 +344,27 @@ func azureProvider(supportLegacyTestSuite bool) *schema.Provider {
 				Description: "The custom headers that will be sent in the out going requests by each resource client",
 			},
 
-			"arm_endpoint": {
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "The endpoint of ARM, will override the default config and metadata if set.",
+			"endpoint": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"active_directory_authority_host": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							DefaultFunc: schema.EnvDefaultFunc("ARM_ACTIVE_DIRECTORY_AUTHORITY_HOST", ""),
+							Description: "The Active Directory login endpoint which should be used.",
+						},
+
+						"resource_manager_endpoint": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							DefaultFunc: schema.EnvDefaultFunc("ARM_RESOURCE_MANAGER_ENDPOINT", ""),
+							Description: "The Resource Manager Endpoint which should be used.",
+						},
+					},
+				},
 			},
 		},
 
@@ -423,6 +440,17 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 
 		if v, ok := d.GetOk("arm_endpoint"); ok {
 			env.ResourceManager = environments.ApiManagementAPI(v.(string))
+		}
+
+		if endpointRaw := d.Get("endpoint").([]interface{}); len(endpointRaw) > 0 {
+			endpoint := endpointRaw[0].(map[string]interface{})
+			if v, ok := endpoint["resource_manager_endpoint"].(string); ok && len(v) > 0 {
+				env.ResourceManager = environments.ResourceManagerAPI(v)
+			}
+
+			if v, ok := endpoint["resource_manager_audience"].(string); ok && len(v) > 0 {
+				env.Authorization.Audiences = []string{v}
+			}
 		}
 
 		var (
