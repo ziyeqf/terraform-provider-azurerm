@@ -343,6 +343,12 @@ func azureProvider(supportLegacyTestSuite bool) *schema.Provider {
 				Optional:    true,
 				Description: "The custom headers that will be sent in the out going requests by each resource client",
 			},
+
+			"arm_endpoint": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The endpoint of ARM, will override the default config and metadata if set.",
+			},
 		},
 
 		DataSourcesMap: dataSources,
@@ -413,6 +419,10 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			if env, err = environments.FromName(envName); err != nil {
 				return nil, diag.FromErr(err)
 			}
+		}
+
+		if v, ok := d.GetOk("arm_endpoint"); ok {
+			env.ResourceManager = environments.ApiManagementAPI(v.(string))
 		}
 
 		var (
