@@ -356,12 +356,6 @@ func azureProvider(supportLegacyTestSuite bool) *schema.Provider {
 							DefaultFunc: schema.EnvDefaultFunc("ARM_RESOURCE_MANAGER_ENDPOINT", ""),
 							Description: "The Resource Manager Endpoint which should be used.",
 						},
-						"resource_manager_audience": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							DefaultFunc: schema.EnvDefaultFunc("ARM_RESOURCE_MANAGER_AUDIENCE", ""),
-							Description: "The resource ID to obtain AD tokens for.",
-						},
 					},
 				},
 			},
