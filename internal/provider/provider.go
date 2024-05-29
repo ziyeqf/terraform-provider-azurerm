@@ -356,6 +356,15 @@ func azureProvider(supportLegacyTestSuite bool) *schema.Provider {
 							DefaultFunc: schema.EnvDefaultFunc("ARM_RESOURCE_MANAGER_ENDPOINT", ""),
 							Description: "The Resource Manager Endpoint which should be used.",
 						},
+
+						// When the endpoint is set to "eastus2euap", the identifier should be kept as "https://management.azure.com/",
+						// Or the service will not be recognized as a valid scope.
+						"resource_manager_identifier": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							DefaultFunc: schema.EnvDefaultFunc("ARM_RESOURCE_MANAGER_IDENTIFIER", ""),
+							Description: "The Resource Manager Identifier which should be used.",
+						},
 					},
 				},
 			},
@@ -431,14 +440,13 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			}
 		}
 
-		if v, ok := d.GetOk("arm_endpoint"); ok {
-			env.ResourceManager = environments.ApiManagementAPI(v.(string))
-		}
-
 		if endpointRaw := d.Get("endpoint").([]interface{}); len(endpointRaw) > 0 {
 			endpoint := endpointRaw[0].(map[string]interface{})
 			if v, ok := endpoint["resource_manager_endpoint"].(string); ok && len(v) > 0 {
 				env.ResourceManager = environments.ResourceManagerAPI(v)
+			}
+			if v, ok := endpoint["resource_manager_identifier"].(string); ok && len(v) > 0 {
+				env.ResourceManager = env.ResourceManager.WithResourceIdentifier(v)
 			}
 		}
 
