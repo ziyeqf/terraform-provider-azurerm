@@ -440,10 +440,6 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			if v, ok := endpoint["resource_manager_endpoint"].(string); ok && len(v) > 0 {
 				env.ResourceManager = environments.ResourceManagerAPI(v)
 			}
-
-			if v, ok := endpoint["resource_manager_audience"].(string); ok && len(v) > 0 {
-				env.Authorization.Audiences = []string{v}
-			}
 		}
 
 		var (
