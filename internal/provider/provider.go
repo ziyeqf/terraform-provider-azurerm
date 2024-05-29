@@ -350,18 +350,17 @@ func azureProvider(supportLegacyTestSuite bool) *schema.Provider {
 				MaxItems: 1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"active_directory_authority_host": {
-							Type:        schema.TypeString,
-							Optional:    true,
-							DefaultFunc: schema.EnvDefaultFunc("ARM_ACTIVE_DIRECTORY_AUTHORITY_HOST", ""),
-							Description: "The Active Directory login endpoint which should be used.",
-						},
-
 						"resource_manager_endpoint": {
 							Type:        schema.TypeString,
 							Optional:    true,
 							DefaultFunc: schema.EnvDefaultFunc("ARM_RESOURCE_MANAGER_ENDPOINT", ""),
 							Description: "The Resource Manager Endpoint which should be used.",
+						},
+						"resource_manager_audience": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							DefaultFunc: schema.EnvDefaultFunc("ARM_RESOURCE_MANAGER_AUDIENCE", ""),
+							Description: "The resource ID to obtain AD tokens for.",
 						},
 					},
 				},
