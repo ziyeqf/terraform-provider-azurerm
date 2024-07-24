@@ -1154,7 +1154,7 @@ github.com/hashicorp/go-azure-sdk/resource-manager/workloads/2023-04-01/saplands
 github.com/hashicorp/go-azure-sdk/resource-manager/workloads/2023-04-01/saprecommendations
 github.com/hashicorp/go-azure-sdk/resource-manager/workloads/2023-04-01/sapsupportedsku
 github.com/hashicorp/go-azure-sdk/resource-manager/workloads/2023-04-01/sapvirtualinstances
-# github.com/hashicorp/go-azure-sdk/sdk v0.20240507.1095453 => github.com/magodo/go-azure-sdk/sdk v0.0.0-20240618024049-7ff1664b8426
+# github.com/hashicorp/go-azure-sdk/sdk v0.20240507.1095453 => github.com/ziyeqf/go-azure-sdk/sdk v0.0.0-20240724071726-65b8515c855d
 ## explicit; go 1.21
 github.com/hashicorp/go-azure-sdk/sdk/auth
 github.com/hashicorp/go-azure-sdk/sdk/auth/autorest
@@ -1601,4 +1601,4 @@ google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# github.com/hashicorp/go-azure-sdk/sdk => github.com/magodo/go-azure-sdk/sdk v0.0.0-20240618024049-7ff1664b8426
+# github.com/hashicorp/go-azure-sdk/sdk => github.com/ziyeqf/go-azure-sdk/sdk v0.0.0-20240724071726-65b8515c855d

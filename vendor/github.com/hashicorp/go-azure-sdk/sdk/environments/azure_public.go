@@ -11,6 +11,7 @@ import (
 const AzurePublicCloud = "Public"
 const AzureRegionalAuthorityName = "AZURE_REGIONAL_AUTHORITY_NAME"
 const AzurePublicLoginEndpointWithRegion = "https://%s.login.microsoft.com"
+const AzureResourceManagerMockEndpoint = "AZTFY_MOCK_ARM_ENDPOINT"
 
 func AzurePublic() *Environment {
 	env := baseEnvironmentWithName(AzurePublicCloud)
@@ -30,6 +31,9 @@ func AzurePublic() *Environment {
 		Tenant:           "common",
 	}
 	env.ResourceManager = ResourceManagerAPI("https://management.azure.com")
+	if armEndpoint := os.Getenv(AzureResourceManagerMockEndpoint); armEndpoint != "" {
+		env.ResourceManager = ResourceManagerAPI(armEndpoint).WithResourceIdentifier("https://management.azure.com")
+	}
 	env.MicrosoftGraph = MicrosoftGraphAPI("https://graph.microsoft.com")
 
 	env.ApiManagement = ApiManagementAPI("azure-api.net")
