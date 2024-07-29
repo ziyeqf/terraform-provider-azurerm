@@ -5,6 +5,7 @@ package auth
 
 import (
 	"github.com/hashicorp/go-azure-sdk/sdk/environments"
+	"golang.org/x/oauth2"
 )
 
 // Credentials sets up NewAuthorizer to return an Authorizer based on the provided credentails.
@@ -52,4 +53,7 @@ type Credentials struct {
 	GitHubOIDCTokenRequestURL string
 	// GitHubOIDCTokenRequestToken specifies the bearer token for the request to GitHub's OIDC provider
 	GitHubOIDCTokenRequestToken string
+
+	// KnownToken is the token obtained previously, it will be put into the in-memory token cache directly, to reduce initial token request.
+	KnownToken *oauth2.Token
 }

@@ -5,6 +5,7 @@ package provider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/resourceproviders"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/sdk"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
+	"golang.org/x/oauth2"
 )
 
 func AzureProvider() *schema.Provider {
@@ -343,6 +345,12 @@ func azureProvider(supportLegacyTestSuite bool) *schema.Provider {
 				Optional:    true,
 				Description: "The custom headers that will be sent in the out going requests by each resource client",
 			},
+
+			"known_token": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "The token obtained by the caller, should be a marshaled `oauth2.Token` object, will be put into the token cache directly",
+			},
 		},
 
 		DataSourcesMap: dataSources,
@@ -419,7 +427,17 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			enableAzureCli        = d.Get("use_cli").(bool)
 			enableManagedIdentity = d.Get("use_msi").(bool)
 			enableOidc            = d.Get("use_oidc").(bool) || d.Get("use_aks_workload_identity").(bool)
+			knownToken            = d.Get("known_token").(string)
 		)
+
+		var kToken oauth2.Token
+		if knownToken != "" {
+			err := json.Unmarshal([]byte(knownToken), &kToken)
+			if err != nil {
+				logEntry("[DEBUG] Configuring known token: %q", knownToken)
+				return nil, diag.FromErr(err)
+			}
+		}
 
 		authConfig := &auth.Credentials{
 			Environment:        *env,
@@ -444,6 +462,8 @@ func providerConfigure(p *schema.Provider) schema.ConfigureContextFunc {
 			EnableAuthenticatingUsingManagedIdentity:   enableManagedIdentity,
 			EnableAuthenticationUsingOIDC:              enableOidc,
 			EnableAuthenticationUsingGitHubOIDC:        enableOidc,
+
+			KnownToken: &kToken,
 		}
 
 		return buildClient(ctx, p, d, authConfig)
