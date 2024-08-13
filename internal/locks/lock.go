@@ -40,7 +40,3 @@ func UnlockMultipleByName(names *[]string, resourceType string) {
 		UnlockByName(name, resourceType)
 	}
 }
-
-func Clear() {
-	armMutexKV = newMutexKV()
-}

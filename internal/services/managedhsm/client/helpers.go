@@ -21,11 +21,6 @@ var (
 	lock     = map[string]*sync.RWMutex{}
 )
 
-func ClearCache() {
-	cache = map[string]managedHSMDetail{}
-	lock = map[string]*sync.RWMutex{}
-}
-
 type managedHSMDetail struct {
 	managedHSMId     managedhsms.ManagedHSMId
 	dataPlaneBaseUri string

@@ -22,10 +22,6 @@ var (
 	credentialsLock = sync.RWMutex{}
 )
 
-func ClearCache() {
-	storageAccountsCache = map[string]accountDetails{}
-}
-
 type EndpointType string
 
 const (

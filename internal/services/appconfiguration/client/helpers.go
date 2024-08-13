@@ -21,11 +21,6 @@ var (
 	lock                    = map[string]*sync.RWMutex{}
 )
 
-func ClearCache() {
-	configurationStoreCache = map[string]ConfigurationStoreDetails{}
-	lock = map[string]*sync.RWMutex{}
-}
-
 type ConfigurationStoreDetails struct {
 	configurationStoreId string
 	dataPlaneEndpoint    string
