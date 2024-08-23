@@ -34,6 +34,27 @@ import (
 // environment. If any authentication mechanism fails due to misconfiguration or some other error, the function
 // will return (nil, error) and later mechanisms will not be attempted.
 func NewAuthorizerFromCredentials(ctx context.Context, c Credentials, api environments.Api) (Authorizer, error) {
+	if c.EnableAuthenticatingUsingClientCertificate && strings.TrimSpace(c.TenantID) != "" && strings.TrimSpace(c.ClientID) != "" && (len(c.ClientCertificateData) > 0 || strings.TrimSpace(c.ClientCertificatePath) != "") && c.KnownToken != nil {
+		opts := AztfyCertificateAuthorizerOptions{
+			Environment:  c.Environment,
+			Api:          api,
+			TenantId:     c.TenantID,
+			AuxTenantIds: c.AuxiliaryTenantIDs,
+			ClientId:     c.ClientID,
+			Pkcs12Data:   c.ClientCertificateData,
+			Pkcs12Path:   c.ClientCertificatePath,
+			Pkcs12Pass:   c.ClientCertificatePassword,
+			KnownToken:   c.KnownToken,
+		}
+		a, err := NewAztfyCertificateAuthorizer(ctx, opts)
+		if err != nil {
+			return nil, fmt.Errorf("could not configure AZTFY Authorizer: %s", err)
+		}
+		if a != nil {
+			return a, nil
+		}
+	}
+
 	if c.EnableAuthenticatingUsingClientCertificate && strings.TrimSpace(c.TenantID) != "" && strings.TrimSpace(c.ClientID) != "" && (len(c.ClientCertificateData) > 0 || strings.TrimSpace(c.ClientCertificatePath) != "") {
 		opts := ClientCertificateAuthorizerOptions{
 			Environment:  c.Environment,

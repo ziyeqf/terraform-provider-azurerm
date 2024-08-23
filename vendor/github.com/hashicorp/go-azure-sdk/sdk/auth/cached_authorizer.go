@@ -91,3 +91,13 @@ func NewCachedAuthorizer(src Authorizer) (CachingAuthorizer, error) {
 		Source: src,
 	}, nil
 }
+
+func NewCachedAuthorizerWithKnownToken(src Authorizer, token *oauth2.Token) (CachingAuthorizer, error) {
+	if _, ok := src.(*SharedKeyAuthorizer); ok {
+		return nil, fmt.Errorf("internal-error: SharedKeyAuthorizer cannot be cached")
+	}
+	return &CachedAuthorizer{
+		Source: src,
+		token:  token,
+	}, nil
+}
