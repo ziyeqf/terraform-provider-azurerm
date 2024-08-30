@@ -69,6 +69,8 @@ type clientCredentialsConfig struct {
 	// for the application with which you are authenticating. Used when FederatedAssertion is empty.
 	Certificate *x509.Certificate
 
+	X5C []string
+
 	// FederatedAssertion contains a JWT provided by a trusted third-party vendor
 	// for obtaining an access token with a federated credential. When empty, an
 	// assertion will be created and signed using the specified PrivateKey and Certificate
@@ -102,9 +104,11 @@ func (c *clientCredentialsConfig) TokenSource(_ context.Context, authType client
 }
 
 type clientAssertionTokenHeader struct {
-	Algorithm string `json:"alg"`
-	Type      string `json:"typ"`
-	KeyId     string `json:"kid"`
+	Algorithm string   `json:"alg"`
+	Type      string   `json:"typ"`
+	KeyId     string   `json:"kid"`
+	X5t       string   `json:"x5t"`
+	X5c       []string `json:"x5c,omitempty"`
 }
 
 func (h *clientAssertionTokenHeader) encode() (string, error) {
@@ -219,6 +223,8 @@ func (a *ClientAssertionAuthorizer) assertion(tokenUrl string) (*string, error) 
 		header: clientAssertionTokenHeader{
 			Type:  "JWT",
 			KeyId: keyId,
+			X5t:   base64.StdEncoding.EncodeToString(thumbprint(a.conf.Certificate)),
+			X5c:   a.conf.X5C,
 		},
 		claims: clientAssertionTokenClaims{
 			Audience: audience,
@@ -379,4 +385,12 @@ func tokenEndpoint(endpoint environments.Authorization, tenant string) string {
 		tenant = "common"
 	}
 	return fmt.Sprintf("%s/%s/oauth2/v2.0/token", endpoint.LoginEndpoint, tenant)
+}
+
+// thumbprint runs the asn1.Der bytes through sha1 for use in the x5t parameter of JWT.
+// https://tools.ietf.org/html/rfc7517#section-4.8
+func thumbprint(cert *x509.Certificate) []byte {
+	/* #nosec */
+	a := sha1.Sum(cert.Raw)
+	return a[:]
 }

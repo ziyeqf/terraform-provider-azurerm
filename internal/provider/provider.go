@@ -6,6 +6,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -361,6 +362,15 @@ func azureProvider(supportLegacyTestSuite bool) *schema.Provider {
 				DefaultFunc: schema.EnvDefaultFunc("ARM_STORAGE_USE_AZUREAD", false),
 				Description: "Should the AzureRM Provider use Azure AD Authentication when accessing the Storage Data Plane APIs?",
 			},
+
+			"custom_headers": {
+				Type: schema.TypeMap,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional:    true,
+				Description: "The custom headers that will be sent in the out going requests by each resource client",
+			},
 		},
 
 		DataSourcesMap: dataSources,
@@ -516,6 +526,13 @@ func buildClient(ctx context.Context, p *schema.Provider, d *schema.ResourceData
 		requiredResourceProviders.Merge(additionalProvidersToRegister)
 	}
 
+	customHeader := http.Header{}
+	if raw, ok := d.Get("custom_headers").(map[string]interface{}); ok {
+		for k, v := range raw {
+			customHeader[k] = []string{v.(string)}
+		}
+	}
+
 	clientBuilder := clients.ClientBuilder{
 		AuthConfig:                  authConfig,
 		DisableCorrelationRequestID: d.Get("disable_correlation_request_id").(bool),
@@ -531,6 +548,8 @@ func buildClient(ctx context.Context, p *schema.Provider, d *schema.ResourceData
 		// this field is intentionally not exposed in the provider block, since it's only used for
 		// platform level tracing
 		CustomCorrelationRequestID: os.Getenv("ARM_CORRELATION_REQUEST_ID"),
+
+		CustomHeader: customHeader,
 	}
 
 	//lint:ignore SA1019 SDKv2 migration - staticcheck's own linter directives are currently being ignored under golangci-lint
