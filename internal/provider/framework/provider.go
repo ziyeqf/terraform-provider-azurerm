@@ -221,6 +221,12 @@ func (p *azureRmFrameworkProvider) Schema(_ context.Context, _ provider.SchemaRe
 					},
 				},
 			},
+
+			"custom_headers": schema.MapAttribute{
+				ElementType: types.StringType,
+				Optional:    true,
+				Description: "The custom headers that will be sent in the out going requests by each resource client",
+			},
 		},
 
 		Blocks: map[string]schema.Block{

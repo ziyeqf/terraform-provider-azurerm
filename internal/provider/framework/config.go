@@ -5,6 +5,7 @@ package framework
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/go-azure-sdk/sdk/auth"
 	"github.com/hashicorp/go-azure-sdk/sdk/environments"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	providerfeatures "github.com/hashicorp/terraform-provider-azurerm/internal/features"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/provider"
@@ -474,6 +476,12 @@ func (p *ProviderConfig) Load(ctx context.Context, data *ProviderModel, tfVersio
 	p.clientBuilder.AuthConfig = authConfig
 	p.clientBuilder.CustomCorrelationRequestID = os.Getenv("ARM_CORRELATION_REQUEST_ID")
 	p.clientBuilder.TerraformVersion = tfVersion
+
+	customHeaders := http.Header{}
+	for k, v := range data.CustomHeaders.Elements() {
+		customHeaders[k] = []string{v.(basetypes.StringValue).ValueString()}
+	}
+	p.clientBuilder.CustomHeader = customHeaders
 
 	client, err := clients.Build(ctx, p.clientBuilder)
 	if err != nil {

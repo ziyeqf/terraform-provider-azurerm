@@ -38,6 +38,7 @@ type ProviderModel struct {
 	SkipProviderRegistration      types.Bool   `tfsdk:"skip_provider_registration"` // TODO - Remove in 5.0
 	ResourceProviderRegistrations types.String `tfsdk:"resource_provider_registrations"`
 	ResourceProvidersToRegister   types.List   `tfsdk:"resource_providers_to_register"`
+	CustomHeaders                 types.Map    `tfsdk:"custom_headers"`
 }
 
 type Features struct {
