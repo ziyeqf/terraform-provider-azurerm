@@ -184,6 +184,9 @@ github.com/google/go-cmp/cmp/internal/value
 # github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
+# github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.1
+## explicit; go 1.19
+github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
@@ -1201,7 +1204,7 @@ github.com/hashicorp/go-hclog
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit; go 1.13
 github.com/hashicorp/go-multierror
-# github.com/hashicorp/go-plugin v1.6.0
+# github.com/hashicorp/go-plugin v1.6.0 => github.com/magodo/go-plugin v1.4.2-0.20241017102356-6b20712ad8a6
 ## explicit; go 1.17
 github.com/hashicorp/go-plugin
 github.com/hashicorp/go-plugin/internal/cmdrunner
@@ -1665,3 +1668,4 @@ google.golang.org/protobuf/types/known/timestamppb
 ## explicit
 gopkg.in/yaml.v3
 # github.com/hashicorp/go-azure-sdk/sdk => github.com/magodo/go-azure-sdk/sdk v0.0.0-20240830120949-075d6883ec98
+# github.com/hashicorp/go-plugin => github.com/magodo/go-plugin v1.4.2-0.20241017102356-6b20712ad8a6

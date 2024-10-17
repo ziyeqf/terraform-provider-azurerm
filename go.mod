@@ -55,6 +55,7 @@ require (
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
+	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -98,5 +99,7 @@ require (
 )
 
 replace github.com/hashicorp/go-azure-sdk/sdk => github.com/magodo/go-azure-sdk/sdk v0.0.0-20240830120949-075d6883ec98
+
+replace github.com/hashicorp/go-plugin => github.com/magodo/go-plugin v1.4.2-0.20241017102356-6b20712ad8a6
 
 go 1.22
