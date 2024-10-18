@@ -6,7 +6,6 @@ package bot
 import (
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/go-azure-helpers/lang/response"
@@ -117,37 +116,37 @@ func resourceArmBotConnectionCreate(d *pluginsdk.ResourceData, meta interface{})
 		}
 	}
 
-	serviceProviderName := d.Get("service_provider_name").(string)
-	var serviceProviderId *string
-	var availableProviders []string
+	// serviceProviderName := d.Get("service_provider_name").(string)
+	// var serviceProviderId *string
+	// var availableProviders []string
 
-	serviceProviders, err := client.ListServiceProviders(ctx)
-	if err != nil {
-		return fmt.Errorf("listing Bot Connection service provider: %+v", err)
-	}
+	// serviceProviders, err := client.ListServiceProviders(ctx)
+	// if err != nil {
+	// 	return fmt.Errorf("listing Bot Connection service provider: %+v", err)
+	// }
 
-	if serviceProviders.Value == nil {
-		return fmt.Errorf("no service providers were returned from the Azure API")
-	}
-	for _, provider := range *serviceProviders.Value {
-		if provider.Properties == nil || provider.Properties.ServiceProviderName == nil {
-			continue
-		}
-		name := provider.Properties.ServiceProviderName
-		if strings.EqualFold(serviceProviderName, *name) {
-			serviceProviderId = provider.Properties.ID
-			break
-		}
-		availableProviders = append(availableProviders, *name)
-	}
+	// if serviceProviders.Value == nil {
+	// 	return fmt.Errorf("no service providers were returned from the Azure API")
+	// }
+	// for _, provider := range *serviceProviders.Value {
+	// 	if provider.Properties == nil || provider.Properties.ServiceProviderName == nil {
+	// 		continue
+	// 	}
+	// 	name := provider.Properties.ServiceProviderName
+	// 	if strings.EqualFold(serviceProviderName, *name) {
+	// 		serviceProviderId = provider.Properties.ID
+	// 		break
+	// 	}
+	// 	availableProviders = append(availableProviders, *name)
+	// }
 
-	if serviceProviderId == nil {
-		return fmt.Errorf("the Service Provider %q was not found. The available service providers are %s", serviceProviderName, strings.Join(availableProviders, ","))
-	}
+	// if serviceProviderId == nil {
+	// 	return fmt.Errorf("the Service Provider %q was not found. The available service providers are %s", serviceProviderName, strings.Join(availableProviders, ","))
+	// }
 
 	connection := botservice.ConnectionSetting{
 		Properties: &botservice.ConnectionSettingProperties{
-			ServiceProviderID: serviceProviderId,
+			ServiceProviderID: nil,
 			ClientID:          utils.String(d.Get("client_id").(string)),
 			ClientSecret:      utils.String(d.Get("client_secret").(string)),
 			Scopes:            utils.String(d.Get("scopes").(string)),

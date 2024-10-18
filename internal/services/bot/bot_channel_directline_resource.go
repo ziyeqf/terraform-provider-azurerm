@@ -208,22 +208,22 @@ func resourceBotChannelDirectlineRead(d *pluginsdk.ResourceData, meta interface{
 		return fmt.Errorf("retrieving Channel Directline for Bot %q (Resource Group %q): %+v", id.ResourceGroup, id.BotServiceName, err)
 	}
 
-	channelsResp, err := client.ListWithKeys(ctx, id.ResourceGroup, id.BotServiceName, botservice.ChannelNameDirectLineChannel)
-	if err != nil {
-		return fmt.Errorf("listing Keys for Directline Channel for Bot %q (Resource Group %q): %+v", id.ResourceGroup, id.BotServiceName, err)
-	}
+	// channelsResp, err := client.ListWithKeys(ctx, id.ResourceGroup, id.BotServiceName, botservice.ChannelNameDirectLineChannel)
+	// if err != nil {
+	// 	return fmt.Errorf("listing Keys for Directline Channel for Bot %q (Resource Group %q): %+v", id.ResourceGroup, id.BotServiceName, err)
+	// }
 
 	d.Set("bot_name", id.BotServiceName)
 	d.Set("resource_group_name", id.ResourceGroup)
 	d.Set("location", location.NormalizeNilable(resp.Location))
 
-	if props := channelsResp.Properties; props != nil {
-		if channel, ok := props.AsDirectLineChannel(); ok {
-			if channelProps := channel.Properties; channelProps != nil {
-				d.Set("site", flattenDirectlineSites(filterSites(channelProps.Sites)))
-			}
-		}
-	}
+	// if props := channelsResp.Properties; props != nil {
+	// 	if channel, ok := props.AsDirectLineChannel(); ok {
+	// 		if channelProps := channel.Properties; channelProps != nil {
+	// 			d.Set("site", flattenDirectlineSites(filterSites(channelProps.Sites)))
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }

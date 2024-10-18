@@ -142,20 +142,20 @@ func resourceBotChannelLineRead(d *pluginsdk.ResourceData, meta interface{}) err
 	d.Set("resource_group_name", id.ResourceGroup)
 	d.Set("location", location.NormalizeNilable(resp.Location))
 
-	channelsResp, err := client.ListWithKeys(ctx, id.ResourceGroup, id.BotServiceName, botservice.ChannelNameLineChannel)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", *id, err)
-	}
+	// channelsResp, err := client.ListWithKeys(ctx, id.ResourceGroup, id.BotServiceName, botservice.ChannelNameLineChannel)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+	// }
 
-	if props := channelsResp.Properties; props != nil {
-		if channel, ok := props.AsLineChannel(); ok {
-			if channelProps := channel.Properties; channelProps != nil {
-				if err := d.Set("line_channel", flattenLineChannel(channelProps.LineRegistrations)); err != nil {
-					return fmt.Errorf("setting `line_channel`: %+v", err)
-				}
-			}
-		}
-	}
+	// if props := channelsResp.Properties; props != nil {
+	// 	if channel, ok := props.AsLineChannel(); ok {
+	// 		if channelProps := channel.Properties; channelProps != nil {
+	// 			if err := d.Set("line_channel", flattenLineChannel(channelProps.LineRegistrations)); err != nil {
+	// 				return fmt.Errorf("setting `line_channel`: %+v", err)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }

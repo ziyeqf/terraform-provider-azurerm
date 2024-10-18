@@ -143,20 +143,20 @@ func resourceBotChannelSMSRead(d *pluginsdk.ResourceData, meta interface{}) erro
 	d.Set("resource_group_name", id.ResourceGroup)
 	d.Set("location", location.NormalizeNilable(resp.Location))
 
-	channelsResp, err := client.ListWithKeys(ctx, id.ResourceGroup, id.BotServiceName, botservice.ChannelNameSmsChannel)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", *id, err)
-	}
+	// channelsResp, err := client.ListWithKeys(ctx, id.ResourceGroup, id.BotServiceName, botservice.ChannelNameSmsChannel)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+	// }
 
-	if props := channelsResp.Properties; props != nil {
-		if channel, ok := props.AsSmsChannel(); ok {
-			if channelProps := channel.Properties; channelProps != nil {
-				d.Set("sms_channel_account_security_id", channelProps.AccountSID)
-				d.Set("sms_channel_auth_token", channelProps.AuthToken)
-				d.Set("phone_number", channelProps.Phone)
-			}
-		}
-	}
+	// if props := channelsResp.Properties; props != nil {
+	// 	if channel, ok := props.AsSmsChannel(); ok {
+	// 		if channelProps := channel.Properties; channelProps != nil {
+	// 			d.Set("sms_channel_account_security_id", channelProps.AccountSID)
+	// 			d.Set("sms_channel_auth_token", channelProps.AuthToken)
+	// 			d.Set("phone_number", channelProps.Phone)
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }

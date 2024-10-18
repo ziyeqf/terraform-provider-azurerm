@@ -153,27 +153,27 @@ func resourceBotChannelFacebookRead(d *pluginsdk.ResourceData, meta interface{})
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	channelsResp, err := client.ListWithKeys(ctx, id.ResourceGroup, id.BotServiceName, botservice.ChannelNameFacebookChannel)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", *id, err)
-	}
+	// channelsResp, err := client.ListWithKeys(ctx, id.ResourceGroup, id.BotServiceName, botservice.ChannelNameFacebookChannel)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+	// }
 
 	d.Set("bot_name", id.BotServiceName)
 	d.Set("resource_group_name", id.ResourceGroup)
 	d.Set("location", location.NormalizeNilable(resp.Location))
 
-	if props := channelsResp.Properties; props != nil {
-		if channel, ok := props.AsFacebookChannel(); ok {
-			if channelProps := channel.Properties; channelProps != nil {
-				d.Set("facebook_application_id", channelProps.AppID)
-				d.Set("facebook_application_secret", channelProps.AppSecret)
+	// if props := channelsResp.Properties; props != nil {
+	// 	if channel, ok := props.AsFacebookChannel(); ok {
+	// 		if channelProps := channel.Properties; channelProps != nil {
+	// 			d.Set("facebook_application_id", channelProps.AppID)
+	// 			d.Set("facebook_application_secret", channelProps.AppSecret)
 
-				if err := d.Set("page", flattenFacebookPage(channelProps.Pages)); err != nil {
-					return fmt.Errorf("setting `page`: %+v", err)
-				}
-			}
-		}
-	}
+	// 			if err := d.Set("page", flattenFacebookPage(channelProps.Pages)); err != nil {
+	// 				return fmt.Errorf("setting `page`: %+v", err)
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }
