@@ -224,25 +224,25 @@ func resourceStaticSiteRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	d.Set("sku_size", skuName)
 	d.Set("sku_tier", skuTier)
 
-	secretResp, err := client.ListStaticSiteSecrets(ctx, id.ResourceGroup, id.Name)
-	if err != nil {
-		return fmt.Errorf("listing secretes for %s: %v", id, err)
-	}
+	// secretResp, err := client.ListStaticSiteSecrets(ctx, id.ResourceGroup, id.Name)
+	// if err != nil {
+	// 	return fmt.Errorf("listing secretes for %s: %v", id, err)
+	// }
 
-	apiKey := ""
-	if pkey := secretResp.Properties["apiKey"]; pkey != nil {
-		apiKey = *pkey
-	}
-	d.Set("api_key", apiKey)
+	// apiKey := ""
+	// if pkey := secretResp.Properties["apiKey"]; pkey != nil {
+	// 	apiKey = *pkey
+	// }
+	// d.Set("api_key", apiKey)
 
-	appSettingsResp, err := client.ListStaticSiteAppSettings(ctx, id.ResourceGroup, id.Name)
-	if err != nil {
-		return fmt.Errorf("making Read request for app settings on %s: %+v", id, err)
-	}
+	// appSettingsResp, err := client.ListStaticSiteAppSettings(ctx, id.ResourceGroup, id.Name)
+	// if err != nil {
+	// 	return fmt.Errorf("making Read request for app settings on %s: %+v", id, err)
+	// }
 
-	if err := d.Set("app_settings", appSettingsResp.Properties); err != nil {
-		return fmt.Errorf("setting `app_settings`: %s", err)
-	}
+	// if err := d.Set("app_settings", appSettingsResp.Properties); err != nil {
+	// 	return fmt.Errorf("setting `app_settings`: %s", err)
+	// }
 
 	return tags.FlattenAndSet(d, resp.Tags)
 }

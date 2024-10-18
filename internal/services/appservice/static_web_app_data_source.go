@@ -165,26 +165,26 @@ func (s StaticWebAppDataSource) Read() sdk.ResourceFunc {
 					state.SkuTier = pointer.From(sku.Tier)
 				}
 
-				sec, err := client.ListStaticSiteSecrets(ctx, id)
-				if err != nil || sec.Model == nil {
-					return fmt.Errorf("retrieving secrets for %s: %+v", id, err)
-				}
+				// sec, err := client.ListStaticSiteSecrets(ctx, id)
+				// if err != nil || sec.Model == nil {
+				// 	return fmt.Errorf("retrieving secrets for %s: %+v", id, err)
+				// }
 
-				if secProps := sec.Model.Properties; secProps != nil {
-					propsMap := pointer.From(secProps)
-					apiKey := ""
-					apiKey = propsMap["apiKey"]
-					state.ApiKey = apiKey
-				}
+				// if secProps := sec.Model.Properties; secProps != nil {
+				// 	propsMap := pointer.From(secProps)
+				// 	apiKey := ""
+				// 	apiKey = propsMap["apiKey"]
+				// 	state.ApiKey = apiKey
+				// }
 			}
 
-			appSettings, err := client.ListStaticSiteAppSettings(ctx, id)
-			if err != nil {
-				return fmt.Errorf("retrieving app_settings for %s: %+v", id, err)
-			}
-			if appSettingsModel := appSettings.Model; appSettingsModel != nil {
-				state.AppSettings = pointer.From(appSettingsModel.Properties)
-			}
+			// appSettings, err := client.ListStaticSiteAppSettings(ctx, id)
+			// if err != nil {
+			// 	return fmt.Errorf("retrieving app_settings for %s: %+v", id, err)
+			// }
+			// if appSettingsModel := appSettings.Model; appSettingsModel != nil {
+			// 	state.AppSettings = pointer.From(appSettingsModel.Properties)
+			// }
 
 			sdkHackClient := sdkhacks.NewStaticWebAppClient(client)
 			auth, err := sdkHackClient.GetBasicAuth(ctx, id)
