@@ -93,14 +93,14 @@ func dataSourceMapsAccountRead(d *pluginsdk.ResourceData, meta interface{}) erro
 		}
 	}
 
-	keysResp, err := client.ListKeys(ctx, id)
-	if err != nil {
-		return fmt.Errorf("retrieving Access Keys for %s: %+v", id, err)
-	}
-	if model := keysResp.Model; model != nil {
-		d.Set("primary_access_key", model.PrimaryKey)
-		d.Set("secondary_access_key", model.SecondaryKey)
-	}
+	// keysResp, err := client.ListKeys(ctx, id)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Access Keys for %s: %+v", id, err)
+	// }
+	// if model := keysResp.Model; model != nil {
+	// 	d.Set("primary_access_key", model.PrimaryKey)
+	// 	d.Set("secondary_access_key", model.SecondaryKey)
+	// }
 
 	return nil
 }
