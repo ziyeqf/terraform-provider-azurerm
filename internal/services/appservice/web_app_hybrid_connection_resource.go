@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/lang/response"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonids"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/relay/2021-11-01/hybridconnections"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/relay/2021-11-01/namespaces"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-12-01/webapps"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
 	azValidate "github.com/hashicorp/terraform-provider-azurerm/helpers/validate"
@@ -227,23 +226,23 @@ func (r WebAppHybridConnectionResource) Read() sdk.ResourceFunc {
 				}
 
 				if appHybridConn.ServiceBusNamespace != "" && appHybridConn.SendKeyName != "" {
-					relayNamespaceClient := metadata.Client.Relay.NamespacesClient
-					relayId, err := hybridconnections.ParseHybridConnectionIDInsensitively(appHybridConn.RelayId)
-					if err != nil {
-						return err
-					}
+					//relayNamespaceClient := metadata.Client.Relay.NamespacesClient
+					// relayId, err := hybridconnections.ParseHybridConnectionIDInsensitively(appHybridConn.RelayId)
+					// if err != nil {
+					// 	return err
+					// }
 
-					if keys, err := relayNamespaceClient.ListKeys(ctx, namespaces.NewAuthorizationRuleID(relayId.SubscriptionId, relayId.ResourceGroupName, appHybridConn.ServiceBusNamespace, appHybridConn.SendKeyName)); err != nil && keys.Model != nil {
-						appHybridConn.SendKeyValue = pointer.From(keys.Model.PrimaryKey)
-						return metadata.Encode(&appHybridConn)
-					}
+					// if keys, err := relayNamespaceClient.ListKeys(ctx, namespaces.NewAuthorizationRuleID(relayId.SubscriptionId, relayId.ResourceGroupName, appHybridConn.ServiceBusNamespace, appHybridConn.SendKeyName)); err != nil && keys.Model != nil {
+					// 	appHybridConn.SendKeyValue = pointer.From(keys.Model.PrimaryKey)
+					// 	return metadata.Encode(&appHybridConn)
+					// }
 
-					hybridConnectionsClient := metadata.Client.Relay.HybridConnectionsClient
-					ruleID := hybridconnections.NewHybridConnectionAuthorizationRuleID(relayId.SubscriptionId, relayId.ResourceGroupName, appHybridConn.ServiceBusNamespace, pointer.From(model.Name), appHybridConn.SendKeyName)
-					keys, err := hybridConnectionsClient.ListKeys(ctx, ruleID)
-					if err != nil && keys.Model != nil {
-						appHybridConn.SendKeyValue = pointer.From(keys.Model.PrimaryKey)
-					}
+					// hybridConnectionsClient := metadata.Client.Relay.HybridConnectionsClient
+					// ruleID := hybridconnections.NewHybridConnectionAuthorizationRuleID(relayId.SubscriptionId, relayId.ResourceGroupName, appHybridConn.ServiceBusNamespace, pointer.From(model.Name), appHybridConn.SendKeyName)
+					// keys, err := hybridConnectionsClient.ListKeys(ctx, ruleID)
+					// if err != nil && keys.Model != nil {
+					// 	appHybridConn.SendKeyValue = pointer.From(keys.Model.PrimaryKey)
+					// }
 				}
 			}
 

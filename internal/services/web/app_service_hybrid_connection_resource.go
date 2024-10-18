@@ -162,7 +162,7 @@ func resourceAppServiceHybridConnectionCreateUpdate(d *pluginsdk.ResourceData, m
 
 func resourceAppServiceHybridConnectionRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	client := meta.(*clients.Client).Web.AppServicesClient
-	relayClient := meta.(*clients.Client).Relay.HybridConnectionsClient
+	//relayClient := meta.(*clients.Client).Relay.HybridConnectionsClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
@@ -196,26 +196,26 @@ func resourceAppServiceHybridConnectionRead(d *pluginsdk.ResourceData, meta inte
 
 	// key values are not returned in the response, so we get the primary key from the relay namespace ListKeys func
 	if resp.ServiceBusNamespace != nil && resp.SendKeyName != nil {
-		relayNamespacesClient := meta.(*clients.Client).Relay.NamespacesClient
-		relayNamespaceRG, err := findRelayNamespace(ctx, relayNamespacesClient, id.SubscriptionId, *resp.ServiceBusNamespace)
-		if err != nil {
-			return err
-		}
-		authRuleId := namespaces.NewAuthorizationRuleID(id.SubscriptionId, *relayNamespaceRG, *resp.ServiceBusNamespace, *resp.SendKeyName)
-		accessKeys, err := relayNamespacesClient.ListKeys(ctx, authRuleId)
+		// relayNamespacesClient := meta.(*clients.Client).Relay.NamespacesClient
+		// relayNamespaceRG, err := findRelayNamespace(ctx, relayNamespacesClient, id.SubscriptionId, *resp.ServiceBusNamespace)
+		// if err != nil {
+		// 	return err
+		// }
+		//authRuleId := namespaces.NewAuthorizationRuleID(id.SubscriptionId, *relayNamespaceRG, *resp.ServiceBusNamespace, *resp.SendKeyName)
+		// accessKeys, err := relayNamespacesClient.ListKeys(ctx, authRuleId)
 
-		if err == nil && accessKeys.Model != nil {
-			d.Set("send_key_value", accessKeys.Model.PrimaryKey)
-			return nil
-		}
+		// if err == nil && accessKeys.Model != nil {
+		// 	d.Set("send_key_value", accessKeys.Model.PrimaryKey)
+		// 	return nil
+		// }
 
-		connAccessKeys, err := relayClient.ListKeys(ctx, hybridconnections.NewHybridConnectionAuthorizationRuleID(id.SubscriptionId, *relayNamespaceRG, *resp.ServiceBusNamespace, *resp.Name, *resp.SendKeyName))
-		if err != nil {
-			return fmt.Errorf("unable to List Access Keys for %q (Resource Group %q): %+v", id, id.ResourceGroup, err)
-		}
-		if model := connAccessKeys.Model; model != nil {
-			d.Set("send_key_value", model.PrimaryKey)
-		}
+		// connAccessKeys, err := relayClient.ListKeys(ctx, hybridconnections.NewHybridConnectionAuthorizationRuleID(id.SubscriptionId, *relayNamespaceRG, *resp.ServiceBusNamespace, *resp.Name, *resp.SendKeyName))
+		// if err != nil {
+		// 	return fmt.Errorf("unable to List Access Keys for %q (Resource Group %q): %+v", id, id.ResourceGroup, err)
+		// }
+		// if model := connAccessKeys.Model; model != nil {
+		// 	d.Set("send_key_value", model.PrimaryKey)
+		// }
 	}
 
 	return nil

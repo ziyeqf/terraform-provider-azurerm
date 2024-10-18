@@ -155,11 +155,11 @@ func resourceRelayNamespaceRead(d *pluginsdk.ResourceData, meta interface{}) err
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	authRuleId := namespaces.NewAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, "RootManageSharedAccessKey")
-	keysResp, err := client.ListKeys(ctx, authRuleId)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", *id, err)
-	}
+	// authRuleId := namespaces.NewAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, "RootManageSharedAccessKey")
+	// keysResp, err := client.ListKeys(ctx, authRuleId)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+	// }
 
 	d.Set("name", id.NamespaceName)
 	d.Set("resource_group_name", id.ResourceGroupName)
@@ -180,12 +180,12 @@ func resourceRelayNamespaceRead(d *pluginsdk.ResourceData, meta interface{}) err
 		}
 	}
 
-	if model := keysResp.Model; model != nil {
-		d.Set("primary_connection_string", model.PrimaryConnectionString)
-		d.Set("primary_key", model.PrimaryKey)
-		d.Set("secondary_connection_string", model.SecondaryConnectionString)
-		d.Set("secondary_key", model.SecondaryKey)
-	}
+	// if model := keysResp.Model; model != nil {
+	// 	d.Set("primary_connection_string", model.PrimaryConnectionString)
+	// 	d.Set("primary_key", model.PrimaryKey)
+	// 	d.Set("secondary_connection_string", model.SecondaryConnectionString)
+	// 	d.Set("secondary_key", model.SecondaryKey)
+	// }
 
 	return nil
 }

@@ -120,10 +120,10 @@ func resourceRelayHybridConnectionAuthorizationRuleRead(d *pluginsdk.ResourceDat
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	keysResp, err := client.ListKeys(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", id, err)
-	}
+	// keysResp, err := client.ListKeys(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", id, err)
+	// }
 
 	d.Set("name", id.AuthorizationRuleName)
 	d.Set("hybrid_connection_name", id.HybridConnectionName)
@@ -137,10 +137,10 @@ func resourceRelayHybridConnectionAuthorizationRuleRead(d *pluginsdk.ResourceDat
 		d.Set("send", send)
 	}
 
-	d.Set("primary_key", keysResp.Model.PrimaryKey)
-	d.Set("primary_connection_string", keysResp.Model.PrimaryConnectionString)
-	d.Set("secondary_key", keysResp.Model.SecondaryKey)
-	d.Set("secondary_connection_string", keysResp.Model.SecondaryConnectionString)
+	// d.Set("primary_key", keysResp.Model.PrimaryKey)
+	// d.Set("primary_connection_string", keysResp.Model.PrimaryConnectionString)
+	// d.Set("secondary_key", keysResp.Model.SecondaryKey)
+	// d.Set("secondary_connection_string", keysResp.Model.SecondaryConnectionString)
 
 	return nil
 }
