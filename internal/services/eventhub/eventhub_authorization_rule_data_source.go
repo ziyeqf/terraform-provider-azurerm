@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/go-azure-helpers/lang/response"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2021-11-01/authorizationruleseventhubs"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2021-11-01/eventhubs"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/eventhub/validate"
@@ -75,7 +74,7 @@ func EventHubAuthorizationRuleDataSource() *pluginsdk.Resource {
 
 func EventHubAuthorizationRuleDataSourceRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	eventHubsClient := meta.(*clients.Client).Eventhub.EventHubsClient
-	rulesClient := meta.(*clients.Client).Eventhub.EventHubAuthorizationRulesClient
+	//rulesClient := meta.(*clients.Client).Eventhub.EventHubAuthorizationRulesClient
 	subscriptionId := meta.(*clients.Client).Account.SubscriptionId
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
@@ -100,20 +99,20 @@ func EventHubAuthorizationRuleDataSourceRead(d *pluginsdk.ResourceData, meta int
 	d.Set("namespace_name", id.NamespaceName)
 	d.Set("resource_group_name", id.ResourceGroupName)
 
-	localId := authorizationruleseventhubs.NewEventhubAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, id.EventhubName, id.AuthorizationRuleName)
-	keysResp, err := rulesClient.EventHubsListKeys(ctx, localId)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", id, err)
-	}
+	// localId := authorizationruleseventhubs.NewEventhubAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, id.EventhubName, id.AuthorizationRuleName)
+	// keysResp, err := rulesClient.EventHubsListKeys(ctx, localId)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", id, err)
+	// }
 
-	if model := keysResp.Model; model != nil {
-		d.Set("primary_key", model.PrimaryKey)
-		d.Set("secondary_key", model.SecondaryKey)
-		d.Set("primary_connection_string", model.PrimaryConnectionString)
-		d.Set("secondary_connection_string", model.SecondaryConnectionString)
-		d.Set("primary_connection_string_alias", model.AliasPrimaryConnectionString)
-		d.Set("secondary_connection_string_alias", model.AliasSecondaryConnectionString)
-	}
+	// if model := keysResp.Model; model != nil {
+	// 	d.Set("primary_key", model.PrimaryKey)
+	// 	d.Set("secondary_key", model.SecondaryKey)
+	// 	d.Set("primary_connection_string", model.PrimaryConnectionString)
+	// 	d.Set("secondary_connection_string", model.SecondaryConnectionString)
+	// 	d.Set("primary_connection_string_alias", model.AliasPrimaryConnectionString)
+	// 	d.Set("secondary_connection_string_alias", model.AliasSecondaryConnectionString)
+	// }
 
 	return nil
 }

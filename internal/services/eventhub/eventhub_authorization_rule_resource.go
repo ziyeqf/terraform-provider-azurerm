@@ -136,7 +136,7 @@ func resourceEventHubAuthorizationRuleCreateUpdate(d *pluginsdk.ResourceData, me
 
 func resourceEventHubAuthorizationRuleRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	eventHubsClient := meta.(*clients.Client).Eventhub.EventHubsClient
-	authorizationRulesClient := meta.(*clients.Client).Eventhub.EventHubAuthorizationRulesClient
+	//authorizationRulesClient := meta.(*clients.Client).Eventhub.EventHubAuthorizationRulesClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
@@ -168,20 +168,20 @@ func resourceEventHubAuthorizationRuleRead(d *pluginsdk.ResourceData, meta inter
 		}
 	}
 
-	localId := authorizationruleseventhubs.NewEventhubAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, id.EventhubName, id.AuthorizationRuleName)
-	keysResp, err := authorizationRulesClient.EventHubsListKeys(ctx, localId)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", *id, err)
-	}
+	// localId := authorizationruleseventhubs.NewEventhubAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, id.EventhubName, id.AuthorizationRuleName)
+	// keysResp, err := authorizationRulesClient.EventHubsListKeys(ctx, localId)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+	// }
 
-	if model := keysResp.Model; model != nil {
-		d.Set("primary_key", model.PrimaryKey)
-		d.Set("secondary_key", model.SecondaryKey)
-		d.Set("primary_connection_string", model.PrimaryConnectionString)
-		d.Set("secondary_connection_string", model.SecondaryConnectionString)
-		d.Set("primary_connection_string_alias", model.AliasPrimaryConnectionString)
-		d.Set("secondary_connection_string_alias", model.AliasSecondaryConnectionString)
-	}
+	// if model := keysResp.Model; model != nil {
+	// 	d.Set("primary_key", model.PrimaryKey)
+	// 	d.Set("secondary_key", model.SecondaryKey)
+	// 	d.Set("primary_connection_string", model.PrimaryConnectionString)
+	// 	d.Set("secondary_connection_string", model.SecondaryConnectionString)
+	// 	d.Set("primary_connection_string_alias", model.AliasPrimaryConnectionString)
+	// 	d.Set("secondary_connection_string_alias", model.AliasSecondaryConnectionString)
+	// }
 
 	return nil
 }

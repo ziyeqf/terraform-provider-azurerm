@@ -5,14 +5,12 @@ package eventhub
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/go-azure-helpers/lang/response"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/tags"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2021-11-01/authorizationrulesnamespaces"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2022-01-01-preview/namespaces"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/features"
@@ -121,7 +119,7 @@ func EventHubNamespaceDataSource() *pluginsdk.Resource {
 
 func EventHubNamespaceDataSourceRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	client := meta.(*clients.Client).Eventhub.NamespacesClient
-	authorizationRulesClient := meta.(*clients.Client).Eventhub.NamespaceAuthorizationRulesClient
+	//authorizationRulesClient := meta.(*clients.Client).Eventhub.NamespaceAuthorizationRulesClient
 	subscriptionId := meta.(*clients.Client).Account.SubscriptionId
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
@@ -164,19 +162,19 @@ func EventHubNamespaceDataSourceRead(d *pluginsdk.ResourceData, meta interface{}
 		}
 	}
 
-	defaultRuleId := authorizationrulesnamespaces.NewAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, eventHubNamespaceDefaultAuthorizationRule)
-	keys, err := authorizationRulesClient.NamespacesListKeys(ctx, defaultRuleId)
-	if err != nil {
-		log.Printf("[WARN] Unable to List default keys for %s: %+v", id, err)
-	}
-	if model := keys.Model; model != nil {
-		d.Set("default_primary_connection_string_alias", model.AliasPrimaryConnectionString)
-		d.Set("default_secondary_connection_string_alias", model.AliasSecondaryConnectionString)
-		d.Set("default_primary_connection_string", model.PrimaryConnectionString)
-		d.Set("default_secondary_connection_string", model.SecondaryConnectionString)
-		d.Set("default_primary_key", model.PrimaryKey)
-		d.Set("default_secondary_key", model.SecondaryKey)
-	}
+	// defaultRuleId := authorizationrulesnamespaces.NewAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, eventHubNamespaceDefaultAuthorizationRule)
+	// keys, err := authorizationRulesClient.NamespacesListKeys(ctx, defaultRuleId)
+	// if err != nil {
+	// 	log.Printf("[WARN] Unable to List default keys for %s: %+v", id, err)
+	// }
+	// if model := keys.Model; model != nil {
+	// 	d.Set("default_primary_connection_string_alias", model.AliasPrimaryConnectionString)
+	// 	d.Set("default_secondary_connection_string_alias", model.AliasSecondaryConnectionString)
+	// 	d.Set("default_primary_connection_string", model.PrimaryConnectionString)
+	// 	d.Set("default_secondary_connection_string", model.SecondaryConnectionString)
+	// 	d.Set("default_primary_key", model.PrimaryKey)
+	// 	d.Set("default_secondary_key", model.SecondaryKey)
+	// }
 
 	return nil
 }

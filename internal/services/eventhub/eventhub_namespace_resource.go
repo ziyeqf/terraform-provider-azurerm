@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/identity"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/tags"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2021-11-01/authorizationrulesnamespaces"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2021-11-01/eventhubsclusters"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2021-11-01/networkrulesets"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2022-01-01-preview/namespaces"
@@ -530,7 +529,7 @@ func resourceEventHubNamespaceUpdate(d *pluginsdk.ResourceData, meta interface{}
 
 func resourceEventHubNamespaceRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	client := meta.(*clients.Client).Eventhub.NamespacesClient
-	authorizationKeysClient := meta.(*clients.Client).Eventhub.NamespaceAuthorizationRulesClient
+	//authorizationKeysClient := meta.(*clients.Client).Eventhub.NamespaceAuthorizationRulesClient
 	ruleSetsClient := meta.(*clients.Client).Eventhub.NetworkRuleSetsClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
@@ -611,20 +610,20 @@ func resourceEventHubNamespaceRead(d *pluginsdk.ResourceData, meta interface{}) 
 		return fmt.Errorf("setting `network_ruleset` for Evenhub Namespace %s: %v", id.NamespaceName, err)
 	}
 
-	authorizationRuleId := authorizationrulesnamespaces.NewAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, eventHubNamespaceDefaultAuthorizationRule)
-	keys, err := authorizationKeysClient.NamespacesListKeys(ctx, authorizationRuleId)
-	if err != nil {
-		log.Printf("[WARN] Unable to List default keys for EventHub Namespace %q: %+v", id.NamespaceName, err)
-	}
+	// authorizationRuleId := authorizationrulesnamespaces.NewAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, eventHubNamespaceDefaultAuthorizationRule)
+	// keys, err := authorizationKeysClient.NamespacesListKeys(ctx, authorizationRuleId)
+	// if err != nil {
+	// 	log.Printf("[WARN] Unable to List default keys for EventHub Namespace %q: %+v", id.NamespaceName, err)
+	// }
 
-	if model := keys.Model; model != nil {
-		d.Set("default_primary_connection_string_alias", model.AliasPrimaryConnectionString)
-		d.Set("default_secondary_connection_string_alias", model.AliasSecondaryConnectionString)
-		d.Set("default_primary_connection_string", model.PrimaryConnectionString)
-		d.Set("default_secondary_connection_string", model.SecondaryConnectionString)
-		d.Set("default_primary_key", model.PrimaryKey)
-		d.Set("default_secondary_key", model.SecondaryKey)
-	}
+	// if model := keys.Model; model != nil {
+	// 	d.Set("default_primary_connection_string_alias", model.AliasPrimaryConnectionString)
+	// 	d.Set("default_secondary_connection_string_alias", model.AliasSecondaryConnectionString)
+	// 	d.Set("default_primary_connection_string", model.PrimaryConnectionString)
+	// 	d.Set("default_secondary_connection_string", model.SecondaryConnectionString)
+	// 	d.Set("default_primary_key", model.PrimaryKey)
+	// 	d.Set("default_secondary_key", model.SecondaryKey)
+	// }
 
 	return nil
 }

@@ -139,19 +139,19 @@ func resourceEventHubNamespaceAuthorizationRuleRead(d *pluginsdk.ResourceData, m
 		}
 	}
 
-	keysResp, err := client.NamespacesListKeys(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", id, err)
-	}
+	// keysResp, err := client.NamespacesListKeys(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", id, err)
+	// }
 
-	if model := keysResp.Model; model != nil {
-		d.Set("primary_key", model.PrimaryKey)
-		d.Set("secondary_key", model.SecondaryKey)
-		d.Set("primary_connection_string", model.PrimaryConnectionString)
-		d.Set("secondary_connection_string", model.SecondaryConnectionString)
-		d.Set("primary_connection_string_alias", model.AliasPrimaryConnectionString)
-		d.Set("secondary_connection_string_alias", model.AliasSecondaryConnectionString)
-	}
+	// if model := keysResp.Model; model != nil {
+	// 	d.Set("primary_key", model.PrimaryKey)
+	// 	d.Set("secondary_key", model.SecondaryKey)
+	// 	d.Set("primary_connection_string", model.PrimaryConnectionString)
+	// 	d.Set("secondary_connection_string", model.SecondaryConnectionString)
+	// 	d.Set("primary_connection_string_alias", model.AliasPrimaryConnectionString)
+	// 	d.Set("secondary_connection_string_alias", model.AliasSecondaryConnectionString)
+	// }
 
 	return nil
 }
