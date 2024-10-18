@@ -85,40 +85,40 @@ func dataSourceIotHubDPSSharedAccessPolicyRead(d *pluginsdk.ResourceData, meta i
 	}
 
 	keyId := iotdpsresource.NewKeyID(subscriptionId, d.Get("resource_group_name").(string), d.Get("iothub_dps_name").(string), d.Get("name").(string))
-	accessPolicy, err := client.ListKeysForKeyName(ctx, keyId)
-	if err != nil {
-		if response.WasNotFound(accessPolicy.HttpResponse) {
-			return fmt.Errorf("%s was not found", id)
-		}
+	// accessPolicy, err := client.ListKeysForKeyName(ctx, keyId)
+	// if err != nil {
+	// 	if response.WasNotFound(accessPolicy.HttpResponse) {
+	// 		return fmt.Errorf("%s was not found", id)
+	// 	}
 
-		return fmt.Errorf("loading %s: %+v", id, err)
-	}
+	// 	return fmt.Errorf("loading %s: %+v", id, err)
+	// }
 
 	d.Set("name", keyId.KeyName)
 	d.Set("resource_group_name", keyId.ResourceGroupName)
 
 	d.SetId(id.ID())
-	if model := accessPolicy.Model; model != nil {
-		d.Set("primary_key", model.PrimaryKey)
-		d.Set("secondary_key", model.SecondaryKey)
+	// if model := accessPolicy.Model; model != nil {
+	// 	d.Set("primary_key", model.PrimaryKey)
+	// 	d.Set("secondary_key", model.SecondaryKey)
 
-		if dpsModel := iothubDps.Model; dpsModel != nil {
-			properties := dpsModel.Properties
-			primaryConnectionString := ""
-			secondaryConnectionString := ""
-			if properties.ServiceOperationsHostName != nil {
-				hostname := properties.ServiceOperationsHostName
-				if primary := model.PrimaryKey; primary != nil {
-					primaryConnectionString = getSAPConnectionString(*hostname, keyId.KeyName, *primary)
-				}
-				if secondary := model.SecondaryKey; secondary != nil {
-					secondaryConnectionString = getSAPConnectionString(*hostname, keyId.KeyName, *secondary)
-				}
-			}
-			d.Set("primary_connection_string", primaryConnectionString)
-			d.Set("secondary_connection_string", secondaryConnectionString)
-		}
-	}
+	// 	if dpsModel := iothubDps.Model; dpsModel != nil {
+	// 		properties := dpsModel.Properties
+	// 		primaryConnectionString := ""
+	// 		secondaryConnectionString := ""
+	// 		if properties.ServiceOperationsHostName != nil {
+	// 			hostname := properties.ServiceOperationsHostName
+	// 			if primary := model.PrimaryKey; primary != nil {
+	// 				primaryConnectionString = getSAPConnectionString(*hostname, keyId.KeyName, *primary)
+	// 			}
+	// 			if secondary := model.SecondaryKey; secondary != nil {
+	// 				secondaryConnectionString = getSAPConnectionString(*hostname, keyId.KeyName, *secondary)
+	// 			}
+	// 		}
+	// 		d.Set("primary_connection_string", primaryConnectionString)
+	// 		d.Set("secondary_connection_string", secondaryConnectionString)
+	// 	}
+	// }
 
 	return nil
 }

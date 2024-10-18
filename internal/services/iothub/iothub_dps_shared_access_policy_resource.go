@@ -5,7 +5,6 @@ package iothub
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/deviceprovisioningservices/2022-02-05/iotdpsresource"
 	"github.com/hashicorp/go-multierror"
-	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/locks"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/iothub/validate"
@@ -161,21 +159,21 @@ func resourceIotHubDPSSharedAccessPolicyCreateUpdate(d *pluginsdk.ResourceData, 
 	accessPolicies := make([]iotdpsresource.SharedAccessSignatureAuthorizationRuleAccessRightsDescription, 0)
 
 	alreadyExists := false
-	existingAccessPolicies, err := client.ListKeysComplete(ctx, iothubDpsId)
-	if err != nil {
-		return fmt.Errorf("loading %s: %+v", id, err)
-	}
-	for _, existingAccessPolicy := range existingAccessPolicies.Items {
-		if strings.EqualFold(existingAccessPolicy.KeyName, id.KeyName) {
-			if d.IsNewResource() {
-				return tf.ImportAsExistsError("azurerm_iothub_dps_shared_access_policy", id.ID())
-			}
-			accessPolicies = append(accessPolicies, expandedAccessPolicy)
-			alreadyExists = true
-		} else {
-			accessPolicies = append(accessPolicies, existingAccessPolicy)
-		}
-	}
+	// existingAccessPolicies, err := client.ListKeysComplete(ctx, iothubDpsId)
+	// if err != nil {
+	// 	return fmt.Errorf("loading %s: %+v", id, err)
+	// }
+	// for _, existingAccessPolicy := range existingAccessPolicies.Items {
+	// 	if strings.EqualFold(existingAccessPolicy.KeyName, id.KeyName) {
+	// 		if d.IsNewResource() {
+	// 			return tf.ImportAsExistsError("azurerm_iothub_dps_shared_access_policy", id.ID())
+	// 		}
+	// 		accessPolicies = append(accessPolicies, expandedAccessPolicy)
+	// 		alreadyExists = true
+	// 	} else {
+	// 		accessPolicies = append(accessPolicies, existingAccessPolicy)
+	// 	}
+	// }
 
 	if d.IsNewResource() {
 		accessPolicies = append(accessPolicies, expandedAccessPolicy)
@@ -195,63 +193,63 @@ func resourceIotHubDPSSharedAccessPolicyCreateUpdate(d *pluginsdk.ResourceData, 
 }
 
 func resourceIotHubDPSSharedAccessPolicyRead(d *pluginsdk.ResourceData, meta interface{}) error {
-	client := meta.(*clients.Client).IoTHub.DPSResourceClient
-	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
-	defer cancel()
+	// client := meta.(*clients.Client).IoTHub.DPSResourceClient
+	// ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
+	// defer cancel()
 
 	id, err := iotdpsresource.ParseKeyID(d.Id())
 	if err != nil {
 		return err
 	}
 
-	iothubDpsId := commonids.NewProvisioningServiceID(id.SubscriptionId, id.ResourceGroupName, id.ProvisioningServiceName)
-	iothubDps, err := client.Get(ctx, iothubDpsId)
-	if err != nil {
-		return fmt.Errorf("retrieving IotHub DPS %q: %+v", id, err)
-	}
+	// iothubDpsId := commonids.NewProvisioningServiceID(id.SubscriptionId, id.ResourceGroupName, id.ProvisioningServiceName)
+	// iothubDps, err := client.Get(ctx, iothubDpsId)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving IotHub DPS %q: %+v", id, err)
+	// }
 
-	accessPolicy, err := client.ListKeysForKeyName(ctx, *id)
-	if err != nil {
-		if response.WasNotFound(accessPolicy.HttpResponse) {
-			log.Printf("[DEBUG] %s - removing from state", id)
-			d.SetId("")
-			return nil
-		}
+	// accessPolicy, err := client.ListKeysForKeyName(ctx, *id)
+	// if err != nil {
+	// 	if response.WasNotFound(accessPolicy.HttpResponse) {
+	// 		log.Printf("[DEBUG] %s - removing from state", id)
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("loading %s: %+v", id, err)
-	}
+	// 	return fmt.Errorf("loading %s: %+v", id, err)
+	// }
 
 	d.Set("name", id.KeyName)
 	d.Set("resource_group_name", id.ResourceGroupName)
 
-	if model := accessPolicy.Model; model != nil {
-		d.Set("primary_key", model.PrimaryKey)
-		d.Set("secondary_key", model.SecondaryKey)
+	// if model := accessPolicy.Model; model != nil {
+	// 	d.Set("primary_key", model.PrimaryKey)
+	// 	d.Set("secondary_key", model.SecondaryKey)
 
-		if iothubDpsModel := iothubDps.Model; iothubDpsModel != nil {
-			primaryConnectionString := ""
-			secondaryConnectionString := ""
-			properties := iothubDpsModel.Properties
-			if properties.ServiceOperationsHostName != nil {
-				hostname := properties.ServiceOperationsHostName
-				if primary := model.PrimaryKey; primary != nil {
-					primaryConnectionString = getSAPConnectionString(*hostname, id.KeyName, *primary)
-				}
-				if secondary := model.SecondaryKey; secondary != nil {
-					secondaryConnectionString = getSAPConnectionString(*hostname, id.KeyName, *secondary)
-				}
-			}
-			d.Set("primary_connection_string", primaryConnectionString)
-			d.Set("secondary_connection_string", secondaryConnectionString)
-		}
+	// 	if iothubDpsModel := iothubDps.Model; iothubDpsModel != nil {
+	// 		primaryConnectionString := ""
+	// 		secondaryConnectionString := ""
+	// 		properties := iothubDpsModel.Properties
+	// 		if properties.ServiceOperationsHostName != nil {
+	// 			hostname := properties.ServiceOperationsHostName
+	// 			if primary := model.PrimaryKey; primary != nil {
+	// 				primaryConnectionString = getSAPConnectionString(*hostname, id.KeyName, *primary)
+	// 			}
+	// 			if secondary := model.SecondaryKey; secondary != nil {
+	// 				secondaryConnectionString = getSAPConnectionString(*hostname, id.KeyName, *secondary)
+	// 			}
+	// 		}
+	// 		d.Set("primary_connection_string", primaryConnectionString)
+	// 		d.Set("secondary_connection_string", secondaryConnectionString)
+	// 	}
 
-		rights := flattenDpsAccessRights(model.Rights)
-		d.Set("enrollment_read", rights.enrollmentRead)
-		d.Set("enrollment_write", rights.enrollmentWrite)
-		d.Set("registration_read", rights.registrationRead)
-		d.Set("registration_write", rights.registrationWrite)
-		d.Set("service_config", rights.serviceConfig)
-	}
+	// 	rights := flattenDpsAccessRights(model.Rights)
+	// 	d.Set("enrollment_read", rights.enrollmentRead)
+	// 	d.Set("enrollment_write", rights.enrollmentWrite)
+	// 	d.Set("registration_read", rights.registrationRead)
+	// 	d.Set("registration_write", rights.registrationWrite)
+	// 	d.Set("service_config", rights.serviceConfig)
+	// }
 
 	return nil
 }
@@ -279,19 +277,19 @@ func resourceIotHubDPSSharedAccessPolicyDelete(d *pluginsdk.ResourceData, meta i
 		return fmt.Errorf("loading IotHub DPS %q: %+v", id, err)
 	}
 
-	accessPolicies := make([]iotdpsresource.SharedAccessSignatureAuthorizationRuleAccessRightsDescription, 0)
+	// accessPolicies := make([]iotdpsresource.SharedAccessSignatureAuthorizationRuleAccessRightsDescription, 0)
 
-	existingAccessPolicies, err := client.ListKeysComplete(ctx, iothubDpsId)
-	if err != nil {
-		return fmt.Errorf("loading %s: %+v", id, err)
-	}
-	for _, existingAccessPolicy := range existingAccessPolicies.Items {
-		if !strings.EqualFold(existingAccessPolicy.KeyName, id.KeyName) {
-			accessPolicies = append(accessPolicies, existingAccessPolicy)
-		}
-	}
+	// existingAccessPolicies, err := client.ListKeysComplete(ctx, iothubDpsId)
+	// if err != nil {
+	// 	return fmt.Errorf("loading %s: %+v", id, err)
+	// }
+	// for _, existingAccessPolicy := range existingAccessPolicies.Items {
+	// 	if !strings.EqualFold(existingAccessPolicy.KeyName, id.KeyName) {
+	// 		accessPolicies = append(accessPolicies, existingAccessPolicy)
+	// 	}
+	// }
 
-	iothubDps.Model.Properties.AuthorizationPolicies = &accessPolicies
+	// iothubDps.Model.Properties.AuthorizationPolicies = &accessPolicies
 
 	if err := client.CreateOrUpdateThenPoll(ctx, iothubDpsId, *iothubDps.Model); err != nil {
 		return fmt.Errorf("updating %s: %+v", id, err)

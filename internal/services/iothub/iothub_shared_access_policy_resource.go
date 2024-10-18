@@ -6,13 +6,11 @@ package iothub
 import (
 	"context"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-multierror"
-	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/locks"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/iothub/migration"
@@ -166,31 +164,31 @@ func resourceIotHubSharedAccessPolicyCreateUpdate(d *pluginsdk.ResourceData, met
 	accessPolicies := make([]devices.SharedAccessSignatureAuthorizationRule, 0)
 
 	alreadyExists := false
-	for accessPolicyIterator, err := client.ListKeysComplete(ctx, id.ResourceGroup, id.IotHubName); accessPolicyIterator.NotDone(); err = accessPolicyIterator.NextWithContext(ctx) {
-		if err != nil {
-			return fmt.Errorf("loading %s: %+v", id, err)
-		}
-		existingAccessPolicy := accessPolicyIterator.Value()
+	// for accessPolicyIterator, err := client.ListKeysComplete(ctx, id.ResourceGroup, id.IotHubName); accessPolicyIterator.NotDone(); err = accessPolicyIterator.NextWithContext(ctx) {
+	// 	if err != nil {
+	// 		return fmt.Errorf("loading %s: %+v", id, err)
+	// 	}
+	// 	existingAccessPolicy := accessPolicyIterator.Value()
 
-		if strings.EqualFold(*existingAccessPolicy.KeyName, id.IotHubKeyName) {
-			if d.IsNewResource() {
-				return tf.ImportAsExistsError("azurerm_iothub_shared_access_policy", id.ID())
-			}
+	// 	if strings.EqualFold(*existingAccessPolicy.KeyName, id.IotHubKeyName) {
+	// 		if d.IsNewResource() {
+	// 			return tf.ImportAsExistsError("azurerm_iothub_shared_access_policy", id.ID())
+	// 		}
 
-			if existingAccessPolicy.PrimaryKey != nil {
-				expandedAccessPolicy.PrimaryKey = existingAccessPolicy.PrimaryKey
-			}
+	// 		if existingAccessPolicy.PrimaryKey != nil {
+	// 			expandedAccessPolicy.PrimaryKey = existingAccessPolicy.PrimaryKey
+	// 		}
 
-			if existingAccessPolicy.SecondaryKey != nil {
-				expandedAccessPolicy.SecondaryKey = existingAccessPolicy.SecondaryKey
-			}
+	// 		if existingAccessPolicy.SecondaryKey != nil {
+	// 			expandedAccessPolicy.SecondaryKey = existingAccessPolicy.SecondaryKey
+	// 		}
 
-			accessPolicies = append(accessPolicies, expandedAccessPolicy)
-			alreadyExists = true
-		} else {
-			accessPolicies = append(accessPolicies, existingAccessPolicy)
-		}
-	}
+	// 		accessPolicies = append(accessPolicies, expandedAccessPolicy)
+	// 		alreadyExists = true
+	// 	} else {
+	// 		accessPolicies = append(accessPolicies, existingAccessPolicy)
+	// 	}
+	// }
 
 	if d.IsNewResource() {
 		accessPolicies = append(accessPolicies, expandedAccessPolicy)
@@ -215,49 +213,49 @@ func resourceIotHubSharedAccessPolicyCreateUpdate(d *pluginsdk.ResourceData, met
 }
 
 func resourceIotHubSharedAccessPolicyRead(d *pluginsdk.ResourceData, meta interface{}) error {
-	client := meta.(*clients.Client).IoTHub.ResourceClient
-	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
-	defer cancel()
+	// client := meta.(*clients.Client).IoTHub.ResourceClient
+	// ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
+	// defer cancel()
 
 	id, err := parse.SharedAccessPolicyID(d.Id())
 	if err != nil {
 		return err
 	}
 
-	accessPolicy, err := client.GetKeysForKeyName(ctx, id.ResourceGroup, id.IotHubName, id.IotHubKeyName)
-	if err != nil {
-		if utils.ResponseWasNotFound(accessPolicy.Response) {
-			log.Printf("[DEBUG] %s was not found - removing from state", id)
-			d.SetId("")
-			return nil
-		}
+	// accessPolicy, err := client.GetKeysForKeyName(ctx, id.ResourceGroup, id.IotHubName, id.IotHubKeyName)
+	// if err != nil {
+	// 	if utils.ResponseWasNotFound(accessPolicy.Response) {
+	// 		log.Printf("[DEBUG] %s was not found - removing from state", id)
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("loading %s: %+v", id, err)
-	}
+	// 	return fmt.Errorf("loading %s: %+v", id, err)
+	// }
 
-	iothub, err := client.Get(ctx, id.ResourceGroup, id.IotHubName)
-	if err != nil {
-		return fmt.Errorf("loading IotHub %q (Resource Group %q): %+v", id.IotHubName, id.ResourceGroup, err)
-	}
+	// iothub, err := client.Get(ctx, id.ResourceGroup, id.IotHubName)
+	// if err != nil {
+	// 	return fmt.Errorf("loading IotHub %q (Resource Group %q): %+v", id.IotHubName, id.ResourceGroup, err)
+	// }
 
 	d.Set("name", id.IotHubKeyName)
 	d.Set("iothub_name", id.IotHubName)
 	d.Set("resource_group_name", id.ResourceGroup)
 
-	d.Set("primary_key", accessPolicy.PrimaryKey)
-	if err := d.Set("primary_connection_string", getSharedAccessPolicyConnectionString(*iothub.Properties.HostName, id.IotHubKeyName, *accessPolicy.PrimaryKey)); err != nil {
-		return fmt.Errorf("setting `primary_connection_string`: %v", err)
-	}
-	d.Set("secondary_key", accessPolicy.SecondaryKey)
-	if err := d.Set("secondary_connection_string", getSharedAccessPolicyConnectionString(*iothub.Properties.HostName, id.IotHubKeyName, *accessPolicy.SecondaryKey)); err != nil {
-		return fmt.Errorf("setting `secondary_connection_string`: %v", err)
-	}
+	// d.Set("primary_key", accessPolicy.PrimaryKey)
+	// if err := d.Set("primary_connection_string", getSharedAccessPolicyConnectionString(*iothub.Properties.HostName, id.IotHubKeyName, *accessPolicy.PrimaryKey)); err != nil {
+	// 	return fmt.Errorf("setting `primary_connection_string`: %v", err)
+	// }
+	// d.Set("secondary_key", accessPolicy.SecondaryKey)
+	// if err := d.Set("secondary_connection_string", getSharedAccessPolicyConnectionString(*iothub.Properties.HostName, id.IotHubKeyName, *accessPolicy.SecondaryKey)); err != nil {
+	// 	return fmt.Errorf("setting `secondary_connection_string`: %v", err)
+	// }
 
-	rights := flattenAccessRights(accessPolicy.Rights)
-	d.Set("registry_read", rights.registryRead)
-	d.Set("registry_write", rights.registryWrite)
-	d.Set("device_connect", rights.deviceConnect)
-	d.Set("service_connect", rights.serviceConnect)
+	// rights := flattenAccessRights(accessPolicy.Rights)
+	// d.Set("registry_read", rights.registryRead)
+	// d.Set("registry_write", rights.registryWrite)
+	// d.Set("device_connect", rights.deviceConnect)
+	// d.Set("service_connect", rights.serviceConnect)
 
 	return nil
 }
@@ -286,16 +284,16 @@ func resourceIotHubSharedAccessPolicyDelete(d *pluginsdk.ResourceData, meta inte
 
 	accessPolicies := make([]devices.SharedAccessSignatureAuthorizationRule, 0)
 
-	for accessPolicyIterator, err := client.ListKeysComplete(ctx, id.ResourceGroup, id.IotHubName); accessPolicyIterator.NotDone(); err = accessPolicyIterator.NextWithContext(ctx) {
-		if err != nil {
-			return fmt.Errorf("loading %s: %+v", id, err)
-		}
-		existingAccessPolicy := accessPolicyIterator.Value()
+	// for accessPolicyIterator, err := client.ListKeysComplete(ctx, id.ResourceGroup, id.IotHubName); accessPolicyIterator.NotDone(); err = accessPolicyIterator.NextWithContext(ctx) {
+	// 	if err != nil {
+	// 		return fmt.Errorf("loading %s: %+v", id, err)
+	// 	}
+	// 	existingAccessPolicy := accessPolicyIterator.Value()
 
-		if !strings.EqualFold(*existingAccessPolicy.KeyName, id.IotHubKeyName) {
-			accessPolicies = append(accessPolicies, existingAccessPolicy)
-		}
-	}
+	// 	if !strings.EqualFold(*existingAccessPolicy.KeyName, id.IotHubKeyName) {
+	// 		accessPolicies = append(accessPolicies, existingAccessPolicy)
+	// 	}
+	// }
 
 	iothub.Properties.AuthorizationPolicies = &accessPolicies
 

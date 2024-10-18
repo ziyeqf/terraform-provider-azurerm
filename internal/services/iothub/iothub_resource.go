@@ -1032,14 +1032,14 @@ func resourceIotHubRead(d *pluginsdk.ResourceData, meta interface{}) error {
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	if keysResp, err := client.ListKeys(ctx, id.ResourceGroup, id.Name); err == nil {
-		keyList := keysResp.Response()
-		keys := flattenIoTHubSharedAccessPolicy(keyList.Value)
+	// if keysResp, err := client.ListKeys(ctx, id.ResourceGroup, id.Name); err == nil {
+	// 	keyList := keysResp.Response()
+	// 	keys := flattenIoTHubSharedAccessPolicy(keyList.Value)
 
-		if err := d.Set("shared_access_policy", keys); err != nil {
-			return fmt.Errorf("setting `shared_access_policy` in IoTHub %q: %+v", id.Name, err)
-		}
-	}
+	// 	if err := d.Set("shared_access_policy", keys); err != nil {
+	// 		return fmt.Errorf("setting `shared_access_policy` in IoTHub %q: %+v", id.Name, err)
+	// 	}
+	// }
 
 	if properties := hub.Properties; properties != nil {
 		for k, v := range properties.EventHubEndpoints {
