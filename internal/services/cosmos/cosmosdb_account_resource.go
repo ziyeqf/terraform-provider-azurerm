@@ -1487,53 +1487,53 @@ func resourceCosmosDbAccountRead(d *pluginsdk.ResourceData, meta interface{}) er
 
 	// ListKeys returns a data structure containing a DatabaseAccountListReadOnlyKeysResult pointer
 	// implying that it also returns the read only keys, however this appears to not be the case
-	keys, err := client.DatabaseAccountsListKeys(ctx, *id)
-	if err != nil {
-		if response.WasNotFound(keys.HttpResponse) {
-			log.Printf("[DEBUG] Keys were not found for CosmosDB Account %q (Resource Group %q) - removing from state!", id.DatabaseAccountName, id.ResourceGroupName)
-			d.SetId("")
-			return nil
-		}
+	// keys, err := client.DatabaseAccountsListKeys(ctx, *id)
+	// if err != nil {
+	// 	if response.WasNotFound(keys.HttpResponse) {
+	// 		log.Printf("[DEBUG] Keys were not found for CosmosDB Account %q (Resource Group %q) - removing from state!", id.DatabaseAccountName, id.ResourceGroupName)
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("[ERROR] Unable to List Write keys for CosmosDB Account %s: %s", id.DatabaseAccountName, err)
-	}
-	d.Set("primary_key", keys.Model.PrimaryMasterKey)
-	d.Set("secondary_key", keys.Model.SecondaryMasterKey)
+	// 	return fmt.Errorf("[ERROR] Unable to List Write keys for CosmosDB Account %s: %s", id.DatabaseAccountName, err)
+	// }
+	// d.Set("primary_key", keys.Model.PrimaryMasterKey)
+	// d.Set("secondary_key", keys.Model.SecondaryMasterKey)
 
-	readonlyKeys, err := client.DatabaseAccountsListReadOnlyKeys(ctx, *id)
-	if err != nil {
-		if response.WasNotFound(keys.HttpResponse) {
-			log.Printf("[DEBUG] Read Only Keys were not found for CosmosDB Account %q (Resource Group %q) - removing from state!", id.DatabaseAccountName, id.ResourceGroupName)
-			d.SetId("")
-			return nil
-		}
+	// readonlyKeys, err := client.DatabaseAccountsListReadOnlyKeys(ctx, *id)
+	// if err != nil {
+	// 	if response.WasNotFound(keys.HttpResponse) {
+	// 		log.Printf("[DEBUG] Read Only Keys were not found for CosmosDB Account %q (Resource Group %q) - removing from state!", id.DatabaseAccountName, id.ResourceGroupName)
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("[ERROR] Unable to List read-only keys for CosmosDB Account %s: %s", id.DatabaseAccountName, err)
-	}
-	d.Set("primary_readonly_key", readonlyKeys.Model.PrimaryReadonlyMasterKey)
-	d.Set("secondary_readonly_key", readonlyKeys.Model.SecondaryReadonlyMasterKey)
+	// 	return fmt.Errorf("[ERROR] Unable to List read-only keys for CosmosDB Account %s: %s", id.DatabaseAccountName, err)
+	// }
+	// d.Set("primary_readonly_key", readonlyKeys.Model.PrimaryReadonlyMasterKey)
+	// d.Set("secondary_readonly_key", readonlyKeys.Model.SecondaryReadonlyMasterKey)
 
-	connStringResp, err := client.DatabaseAccountsListConnectionStrings(ctx, *id)
-	if err != nil {
-		if response.WasNotFound(keys.HttpResponse) {
-			log.Printf("[DEBUG] Connection Strings were not found for CosmosDB Account %q (Resource Group %q) - removing from state!", id.ResourceGroupName, id.ResourceGroupName)
-			d.SetId("")
-			return nil
-		}
+	// connStringResp, err := client.DatabaseAccountsListConnectionStrings(ctx, *id)
+	// if err != nil {
+	// 	if response.WasNotFound(keys.HttpResponse) {
+	// 		log.Printf("[DEBUG] Connection Strings were not found for CosmosDB Account %q (Resource Group %q) - removing from state!", id.ResourceGroupName, id.ResourceGroupName)
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("[ERROR] Unable to List connection strings for CosmosDB Account %s: %s", id.DatabaseAccountName, err)
-	}
+	// 	return fmt.Errorf("[ERROR] Unable to List connection strings for CosmosDB Account %s: %s", id.DatabaseAccountName, err)
+	// }
 
-	var connStrings []string
-	if connStringResp.Model.ConnectionStrings != nil {
-		connStrings = make([]string, len(*connStringResp.Model.ConnectionStrings))
-		for i, v := range *connStringResp.Model.ConnectionStrings {
-			connStrings[i] = *v.ConnectionString
-			if propertyName, propertyExists := connStringPropertyMap[*v.Description]; propertyExists {
-				d.Set(propertyName, v.ConnectionString) // lintignore:R001
-			}
-		}
-	}
+	// var connStrings []string
+	// if connStringResp.Model.ConnectionStrings != nil {
+	// 	connStrings = make([]string, len(*connStringResp.Model.ConnectionStrings))
+	// 	for i, v := range *connStringResp.Model.ConnectionStrings {
+	// 		connStrings[i] = *v.ConnectionString
+	// 		if propertyName, propertyExists := connStringPropertyMap[*v.Description]; propertyExists {
+	// 			d.Set(propertyName, v.ConnectionString) // lintignore:R001
+	// 		}
+	// 	}
+	// }
 
 	return tags.FlattenAndSet(d, existing.Model.Tags)
 }

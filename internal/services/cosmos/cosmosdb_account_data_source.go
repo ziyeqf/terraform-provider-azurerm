@@ -5,7 +5,6 @@ package cosmos
 
 import (
 	"fmt"
-	"log"
 	"sort"
 	"time"
 
@@ -365,47 +364,47 @@ func dataSourceCosmosDbAccountRead(d *pluginsdk.ResourceData, meta interface{}) 
 		}
 	}
 
-	keys, err := client.DatabaseAccountsListKeys(ctx, id)
-	if err != nil {
-		log.Printf("[ERROR] Unable to List Write keys for %s: %s", id, err)
-	} else {
-		if model := keys.Model; model != nil {
-			d.Set("primary_key", model.PrimaryMasterKey)
-			d.Set("secondary_key", model.SecondaryMasterKey)
-		}
-	}
+	// keys, err := client.DatabaseAccountsListKeys(ctx, id)
+	// if err != nil {
+	// 	log.Printf("[ERROR] Unable to List Write keys for %s: %s", id, err)
+	// } else {
+	// 	if model := keys.Model; model != nil {
+	// 		d.Set("primary_key", model.PrimaryMasterKey)
+	// 		d.Set("secondary_key", model.SecondaryMasterKey)
+	// 	}
+	// }
 
-	readonlyKeys, err := client.DatabaseAccountsListReadOnlyKeys(ctx, id)
-	if err != nil {
-		log.Printf("[ERROR] Unable to List read-only keys for %s: %s", id, err)
-	} else {
-		if model := readonlyKeys.Model; model != nil {
-			d.Set("primary_readonly_key", model.PrimaryReadonlyMasterKey)
-			d.Set("secondary_readonly_key", model.SecondaryReadonlyMasterKey)
-		}
-	}
+	// readonlyKeys, err := client.DatabaseAccountsListReadOnlyKeys(ctx, id)
+	// if err != nil {
+	// 	log.Printf("[ERROR] Unable to List read-only keys for %s: %s", id, err)
+	// } else {
+	// 	if model := readonlyKeys.Model; model != nil {
+	// 		d.Set("primary_readonly_key", model.PrimaryReadonlyMasterKey)
+	// 		d.Set("secondary_readonly_key", model.SecondaryReadonlyMasterKey)
+	// 	}
+	// }
 
-	connStringResp, err := client.DatabaseAccountsListConnectionStrings(ctx, id)
-	if err != nil {
-		if response.WasNotFound(keys.HttpResponse) {
-			log.Printf("[DEBUG] Connection Strings were not found for CosmosDB Account %q (Resource Group %q) - removing from state!", id.DatabaseAccountName, id.ResourceGroupName)
-		} else {
-			log.Printf("[ERROR] Unable to List connection strings for CosmosDB Account %s: %s", id.DatabaseAccountName, err)
-		}
-	} else {
-		if model := connStringResp.Model; model != nil {
-			var connStrings []string
-			if model.ConnectionStrings != nil {
-				connStrings = make([]string, len(*model.ConnectionStrings))
-				for i, v := range *model.ConnectionStrings {
-					connStrings[i] = *v.ConnectionString
-					if propertyName, propertyExists := connStringPropertyMap[*v.Description]; propertyExists {
-						d.Set(propertyName, v.ConnectionString) // lintignore:R001
-					}
-				}
-			}
-		}
-	}
+	// connStringResp, err := client.DatabaseAccountsListConnectionStrings(ctx, id)
+	// if err != nil {
+	// 	if response.WasNotFound(keys.HttpResponse) {
+	// 		log.Printf("[DEBUG] Connection Strings were not found for CosmosDB Account %q (Resource Group %q) - removing from state!", id.DatabaseAccountName, id.ResourceGroupName)
+	// 	} else {
+	// 		log.Printf("[ERROR] Unable to List connection strings for CosmosDB Account %s: %s", id.DatabaseAccountName, err)
+	// 	}
+	// } else {
+	// 	if model := connStringResp.Model; model != nil {
+	// 		var connStrings []string
+	// 		if model.ConnectionStrings != nil {
+	// 			connStrings = make([]string, len(*model.ConnectionStrings))
+	// 			for i, v := range *model.ConnectionStrings {
+	// 				connStrings[i] = *v.ConnectionString
+	// 				if propertyName, propertyExists := connStringPropertyMap[*v.Description]; propertyExists {
+	// 					d.Set(propertyName, v.ConnectionString) // lintignore:R001
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 	return nil
 }
 
