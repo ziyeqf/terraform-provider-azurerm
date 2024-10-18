@@ -90,18 +90,18 @@ func dataSourceCognitiveAccountRead(d *pluginsdk.ResourceData, meta interface{})
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	keys, err := client.AccountsListKeys(ctx, id)
-	if err != nil {
-		// TODO: gracefully fail here
-		return fmt.Errorf("retrieving Keys for %s: %+v", id, err)
-	}
+	// keys, err := client.AccountsListKeys(ctx, id)
+	// if err != nil {
+	// 	// TODO: gracefully fail here
+	// 	return fmt.Errorf("retrieving Keys for %s: %+v", id, err)
+	// }
 
 	d.SetId(id.ID())
 
-	if model := keys.Model; model != nil {
-		d.Set("primary_access_key", model.Key1)
-		d.Set("secondary_access_key", model.Key2)
-	}
+	// if model := keys.Model; model != nil {
+	// 	d.Set("primary_access_key", model.Key1)
+	// 	d.Set("secondary_access_key", model.Key2)
+	// }
 
 	if model := resp.Model; model != nil {
 		d.Set("location", location.NormalizeNilable(model.Location))
