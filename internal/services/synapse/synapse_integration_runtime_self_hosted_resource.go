@@ -127,7 +127,7 @@ func resourceSynapseIntegrationRuntimeSelfHostedCreateUpdate(d *pluginsdk.Resour
 
 func resourceSynapseIntegrationRuntimeSelfHostedRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	client := meta.(*clients.Client).Synapse.IntegrationRuntimesClient
-	authKeysClient := meta.(*clients.Client).Synapse.IntegrationRuntimeAuthKeysClient
+	//authKeysClient := meta.(*clients.Client).Synapse.IntegrationRuntimeAuthKeysClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
@@ -157,18 +157,18 @@ func resourceSynapseIntegrationRuntimeSelfHostedRead(d *pluginsdk.ResourceData, 
 
 	d.Set("description", selfHostedIntegrationRuntime.Description)
 
-	respKey, err := authKeysClient.List(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
-	if err != nil {
-		if utils.ResponseWasNotFound(respKey.Response) {
-			d.SetId("")
-			return nil
-		}
+	// respKey, err := authKeysClient.List(ctx, id.ResourceGroup, id.WorkspaceName, id.Name)
+	// if err != nil {
+	// 	if utils.ResponseWasNotFound(respKey.Response) {
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("retrieving auth keys (%q): %+v", id, err)
-	}
+	// 	return fmt.Errorf("retrieving auth keys (%q): %+v", id, err)
+	// }
 
-	d.Set("authorization_key_primary", respKey.AuthKey1)
-	d.Set("authorization_key_secondary", respKey.AuthKey2)
+	// d.Set("authorization_key_primary", respKey.AuthKey1)
+	// d.Set("authorization_key_secondary", respKey.AuthKey2)
 
 	return nil
 }
