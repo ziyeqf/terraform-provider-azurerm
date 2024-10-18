@@ -138,10 +138,10 @@ func dataSourceWebPubsubRead(d *pluginsdk.ResourceData, meta interface{}) error 
 		return fmt.Errorf("retrieving %q: %+v", id, err)
 	}
 
-	keys, err := client.ListKeys(ctx, id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %q: %+v", id, err)
-	}
+	// keys, err := client.ListKeys(ctx, id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %q: %+v", id, err)
+	// }
 
 	d.SetId(id.ID())
 
@@ -196,12 +196,12 @@ func dataSourceWebPubsubRead(d *pluginsdk.ResourceData, meta interface{}) error 
 		}
 	}
 
-	if model := keys.Model; model != nil {
-		d.Set("primary_access_key", model.PrimaryKey)
-		d.Set("primary_connection_string", model.PrimaryConnectionString)
-		d.Set("secondary_access_key", model.SecondaryKey)
-		d.Set("secondary_connection_string", model.SecondaryConnectionString)
-	}
+	// if model := keys.Model; model != nil {
+	// 	d.Set("primary_access_key", model.PrimaryKey)
+	// 	d.Set("primary_connection_string", model.PrimaryConnectionString)
+	// 	d.Set("secondary_access_key", model.SecondaryKey)
+	// 	d.Set("secondary_connection_string", model.SecondaryConnectionString)
+	// }
 
 	return nil
 }

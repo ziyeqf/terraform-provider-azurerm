@@ -190,10 +190,10 @@ func resourceArmSignalRServiceRead(d *pluginsdk.ResourceData, meta interface{}) 
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	keys, err := client.ListKeys(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", *id, err)
-	}
+	// keys, err := client.ListKeys(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+	// }
 
 	d.Set("name", id.SignalRName)
 	d.Set("resource_group_name", id.ResourceGroupName)
@@ -309,12 +309,12 @@ func resourceArmSignalRServiceRead(d *pluginsdk.ResourceData, meta interface{}) 
 		}
 	}
 
-	if model := keys.Model; model != nil {
-		d.Set("primary_access_key", model.PrimaryKey)
-		d.Set("primary_connection_string", model.PrimaryConnectionString)
-		d.Set("secondary_access_key", model.SecondaryKey)
-		d.Set("secondary_connection_string", model.SecondaryConnectionString)
-	}
+	// if model := keys.Model; model != nil {
+	// 	d.Set("primary_access_key", model.PrimaryKey)
+	// 	d.Set("primary_connection_string", model.PrimaryConnectionString)
+	// 	d.Set("secondary_access_key", model.SecondaryKey)
+	// 	d.Set("secondary_connection_string", model.SecondaryConnectionString)
+	// }
 
 	return nil
 }
