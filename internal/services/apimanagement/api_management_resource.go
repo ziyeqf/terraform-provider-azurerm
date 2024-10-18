@@ -1243,7 +1243,7 @@ func resourceApiManagementServiceRead(d *pluginsdk.ResourceData, meta interface{
 	signInClient := meta.(*clients.Client).ApiManagement.SignInClient
 	signUpClient := meta.(*clients.Client).ApiManagement.SignUpClient
 	delegationClient := meta.(*clients.Client).ApiManagement.DelegationSettingsClient
-	tenantAccessClient := meta.(*clients.Client).ApiManagement.TenantAccessClient
+	//tenantAccessClient := meta.(*clients.Client).ApiManagement.TenantAccessClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
@@ -1377,23 +1377,23 @@ func resourceApiManagementServiceRead(d *pluginsdk.ResourceData, meta interface{
 				return fmt.Errorf("retrieving Delegation Settings for %s: %+v", *id, err)
 			}
 
-			delegationValidationKeyContract, err := delegationClient.ListSecrets(ctx, delegationSettingServiceId)
-			if err != nil {
-				return fmt.Errorf("retrieving Delegation Validation Key for %s: %+v", *id, err)
-			}
+			// delegationValidationKeyContract, err := delegationClient.ListSecrets(ctx, delegationSettingServiceId)
+			// if err != nil {
+			// 	return fmt.Errorf("retrieving Delegation Validation Key for %s: %+v", *id, err)
+			// }
 
-			if err := d.Set("delegation", flattenApiManagementDelegationSettings(*delegationSettings.Model, *delegationValidationKeyContract.Model)); err != nil {
+			if err := d.Set("delegation", flattenApiManagementDelegationSettings(*delegationSettings.Model)); err != nil {
 				return fmt.Errorf("setting `delegation`: %+v", err)
 			}
 
-			tenantAccessServiceId := tenantaccess.NewAccessID(id.SubscriptionId, id.ResourceGroupName, id.ServiceName, "access")
-			tenantAccessInformationContract, err := tenantAccessClient.ListSecrets(ctx, tenantAccessServiceId)
-			if err != nil {
-				return fmt.Errorf("retrieving tenant access properties for %s: %+v", *id, err)
-			}
-			if err := d.Set("tenant_access", flattenApiManagementTenantAccessSettings(*tenantAccessInformationContract.Model)); err != nil {
-				return fmt.Errorf("setting `tenant_access`: %+v", err)
-			}
+			// tenantAccessServiceId := tenantaccess.NewAccessID(id.SubscriptionId, id.ResourceGroupName, id.ServiceName, "access")
+			// tenantAccessInformationContract, err := tenantAccessClient.ListSecrets(ctx, tenantAccessServiceId)
+			// if err != nil {
+			// 	return fmt.Errorf("retrieving tenant access properties for %s: %+v", *id, err)
+			// }
+			// if err := d.Set("tenant_access", flattenApiManagementTenantAccessSettings(*tenantAccessInformationContract.Model)); err != nil {
+			// 	return fmt.Errorf("setting `tenant_access`: %+v", err)
+			// }
 		} else {
 			d.Set("sign_in", []interface{}{})
 			d.Set("sign_up", []interface{}{})
@@ -2046,7 +2046,7 @@ func expandApiManagementDelegationSettings(input []interface{}) delegationsettin
 	}
 }
 
-func flattenApiManagementDelegationSettings(input delegationsettings.PortalDelegationSettings, keyContract delegationsettings.PortalSettingValidationKeyContract) []interface{} {
+func flattenApiManagementDelegationSettings(input delegationsettings.PortalDelegationSettings) []interface{} {
 	url := ""
 	subscriptionsEnabled := false
 	userRegistrationEnabled := false
@@ -2066,7 +2066,7 @@ func flattenApiManagementDelegationSettings(input delegationsettings.PortalDeleg
 			"url":                       url,
 			"subscriptions_enabled":     subscriptionsEnabled,
 			"user_registration_enabled": userRegistrationEnabled,
-			"validation_key":            pointer.From(keyContract.ValidationKey),
+			"validation_key":            nil,
 		},
 	}
 }

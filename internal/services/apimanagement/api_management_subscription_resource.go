@@ -266,14 +266,14 @@ func resourceApiManagementSubscriptionRead(d *pluginsdk.ResourceData, meta inter
 	}
 
 	// Primary and secondary keys must be got from this additional api
-	keyResp, err := client.ListSecrets(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("listing Subscription %q Primary and Secondary Keys (API Management Service %q / Resource Group %q): %+v", id.SubscriptionId, id.ServiceName, id.ResourceGroupName, err)
-	}
-	if model := keyResp.Model; model != nil {
-		d.Set("primary_key", pointer.From(model.PrimaryKey))
-		d.Set("secondary_key", pointer.From(model.SecondaryKey))
-	}
+	// keyResp, err := client.ListSecrets(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing Subscription %q Primary and Secondary Keys (API Management Service %q / Resource Group %q): %+v", id.SubscriptionId, id.ServiceName, id.ResourceGroupName, err)
+	// }
+	// if model := keyResp.Model; model != nil {
+	// 	d.Set("primary_key", pointer.From(model.PrimaryKey))
+	// 	d.Set("secondary_key", pointer.From(model.SecondaryKey))
+	// }
 
 	return nil
 }

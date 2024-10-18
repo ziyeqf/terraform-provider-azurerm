@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/tags"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/zones"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/apimanagement/2022-08-01/apimanagementservice"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/apimanagement/2022-08-01/tenantaccess"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/azure"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/apimanagement/schemaz"
@@ -233,7 +232,7 @@ func dataSourceApiManagementService() *pluginsdk.Resource {
 
 func dataSourceApiManagementRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	client := meta.(*clients.Client).ApiManagement.ServiceClient
-	tenantAccessClient := meta.(*clients.Client).ApiManagement.TenantAccessClient
+	//tenantAccessClient := meta.(*clients.Client).ApiManagement.TenantAccessClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
@@ -291,15 +290,15 @@ func dataSourceApiManagementRead(d *pluginsdk.ResourceData, meta interface{}) er
 
 		tenantAccess := make([]interface{}, 0)
 		if model.Sku.Name != apimanagementservice.SkuTypeConsumption {
-			tenantAccessServiceId := tenantaccess.NewAccessID(id.SubscriptionId, id.ResourceGroupName, id.ServiceName, "access")
-			tenantAccessInformationContract, err := tenantAccessClient.ListSecrets(ctx, tenantAccessServiceId)
-			if err != nil {
-				if !response.WasForbidden(tenantAccessInformationContract.HttpResponse) {
-					return fmt.Errorf("retrieving tenant access properties for %s: %+v", id, err)
-				}
-			} else {
-				tenantAccess = flattenApiManagementTenantAccessSettings(*tenantAccessInformationContract.Model)
-			}
+			// tenantAccessServiceId := tenantaccess.NewAccessID(id.SubscriptionId, id.ResourceGroupName, id.ServiceName, "access")
+			// tenantAccessInformationContract, err := tenantAccessClient.ListSecrets(ctx, tenantAccessServiceId)
+			// if err != nil {
+			// 	if !response.WasForbidden(tenantAccessInformationContract.HttpResponse) {
+			// 		return fmt.Errorf("retrieving tenant access properties for %s: %+v", id, err)
+			// 	}
+			// } else {
+			// 	tenantAccess = flattenApiManagementTenantAccessSettings(*tenantAccessInformationContract.Model)
+			// }
 		}
 		if err := d.Set("tenant_access", tenantAccess); err != nil {
 			return fmt.Errorf("setting `tenant_access`: %+v", err)
