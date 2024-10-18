@@ -5,7 +5,6 @@ package containers
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -808,11 +807,11 @@ func dataSourceKubernetesClusterRead(d *pluginsdk.ResourceData, meta interface{}
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	userCredentialsResp, err := client.ListClusterUserCredentials(ctx, id, managedclusters.ListClusterUserCredentialsOperationOptions{})
-	// only raise the error if it's not a limited permissions error, since this is the Data Source
-	if err != nil && !response.WasStatusCode(userCredentialsResp.HttpResponse, http.StatusForbidden) {
-		return fmt.Errorf("retrieving User Credentials for %s: %+v", id, err)
-	}
+	// userCredentialsResp, err := client.ListClusterUserCredentials(ctx, id, managedclusters.ListClusterUserCredentialsOperationOptions{})
+	// // only raise the error if it's not a limited permissions error, since this is the Data Source
+	// if err != nil && !response.WasStatusCode(userCredentialsResp.HttpResponse, http.StatusForbidden) {
+	// 	return fmt.Errorf("retrieving User Credentials for %s: %+v", id, err)
+	// }
 
 	d.SetId(id.ID())
 	if model := resp.Model; model != nil {
@@ -944,13 +943,13 @@ func dataSourceKubernetesClusterRead(d *pluginsdk.ResourceData, meta interface{}
 			adminKubeConfig := make([]interface{}, 0)
 			var adminKubeConfigRaw *string
 			if props.AadProfile != nil && (props.DisableLocalAccounts == nil || !*props.DisableLocalAccounts) {
-				adminCredentialsResp, err := client.ListClusterAdminCredentials(ctx, id, managedclusters.ListClusterAdminCredentialsOperationOptions{})
-				// only raise the error if it's not a limited permissions error, since this is the Data Source
-				if err != nil && !response.WasStatusCode(adminCredentialsResp.HttpResponse, http.StatusForbidden) {
-					return fmt.Errorf("retrieving Admin Credentials for %s: %+v", id, err)
-				}
+				// adminCredentialsResp, err := client.ListClusterAdminCredentials(ctx, id, managedclusters.ListClusterAdminCredentialsOperationOptions{})
+				// // only raise the error if it's not a limited permissions error, since this is the Data Source
+				// if err != nil && !response.WasStatusCode(adminCredentialsResp.HttpResponse, http.StatusForbidden) {
+				// 	return fmt.Errorf("retrieving Admin Credentials for %s: %+v", id, err)
+				// }
 
-				adminKubeConfigRaw, adminKubeConfig = flattenKubernetesClusterCredentials(adminCredentialsResp.Model, "clusterAdmin")
+				// adminKubeConfigRaw, adminKubeConfig = flattenKubernetesClusterCredentials(adminCredentialsResp.Model, "clusterAdmin")
 			}
 			d.Set("kube_admin_config_raw", adminKubeConfigRaw)
 			if err := d.Set("kube_admin_config", adminKubeConfig); err != nil {
@@ -967,11 +966,11 @@ func dataSourceKubernetesClusterRead(d *pluginsdk.ResourceData, meta interface{}
 			return fmt.Errorf("setting `identity`: %+v", err)
 		}
 
-		kubeConfigRaw, kubeConfig := flattenKubernetesClusterCredentials(userCredentialsResp.Model, "clusterUser")
-		d.Set("kube_config_raw", kubeConfigRaw)
-		if err := d.Set("kube_config", kubeConfig); err != nil {
-			return fmt.Errorf("setting `kube_config`: %+v", err)
-		}
+		// kubeConfigRaw, kubeConfig := flattenKubernetesClusterCredentials(userCredentialsResp.Model, "clusterUser")
+		// d.Set("kube_config_raw", kubeConfigRaw)
+		// if err := d.Set("kube_config", kubeConfig); err != nil {
+		// 	return fmt.Errorf("setting `kube_config`: %+v", err)
+		// }
 
 		d.Set("tags", tags.Flatten(model.Tags))
 	}

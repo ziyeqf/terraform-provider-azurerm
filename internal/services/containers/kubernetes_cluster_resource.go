@@ -2859,13 +2859,13 @@ func resourceKubernetesClusterRead(d *pluginsdk.ResourceData, meta interface{}) 
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	credentials, err := client.ListClusterUserCredentials(ctx, *id, managedclusters.ListClusterUserCredentialsOperationOptions{})
-	if err != nil {
-		return fmt.Errorf("retrieving User Credentials for %s: %+v", id, err)
-	}
-	if credentials.Model == nil {
-		return fmt.Errorf("retrieving User Credentials for %s: payload is empty", id)
-	}
+	// credentials, err := client.ListClusterUserCredentials(ctx, *id, managedclusters.ListClusterUserCredentialsOperationOptions{})
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving User Credentials for %s: %+v", id, err)
+	// }
+	// if credentials.Model == nil {
+	// 	return fmt.Errorf("retrieving User Credentials for %s: payload is empty", id)
+	// }
 
 	d.Set("name", id.ManagedClusterName)
 	d.Set("resource_group_name", id.ResourceGroupName)
@@ -3114,11 +3114,11 @@ func resourceKubernetesClusterRead(d *pluginsdk.ResourceData, meta interface{}) 
 			var adminKubeConfigRaw *string
 			adminKubeConfig := make([]interface{}, 0)
 			if props.AadProfile != nil && (props.DisableLocalAccounts == nil || !*props.DisableLocalAccounts) {
-				adminCredentials, err := client.ListClusterAdminCredentials(ctx, *id, managedclusters.ListClusterAdminCredentialsOperationOptions{})
-				if err != nil {
-					return fmt.Errorf("retrieving Admin Credentials for %s: %+v", id, err)
-				}
-				adminKubeConfigRaw, adminKubeConfig = flattenKubernetesClusterCredentials(adminCredentials.Model, "clusterAdmin")
+				// adminCredentials, err := client.ListClusterAdminCredentials(ctx, *id, managedclusters.ListClusterAdminCredentialsOperationOptions{})
+				// if err != nil {
+				// 	return fmt.Errorf("retrieving Admin Credentials for %s: %+v", id, err)
+				// }
+				// adminKubeConfigRaw, adminKubeConfig = flattenKubernetesClusterCredentials(adminCredentials.Model, "clusterAdmin")
 			}
 
 			d.Set("kube_admin_config_raw", adminKubeConfigRaw)
@@ -3137,11 +3137,11 @@ func resourceKubernetesClusterRead(d *pluginsdk.ResourceData, meta interface{}) 
 			return fmt.Errorf("setting `identity`: %+v", err)
 		}
 
-		kubeConfigRaw, kubeConfig := flattenKubernetesClusterCredentials(credentials.Model, "clusterUser")
-		d.Set("kube_config_raw", kubeConfigRaw)
-		if err := d.Set("kube_config", kubeConfig); err != nil {
-			return fmt.Errorf("setting `kube_config`: %+v", err)
-		}
+		// kubeConfigRaw, kubeConfig := flattenKubernetesClusterCredentials(credentials.Model, "clusterUser")
+		// d.Set("kube_config_raw", kubeConfigRaw)
+		// if err := d.Set("kube_config", kubeConfig); err != nil {
+		// 	return fmt.Errorf("setting `kube_config`: %+v", err)
+		// }
 
 		maintenanceConfigurationsClient := meta.(*clients.Client).Containers.MaintenanceConfigurationsClient
 		maintenanceId := maintenanceconfigurations.NewMaintenanceConfigurationID(id.SubscriptionId, id.ResourceGroupName, id.ManagedClusterName, "default")
