@@ -388,15 +388,15 @@ func resourceBatchAccountRead(d *pluginsdk.ResourceData, meta interface{}) error
 
 			if d.Get("pool_allocation_mode").(string) == string(batchaccount.PoolAllocationModeBatchService) &&
 				isShardKeyAllowed(d.Get("allowed_authentication_modes").(*pluginsdk.Set).List()) {
-				keys, err := client.GetKeys(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("cannot read keys for Batch account %s: %v", *id, err)
-				}
+				// keys, err := client.GetKeys(ctx, *id)
+				// if err != nil {
+				// 	return fmt.Errorf("cannot read keys for Batch account %s: %v", *id, err)
+				// }
 
-				if keysModel := keys.Model; keysModel != nil {
-					d.Set("primary_access_key", keysModel.Primary)
-					d.Set("secondary_access_key", keysModel.Secondary)
-				}
+				// if keysModel := keys.Model; keysModel != nil {
+				// 	d.Set("primary_access_key", keysModel.Primary)
+				// 	d.Set("secondary_access_key", keysModel.Secondary)
+				// }
 			}
 			return tags.FlattenAndSet(d, model.Tags)
 		}

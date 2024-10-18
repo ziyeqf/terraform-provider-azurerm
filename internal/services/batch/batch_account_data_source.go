@@ -129,15 +129,15 @@ func dataSourceBatchAccountRead(d *pluginsdk.ResourceData, meta interface{}) err
 			}
 
 			if poolAllocationMode == string(batchaccount.PoolAllocationModeBatchService) {
-				keys, err := client.GetKeys(ctx, id)
-				if err != nil {
-					return fmt.Errorf("cannot read keys for %s: %v", id, err)
-				}
+				// keys, err := client.GetKeys(ctx, id)
+				// if err != nil {
+				// 	return fmt.Errorf("cannot read keys for %s: %v", id, err)
+				// }
 
-				if keysModel := keys.Model; keysModel != nil {
-					d.Set("primary_access_key", keysModel.Primary)
-					d.Set("secondary_access_key", keysModel.Secondary)
-				}
+				// if keysModel := keys.Model; keysModel != nil {
+				// 	d.Set("primary_access_key", keysModel.Primary)
+				// 	d.Set("secondary_access_key", keysModel.Secondary)
+				// }
 
 				// set empty keyvault reference which is not needed in Batch Service allocation mode.
 				d.Set("key_vault_reference", []interface{}{})
