@@ -118,9 +118,9 @@ func resourceVirtualDesktopHostPoolRegistrationInfoCreateUpdate(d *pluginsdk.Res
 }
 
 func resourceVirtualDesktopHostPoolRegistrationInfoRead(d *pluginsdk.ResourceData, meta interface{}) error {
-	client := meta.(*clients.Client).DesktopVirtualization.HostPoolsClient
-	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
-	defer cancel()
+	// client := meta.(*clients.Client).DesktopVirtualization.HostPoolsClient
+	// ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
+	// defer cancel()
 
 	id, err := parse.HostPoolRegistrationInfoID(d.Id())
 	if err != nil {
@@ -128,26 +128,26 @@ func resourceVirtualDesktopHostPoolRegistrationInfoRead(d *pluginsdk.ResourceDat
 	}
 
 	hostPoolId := hostpool.NewHostPoolID(id.SubscriptionId, id.ResourceGroup, id.HostPoolName)
-	resp, err := client.RetrieveRegistrationToken(ctx, hostPoolId)
-	if err != nil {
-		if response.WasNotFound(resp.HttpResponse) {
-			log.Printf("[DEBUG] Registration Token was not found for %s - removing from state!", hostPoolId)
-			d.SetId("")
-			return nil
-		}
+	// resp, err := client.RetrieveRegistrationToken(ctx, hostPoolId)
+	// if err != nil {
+	// 	if response.WasNotFound(resp.HttpResponse) {
+	// 		log.Printf("[DEBUG] Registration Token was not found for %s - removing from state!", hostPoolId)
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("retrieving Registration Token for %s: %+v", hostPoolId, err)
-	}
+	// 	return fmt.Errorf("retrieving Registration Token for %s: %+v", hostPoolId, err)
+	// }
 
-	if resp.Model == nil || resp.Model.ExpirationTime == nil || resp.Model.Token == nil {
-		log.Printf("HostPool is missing registration info - marking as gone")
-		d.SetId("")
-		return nil
-	}
+	// if resp.Model == nil || resp.Model.ExpirationTime == nil || resp.Model.Token == nil {
+	// 	log.Printf("HostPool is missing registration info - marking as gone")
+	// 	d.SetId("")
+	// 	return nil
+	// }
 
 	d.Set("hostpool_id", hostPoolId.ID())
-	d.Set("expiration_date", resp.Model.ExpirationTime)
-	d.Set("token", resp.Model.Token)
+	// d.Set("expiration_date", resp.Model.ExpirationTime)
+	// d.Set("token", resp.Model.Token)
 
 	return nil
 }
@@ -178,20 +178,20 @@ func resourceVirtualDesktopHostPoolRegistrationInfoDelete(d *pluginsdk.ResourceD
 		return fmt.Errorf("retrieving %s: %+v", hostPoolId, err)
 	}
 
-	regInfo, err := client.RetrieveRegistrationToken(ctx, hostPoolId)
-	if err != nil {
-		if response.WasNotFound(resp.HttpResponse) {
-			log.Printf("[DEBUG] Virtual Desktop Host Pool %q Registration Info was not found in Resource Group %q - removing from state!", id.HostPoolName, id.ResourceGroup)
-			d.SetId("")
-			return nil
-		}
+	// regInfo, err := client.RetrieveRegistrationToken(ctx, hostPoolId)
+	// if err != nil {
+	// 	if response.WasNotFound(resp.HttpResponse) {
+	// 		log.Printf("[DEBUG] Virtual Desktop Host Pool %q Registration Info was not found in Resource Group %q - removing from state!", id.HostPoolName, id.ResourceGroup)
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("retrieving Registration Token for %s: %+v", hostPoolId, err)
-	}
-	if regInfo.Model == nil || regInfo.Model.ExpirationTime == nil {
-		log.Printf("[INFO] RegistrationInfo for %s was nil, registrationInfo already deleted - removing from state", hostPoolId)
-		return nil
-	}
+	// 	return fmt.Errorf("retrieving Registration Token for %s: %+v", hostPoolId, err)
+	// }
+	// if regInfo.Model == nil || regInfo.Model.ExpirationTime == nil {
+	// 	log.Printf("[INFO] RegistrationInfo for %s was nil, registrationInfo already deleted - removing from state", hostPoolId)
+	// 	return nil
+	// }
 
 	tokenOperation := hostpool.RegistrationTokenOperationDelete
 	payload := hostpool.HostPoolPatch{
