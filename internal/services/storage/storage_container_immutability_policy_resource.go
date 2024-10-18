@@ -159,7 +159,7 @@ func (r StorageContainerImmutabilityPolicyResource) Create() sdk.ResourceFunc {
 				},
 			}
 
-			resp, err := client.CreateOrUpdateImmutabilityPolicy(ctx, *containerId, input, blobcontainers.DefaultCreateOrUpdateImmutabilityPolicyOperationOptions())
+			_, err = client.CreateOrUpdateImmutabilityPolicy(ctx, *containerId, input, blobcontainers.DefaultCreateOrUpdateImmutabilityPolicyOperationOptions())
 			if err != nil {
 				return fmt.Errorf("creating %s: %+v", id, err)
 			}
@@ -168,19 +168,19 @@ func (r StorageContainerImmutabilityPolicyResource) Create() sdk.ResourceFunc {
 
 			// Lock the policy if requested - note that this is a one-way operation that prevents subsequent changes or
 			// deletion to the policy, the container it applies to, and the storage account where it resides.
-			if model.Locked {
-				if resp.Model == nil {
-					return fmt.Errorf("preparing to lock %s: model was nil", id)
-				}
+			// if model.Locked {
+			// 	if resp.Model == nil {
+			// 		return fmt.Errorf("preparing to lock %s: model was nil", id)
+			// 	}
 
-				options := blobcontainers.LockImmutabilityPolicyOperationOptions{
-					IfMatch: resp.Model.Etag,
-				}
+			// 	options := blobcontainers.LockImmutabilityPolicyOperationOptions{
+			// 		IfMatch: resp.Model.Etag,
+			// 	}
 
-				if _, err = client.LockImmutabilityPolicy(ctx, *containerId, options); err != nil {
-					return fmt.Errorf("locking %s: %+v", id, err)
-				}
-			}
+			// 	if _, err = client.LockImmutabilityPolicy(ctx, *containerId, options); err != nil {
+			// 		return fmt.Errorf("locking %s: %+v", id, err)
+			// 	}
+			// }
 
 			return nil
 		},
@@ -232,26 +232,26 @@ func (r StorageContainerImmutabilityPolicyResource) Update() sdk.ResourceFunc {
 				IfMatch: resp.Model.Etag,
 			}
 
-			updateResp, err := client.CreateOrUpdateImmutabilityPolicy(ctx, *containerId, input, options)
+			_, err = client.CreateOrUpdateImmutabilityPolicy(ctx, *containerId, input, options)
 			if err != nil {
 				return fmt.Errorf("updating %s: %+v", id, err)
 			}
 
 			// Lock the policy if requested - note that this is a one-way operation that prevents subsequent changes or
 			// deletion to the policy, the container it applies to, and the storage account where it resides.
-			if model.Locked {
-				if updateResp.Model == nil {
-					return fmt.Errorf("preparing to lock %s: model was nil", id)
-				}
+			// if model.Locked {
+			// 	if updateResp.Model == nil {
+			// 		return fmt.Errorf("preparing to lock %s: model was nil", id)
+			// 	}
 
-				lockOptions := blobcontainers.LockImmutabilityPolicyOperationOptions{
-					IfMatch: updateResp.Model.Etag,
-				}
+			// 	lockOptions := blobcontainers.LockImmutabilityPolicyOperationOptions{
+			// 		IfMatch: updateResp.Model.Etag,
+			// 	}
 
-				if _, err = client.LockImmutabilityPolicy(ctx, *containerId, lockOptions); err != nil {
-					return fmt.Errorf("locking %s: %+v", id, err)
-				}
-			}
+			// 	if _, err = client.LockImmutabilityPolicy(ctx, *containerId, lockOptions); err != nil {
+			// 		return fmt.Errorf("locking %s: %+v", id, err)
+			// 	}
+			// }
 
 			return nil
 		},
