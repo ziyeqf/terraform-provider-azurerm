@@ -328,10 +328,10 @@ func resourceEventGridTopicRead(d *pluginsdk.ResourceData, meta interface{}) err
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	keysResp, err := client.ListSharedAccessKeys(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("retrieving Shared Access Keys for %s: %+v", *id, err)
-	}
+	// keysResp, err := client.ListSharedAccessKeys(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Shared Access Keys for %s: %+v", *id, err)
+	// }
 
 	d.Set("name", id.TopicName)
 	d.Set("resource_group_name", id.ResourceGroupName)
@@ -385,10 +385,10 @@ func resourceEventGridTopicRead(d *pluginsdk.ResourceData, meta interface{}) err
 		}
 	}
 
-	if model := keysResp.Model; model != nil {
-		d.Set("primary_access_key", model.Key1)
-		d.Set("secondary_access_key", model.Key2)
-	}
+	// if model := keysResp.Model; model != nil {
+	// 	d.Set("primary_access_key", model.Key1)
+	// 	d.Set("secondary_access_key", model.Key2)
+	// }
 
 	return nil
 }

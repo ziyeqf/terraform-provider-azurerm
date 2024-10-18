@@ -161,12 +161,12 @@ func dataSourceEventGridDomainRead(d *pluginsdk.ResourceData, meta interface{}) 
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	keys, err := client.ListSharedAccessKeys(ctx, id)
-	if err != nil {
-		if !response.WasForbidden(resp.HttpResponse) {
-			return fmt.Errorf("retrieving Shared Access Keys for %s: %+v", id, err)
-		}
-	}
+	// keys, err := client.ListSharedAccessKeys(ctx, id)
+	// if err != nil {
+	// 	if !response.WasForbidden(resp.HttpResponse) {
+	// 		return fmt.Errorf("retrieving Shared Access Keys for %s: %+v", id, err)
+	// 	}
+	// }
 
 	d.SetId(id.ID())
 
@@ -220,10 +220,10 @@ func dataSourceEventGridDomainRead(d *pluginsdk.ResourceData, meta interface{}) 
 		}
 	}
 
-	if model := keys.Model; model != nil {
-		d.Set("primary_access_key", model.Key1)
-		d.Set("secondary_access_key", model.Key2)
-	}
+	// if model := keys.Model; model != nil {
+	// 	d.Set("primary_access_key", model.Key1)
+	// 	d.Set("secondary_access_key", model.Key2)
+	// }
 
 	return nil
 }
