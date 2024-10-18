@@ -6,7 +6,6 @@ package communication
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/hashicorp/go-azure-helpers/lang/pointer"
@@ -119,15 +118,15 @@ func (CommunicationServiceDataSource) Read() sdk.ResourceFunc {
 				state.Tags = pointer.From(model.Tags)
 			}
 
-			keysResp, err := client.ListKeys(ctx, id)
-			if err != nil {
-				log.Printf("[WARN] listing keys for %s: %+v", id, err)
-			} else if model := keysResp.Model; model != nil {
-				state.PrimaryConnectionString = pointer.From(model.PrimaryConnectionString)
-				state.PrimaryKey = pointer.From(model.PrimaryKey)
-				state.SecondaryConnectionString = pointer.From(model.SecondaryConnectionString)
-				state.SecondaryKey = pointer.From(model.SecondaryKey)
-			}
+			// keysResp, err := client.ListKeys(ctx, id)
+			// if err != nil {
+			// 	log.Printf("[WARN] listing keys for %s: %+v", id, err)
+			// } else if model := keysResp.Model; model != nil {
+			// 	state.PrimaryConnectionString = pointer.From(model.PrimaryConnectionString)
+			// 	state.PrimaryKey = pointer.From(model.PrimaryKey)
+			// 	state.SecondaryConnectionString = pointer.From(model.SecondaryConnectionString)
+			// 	state.SecondaryKey = pointer.From(model.SecondaryKey)
+			// }
 
 			metadata.SetID(id)
 

@@ -235,10 +235,10 @@ func (CommunicationServiceResource) Read() sdk.ResourceFunc {
 			state.Name = id.CommunicationServiceName
 			state.ResourceGroupName = id.ResourceGroupName
 
-			keysResp, err := client.ListKeys(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("listing keys for %s: %+v", *id, err)
-			}
+			// keysResp, err := client.ListKeys(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+			// }
 
 			if model := resp.Model; model != nil {
 				if props := model.Properties; props != nil {
@@ -248,12 +248,12 @@ func (CommunicationServiceResource) Read() sdk.ResourceFunc {
 				state.Tags = pointer.From(model.Tags)
 			}
 
-			if model := keysResp.Model; model != nil {
-				state.PrimaryConnectionString = pointer.From(model.PrimaryConnectionString)
-				state.SecondaryConnectionString = pointer.From(model.SecondaryConnectionString)
-				state.PrimaryKey = pointer.From(model.PrimaryKey)
-				state.SecondaryKey = pointer.From(model.SecondaryKey)
-			}
+			// if model := keysResp.Model; model != nil {
+			// 	state.PrimaryConnectionString = pointer.From(model.PrimaryConnectionString)
+			// 	state.SecondaryConnectionString = pointer.From(model.SecondaryConnectionString)
+			// 	state.PrimaryKey = pointer.From(model.PrimaryKey)
+			// 	state.SecondaryKey = pointer.From(model.SecondaryKey)
+			// }
 
 			return metadata.Encode(&state)
 		},
