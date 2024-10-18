@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/fluidrelay/validate"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/validation"
-	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
 
 type ServerModel struct {
@@ -239,10 +238,10 @@ func (s Server) Read() sdk.ResourceFunc {
 				return fmt.Errorf("retrieving %s: %v", id, err)
 			}
 
-			keys, err := client.ListKeys(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("retrieving keys for %s: %+v", *id, err)
-			}
+			// keys, err := client.ListKeys(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("retrieving keys for %s: %+v", *id, err)
+			// }
 
 			output := &ServerModel{
 				Name:          id.FluidRelayServerName,
@@ -279,10 +278,10 @@ func (s Server) Read() sdk.ResourceFunc {
 				}
 			}
 
-			if model := keys.Model; model != nil {
-				output.PrimaryKey = utils.NormalizeNilableString(model.Key1)
-				output.SecondaryKey = utils.NormalizeNilableString(model.Key2)
-			}
+			// if model := keys.Model; model != nil {
+			// 	output.PrimaryKey = utils.NormalizeNilableString(model.Key1)
+			// 	output.SecondaryKey = utils.NormalizeNilableString(model.Key2)
+			// }
 
 			return meta.Encode(output)
 		},
