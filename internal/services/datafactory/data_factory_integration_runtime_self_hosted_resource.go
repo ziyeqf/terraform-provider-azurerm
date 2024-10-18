@@ -204,18 +204,18 @@ func resourceDataFactoryIntegrationRuntimeSelfHostedRead(d *pluginsdk.ResourceDa
 		}
 	}
 
-	respKey, errKey := client.ListAuthKeys(ctx, id.ResourceGroup, id.FactoryName, id.Name)
-	if errKey != nil {
-		if utils.ResponseWasNotFound(respKey.Response) {
-			d.SetId("")
-			return nil
-		}
+	// respKey, errKey := client.ListAuthKeys(ctx, id.ResourceGroup, id.FactoryName, id.Name)
+	// if errKey != nil {
+	// 	if utils.ResponseWasNotFound(respKey.Response) {
+	// 		d.SetId("")
+	// 		return nil
+	// 	}
 
-		return fmt.Errorf("retrieving Auth Keys for Data Factory Self-Hosted %s: %+v", *id, errKey)
-	}
+	// 	return fmt.Errorf("retrieving Auth Keys for Data Factory Self-Hosted %s: %+v", *id, errKey)
+	// }
 
-	d.Set("primary_authorization_key", respKey.AuthKey1)
-	d.Set("secondary_authorization_key", respKey.AuthKey2)
+	// d.Set("primary_authorization_key", respKey.AuthKey1)
+	// d.Set("secondary_authorization_key", respKey.AuthKey2)
 
 	return nil
 }
