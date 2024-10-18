@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/lang/response"
 	apikeys "github.com/hashicorp/go-azure-sdk/resource-manager/applicationinsights/2015-05-01/componentapikeysapis"
 	components "github.com/hashicorp/go-azure-sdk/resource-manager/applicationinsights/2020-02-02/componentsapis"
-	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/applicationinsights/migration"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
@@ -100,27 +99,27 @@ func resourceApplicationInsightsAPIKeyCreate(d *pluginsdk.ResourceData, meta int
 
 	name := d.Get("name").(string)
 
-	var existingAPIKeyList apikeys.APIKeysListOperationResponse
-	var existingAPIKeyId *apikeys.ApiKeyId
-	existingAPIKeyList, err = client.APIKeysList(ctx, *appInsightsId)
-	if err != nil {
-		if !response.WasNotFound(existingAPIKeyList.HttpResponse) {
-			return fmt.Errorf("checking for presence of existing Application Insights API key list for %s: %+v", appInsightsId, err)
-		}
-	}
+	// var existingAPIKeyList apikeys.APIKeysListOperationResponse
+	// var existingAPIKeyId *apikeys.ApiKeyId
+	// existingAPIKeyList, err = client.APIKeysList(ctx, *appInsightsId)
+	// if err != nil {
+	// 	if !response.WasNotFound(existingAPIKeyList.HttpResponse) {
+	// 		return fmt.Errorf("checking for presence of existing Application Insights API key list for %s: %+v", appInsightsId, err)
+	// 	}
+	// }
 
-	for existingAPIKeyList.Model != nil && len(existingAPIKeyList.Model.Value) > 0 {
-		for _, existingAPIKey := range existingAPIKeyList.Model.Value {
-			existingAPIKeyId, err = apikeys.ParseApiKeyIDInsensitively(*existingAPIKey.Id)
-			if err != nil {
-				return err
-			}
+	// for existingAPIKeyList.Model != nil && len(existingAPIKeyList.Model.Value) > 0 {
+	// 	for _, existingAPIKey := range existingAPIKeyList.Model.Value {
+	// 		existingAPIKeyId, err = apikeys.ParseApiKeyIDInsensitively(*existingAPIKey.Id)
+	// 		if err != nil {
+	// 			return err
+	// 		}
 
-			if name == *existingAPIKey.Name {
-				return tf.ImportAsExistsError("azurerm_application_insights_api_key", existingAPIKeyId.ID())
-			}
-		}
-	}
+	// 		if name == *existingAPIKey.Name {
+	// 			return tf.ImportAsExistsError("azurerm_application_insights_api_key", existingAPIKeyId.ID())
+	// 		}
+	// 	}
+	// }
 
 	linkedReadProperties := expandApplicationInsightsAPIKeyLinkedProperties(d.Get("read_permissions").(*pluginsdk.Set), appInsightsId.ID())
 	linkedWriteProperties := expandApplicationInsightsAPIKeyLinkedProperties(d.Get("write_permissions").(*pluginsdk.Set), appInsightsId.ID())
