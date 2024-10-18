@@ -52,14 +52,14 @@ func hdinsightClusterUpdate(clusterKind string, readFunc pluginsdk.ReadFunc) plu
 			workerNodes := roles["worker_node"].([]interface{})
 			workerNode := workerNodes[0].(map[string]interface{})
 			if d.HasChange("roles.0.worker_node.0.target_instance_count") {
-				targetInstanceCount := workerNode["target_instance_count"].(int)
-				payload := clusters.ClusterResizeParameters{
-					TargetInstanceCount: pointer.To(int64(targetInstanceCount)),
-				}
+				//targetInstanceCount := workerNode["target_instance_count"].(int)
+				// payload := clusters.ClusterResizeParameters{
+				// 	TargetInstanceCount: pointer.To(int64(targetInstanceCount)),
+				// }
 
-				if err := client.ResizeThenPoll(ctx, *id, payload); err != nil {
-					return fmt.Errorf("resizing %s %s: %+v", clusterKind, id, err)
-				}
+				// if err := client.ResizeThenPoll(ctx, *id, payload); err != nil {
+				// 	return fmt.Errorf("resizing %s %s: %+v", clusterKind, id, err)
+				// }
 			}
 
 			if d.HasChange("roles.0.worker_node.0.autoscale") {
