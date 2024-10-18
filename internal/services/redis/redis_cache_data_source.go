@@ -290,10 +290,10 @@ func dataSourceRedisCacheRead(d *pluginsdk.ResourceData, meta interface{}) error
 		patchSchedule = flattenRedisPatchSchedules(*schedule.Model)
 	}
 
-	keys, err := client.ListKeys(ctx, id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", id, err)
-	}
+	// keys, err := client.ListKeys(ctx, id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", id, err)
+	// }
 
 	d.SetId(id.ID())
 
@@ -346,9 +346,9 @@ func dataSourceRedisCacheRead(d *pluginsdk.ResourceData, meta interface{}) error
 			return fmt.Errorf("setting `redis_configuration`: %+v", err)
 		}
 
-		enableSslPort := !*props.EnableNonSslPort
-		d.Set("primary_connection_string", getRedisConnectionString(*props.HostName, *props.SslPort, *keys.Model.PrimaryKey, enableSslPort))
-		d.Set("secondary_connection_string", getRedisConnectionString(*props.HostName, *props.SslPort, *keys.Model.SecondaryKey, enableSslPort))
+		// enableSslPort := !*props.EnableNonSslPort
+		// d.Set("primary_connection_string", getRedisConnectionString(*props.HostName, *props.SslPort, *keys.Model.PrimaryKey, enableSslPort))
+		// d.Set("secondary_connection_string", getRedisConnectionString(*props.HostName, *props.SslPort, *keys.Model.SecondaryKey, enableSslPort))
 		d.Set("access_keys_authentication_enabled", !pointer.From(props.DisableAccessKeyAuthentication))
 
 		if err := tags.FlattenAndSet(d, model.Tags); err != nil {
@@ -360,10 +360,10 @@ func dataSourceRedisCacheRead(d *pluginsdk.ResourceData, meta interface{}) error
 		return fmt.Errorf("setting `patch_schedule`: %+v", err)
 	}
 
-	if model := keys.Model; model != nil {
-		d.Set("primary_access_key", model.PrimaryKey)
-		d.Set("secondary_access_key", model.SecondaryKey)
-	}
+	// if model := keys.Model; model != nil {
+	// 	d.Set("primary_access_key", model.PrimaryKey)
+	// 	d.Set("secondary_access_key", model.SecondaryKey)
+	// }
 
 	return nil
 }

@@ -85,10 +85,10 @@ func dataSourceRedisEnterpriseDatabaseRead(d *pluginsdk.ResourceData, meta inter
 
 	id := databases.NewDatabaseID(subscriptionId, clusterId.ResourceGroupName, clusterId.RedisEnterpriseName, d.Get("name").(string))
 
-	keysResp, err := client.ListKeys(ctx, id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", id, err)
-	}
+	// keysResp, err := client.ListKeys(ctx, id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", id, err)
+	// }
 
 	resp, err := client.Get(ctx, id)
 	if err != nil {
@@ -114,10 +114,10 @@ func dataSourceRedisEnterpriseDatabaseRead(d *pluginsdk.ResourceData, meta inter
 		}
 	}
 
-	if model := keysResp.Model; model != nil {
-		d.Set("primary_access_key", model.PrimaryKey)
-		d.Set("secondary_access_key", model.SecondaryKey)
-	}
+	// if model := keysResp.Model; model != nil {
+	// 	d.Set("primary_access_key", model.PrimaryKey)
+	// 	d.Set("secondary_access_key", model.SecondaryKey)
+	// }
 
 	if !features.FourPointOhBeta() {
 		d.Set("resource_group_name", id.ResourceGroupName)

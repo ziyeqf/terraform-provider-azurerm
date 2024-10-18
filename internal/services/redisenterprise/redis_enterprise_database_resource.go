@@ -335,10 +335,10 @@ func resourceRedisEnterpriseDatabaseRead(d *pluginsdk.ResourceData, meta interfa
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	keysResp, err := client.ListKeys(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", *id, err)
-	}
+	// keysResp, err := client.ListKeys(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+	// }
 
 	d.Set("name", id.DatabaseName)
 	clusterId := redisenterprise.NewRedisEnterpriseID(id.SubscriptionId, id.ResourceGroupName, id.RedisEnterpriseName)
@@ -385,10 +385,10 @@ func resourceRedisEnterpriseDatabaseRead(d *pluginsdk.ResourceData, meta interfa
 		}
 	}
 
-	if model := keysResp.Model; model != nil {
-		d.Set("primary_access_key", model.PrimaryKey)
-		d.Set("secondary_access_key", model.SecondaryKey)
-	}
+	// if model := keysResp.Model; model != nil {
+	// 	d.Set("primary_access_key", model.PrimaryKey)
+	// 	d.Set("secondary_access_key", model.SecondaryKey)
+	// }
 
 	return nil
 }

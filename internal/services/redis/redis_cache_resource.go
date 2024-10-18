@@ -770,10 +770,10 @@ func resourceRedisCacheRead(d *pluginsdk.ResourceData, meta interface{}) error {
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	keysResp, err := client.ListKeys(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", *id, err)
-	}
+	// keysResp, err := client.ListKeys(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+	// }
 
 	patchSchedulesRedisId := patchschedules.NewRediID(id.SubscriptionId, id.ResourceGroupName, id.RedisName)
 	schedule, err := patchSchedulesClient.Get(ctx, patchSchedulesRedisId)
@@ -854,10 +854,10 @@ func resourceRedisCacheRead(d *pluginsdk.ResourceData, meta interface{}) error {
 			return fmt.Errorf("setting `redis_configuration`: %+v", err)
 		}
 
-		d.Set("primary_connection_string", getRedisConnectionString(*props.HostName, *props.SslPort, *keysResp.Model.PrimaryKey, true))
-		d.Set("secondary_connection_string", getRedisConnectionString(*props.HostName, *props.SslPort, *keysResp.Model.SecondaryKey, true))
-		d.Set("primary_access_key", keysResp.Model.PrimaryKey)
-		d.Set("secondary_access_key", keysResp.Model.SecondaryKey)
+		// d.Set("primary_connection_string", getRedisConnectionString(*props.HostName, *props.SslPort, *keysResp.Model.PrimaryKey, true))
+		// d.Set("secondary_connection_string", getRedisConnectionString(*props.HostName, *props.SslPort, *keysResp.Model.SecondaryKey, true))
+		// d.Set("primary_access_key", keysResp.Model.PrimaryKey)
+		// d.Set("secondary_access_key", keysResp.Model.SecondaryKey)
 		d.Set("access_keys_authentication_enabled", !pointer.From(props.DisableAccessKeyAuthentication))
 
 		if err := tags.FlattenAndSet(d, model.Tags); err != nil {
