@@ -722,23 +722,23 @@ func resourceContainerRegistryRead(d *pluginsdk.ResourceData, meta interface{}) 
 				}
 			}
 
-			if *props.AdminUserEnabled {
-				credsResp, errList := client.ListCredentials(ctx, *id)
-				if errList != nil {
-					return fmt.Errorf("retrieving credentials for %s: %s", *id, errList)
-				}
+			// if *props.AdminUserEnabled {
+			// 	credsResp, errList := client.ListCredentials(ctx, *id)
+			// 	if errList != nil {
+			// 		return fmt.Errorf("retrieving credentials for %s: %s", *id, errList)
+			// 	}
 
-				if credsModel := credsResp.Model; credsModel != nil {
-					d.Set("admin_username", credsModel.Username)
-					for _, v := range *credsModel.Passwords {
-						d.Set("admin_password", v.Value)
-						break
-					}
-				}
-			} else {
-				d.Set("admin_username", "")
-				d.Set("admin_password", "")
-			}
+			// 	if credsModel := credsResp.Model; credsModel != nil {
+			// 		d.Set("admin_username", credsModel.Username)
+			// 		for _, v := range *credsModel.Passwords {
+			// 			d.Set("admin_password", v.Value)
+			// 			break
+			// 		}
+			// 	}
+			// } else {
+			// 	d.Set("admin_username", "")
+			// 	d.Set("admin_password", "")
+			// }
 		}
 
 		if err := tags.FlattenAndSet(d, model.Tags); err != nil {

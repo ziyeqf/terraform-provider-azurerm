@@ -62,23 +62,23 @@ func dataSourceContainerRegistryRead(d *pluginsdk.ResourceData, meta interface{}
 			d.Set("login_server", props.LoginServer)
 			d.Set("data_endpoint_enabled", props.DataEndpointEnabled)
 
-			if *props.AdminUserEnabled {
-				credsResp, err := client.ListCredentials(ctx, id)
-				if err != nil {
-					return fmt.Errorf("retrieving credentials for %s: %s", id, err)
-				}
+			// if *props.AdminUserEnabled {
+			// 	credsResp, err := client.ListCredentials(ctx, id)
+			// 	if err != nil {
+			// 		return fmt.Errorf("retrieving credentials for %s: %s", id, err)
+			// 	}
 
-				if credsModel := credsResp.Model; credsModel != nil {
-					d.Set("admin_username", credsModel.Username)
-					for _, v := range *credsModel.Passwords {
-						d.Set("admin_password", v.Value)
-						break
-					}
-				} else {
-					d.Set("admin_username", "")
-					d.Set("admin_password", "")
-				}
-			}
+			// 	if credsModel := credsResp.Model; credsModel != nil {
+			// 		d.Set("admin_username", credsModel.Username)
+			// 		for _, v := range *credsModel.Passwords {
+			// 			d.Set("admin_password", v.Value)
+			// 			break
+			// 		}
+			// 	} else {
+			// 		d.Set("admin_username", "")
+			// 		d.Set("admin_password", "")
+			// 	}
+			// }
 		}
 		return tags.FlattenAndSet(d, model.Tags)
 	}
