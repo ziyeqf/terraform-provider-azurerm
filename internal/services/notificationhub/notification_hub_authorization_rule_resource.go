@@ -174,10 +174,10 @@ func resourceNotificationHubAuthorizationRuleRead(d *pluginsdk.ResourceData, met
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	keysResp, err := client.NotificationHubsListKeys(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("listing access keys for %s: %+v", *id, err)
-	}
+	// keysResp, err := client.NotificationHubsListKeys(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing access keys for %s: %+v", *id, err)
+	// }
 
 	d.Set("name", id.AuthorizationRuleName)
 	d.Set("notification_hub_name", id.NotificationHubName)
@@ -193,12 +193,12 @@ func resourceNotificationHubAuthorizationRuleRead(d *pluginsdk.ResourceData, met
 		}
 	}
 
-	if keysModel := keysResp.Model; keysModel != nil {
-		d.Set("primary_access_key", keysModel.PrimaryKey)
-		d.Set("secondary_access_key", keysModel.SecondaryKey)
-		d.Set("primary_connection_string", keysModel.PrimaryConnectionString)
-		d.Set("secondary_connection_string", keysModel.SecondaryConnectionString)
-	}
+	// if keysModel := keysResp.Model; keysModel != nil {
+	// 	d.Set("primary_access_key", keysModel.PrimaryKey)
+	// 	d.Set("secondary_access_key", keysModel.SecondaryKey)
+	// 	d.Set("primary_connection_string", keysModel.PrimaryConnectionString)
+	// 	d.Set("secondary_connection_string", keysModel.SecondaryConnectionString)
+	// }
 
 	return nil
 }
