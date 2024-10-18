@@ -86,7 +86,7 @@ func resourceBackupProtectedFileShare() *pluginsdk.Resource {
 func resourceBackupProtectedFileShareCreateUpdate(d *pluginsdk.ResourceData, meta interface{}) error {
 	protectedClient := meta.(*clients.Client).RecoveryServices.ProtectedItemsGroupClient
 	protectableClient := meta.(*clients.Client).RecoveryServices.ProtectableItemsClient
-	protectionContainerClient := meta.(*clients.Client).RecoveryServices.BackupProtectionContainersClient
+	//protectionContainerClient := meta.(*clients.Client).RecoveryServices.BackupProtectionContainersClient
 	client := meta.(*clients.Client).RecoveryServices.ProtectedItemsClient
 	opClient := meta.(*clients.Client).RecoveryServices.BackupOperationStatusesClient
 	opResultClient := meta.(*clients.Client).RecoveryServices.ProtectionContainerOperationResultsClient
@@ -119,16 +119,17 @@ func resourceBackupProtectedFileShareCreateUpdate(d *pluginsdk.ResourceData, met
 	// this means which means we have to do it client side and loop over backupProtectedItems en backupProtectableItems until share is found
 	filter := "backupManagementType eq 'AzureStorage'"
 
-	protectionContainerId := protectioncontainers.NewProtectionContainerID(subscriptionId, resourceGroup, vaultName, "Azure", containerName)
+	//protectionContainerId := protectioncontainers.NewProtectionContainerID(subscriptionId, resourceGroup, vaultName, "Azure", containerName)
 
 	// There is an issue https://github.com/hashicorp/terraform-provider-azurerm/issues/11184 (When a new file share is added to an existing storage account,
 	// it cannot be listed by Backup Protectable Items - List API after the storage account is registered with a RSV).
 	// After confirming with the service team, whenever new file shares are added, we need to run an 'inquire' API. but inquiry APIs are long running APIs and hence can't be included in GET API's (Backup Protectable Items - List) response.
 	// Therefore, add 'inquire' API to inquire all unprotected files shares under a storage account to fix this usecase.
-	respContainer, err := protectionContainerClient.Inquire(ctx, protectionContainerId, protectioncontainers.InquireOperationOptions{Filter: pointer.To(filter)})
-	if err != nil {
-		return fmt.Errorf("inquire all unprotected files shares for %s: %+v", parsedStorageAccountID, err)
-	}
+	var respContainer protectioncontainers.InquireOperationResponse
+	// respContainer, err := protectionContainerClient.Inquire(ctx, protectionContainerId, protectioncontainers.InquireOperationOptions{Filter: pointer.To(filter)})
+	// if err != nil {
+	// 	return fmt.Errorf("inquire all unprotected files shares for %s: %+v", parsedStorageAccountID, err)
+	// }
 
 	// TODO: @tombuildsstuff: this manual LRO is not needed and should be removed - the existing Azure SDK has logic to handle this as does hashicorp/go-azure-sdk
 	// therefore we should not be invoking the Future by hand, there's already logic to do that for us:
