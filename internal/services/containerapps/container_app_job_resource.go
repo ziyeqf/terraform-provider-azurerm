@@ -6,7 +6,6 @@ package containerapps
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/hashicorp/go-azure-helpers/lang/pointer"
@@ -401,14 +400,14 @@ func (r ContainerAppJobResource) Read() sdk.ResourceFunc {
 				}
 			}
 
-			secretResp, err := client.ListSecrets(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("listing secrets for %s: %+v", *id, err)
-			}
-			state.Secrets = helpers.FlattenContainerAppJobSecrets(secretResp.Model)
-			if !features.FourPointOhBeta() {
-				state.SecretsDeprecated = helpers.FlattenContainerAppJobSecrets(secretResp.Model)
-			}
+			// secretResp, err := client.ListSecrets(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing secrets for %s: %+v", *id, err)
+			// }
+			// state.Secrets = helpers.FlattenContainerAppJobSecrets(secretResp.Model)
+			// if !features.FourPointOhBeta() {
+			// 	state.SecretsDeprecated = helpers.FlattenContainerAppJobSecrets(secretResp.Model)
+			// }
 
 			return metadata.Encode(&state)
 		},
@@ -446,13 +445,13 @@ func (r ContainerAppJobResource) Update() sdk.ResourceFunc {
 				model.Properties.Configuration = &jobs.JobConfiguration{}
 			}
 
-			secretsResp, err := client.ListSecrets(ctx, *id)
-			if err != nil || secretsResp.Model == nil {
-				if !response.WasStatusCode(secretsResp.HttpResponse, http.StatusNoContent) {
-					return fmt.Errorf("retrieving secrets for update for %s: %+v", *id, err)
-				}
-			}
-			model.Properties.Configuration.Secrets = helpers.UnpackContainerJobSecretsCollection(secretsResp.Model)
+			// secretsResp, err := client.ListSecrets(ctx, *id)
+			// if err != nil || secretsResp.Model == nil {
+			// 	if !response.WasStatusCode(secretsResp.HttpResponse, http.StatusNoContent) {
+			// 		return fmt.Errorf("retrieving secrets for update for %s: %+v", *id, err)
+			// 	}
+			// }
+			// model.Properties.Configuration.Secrets = helpers.UnpackContainerJobSecretsCollection(secretsResp.Model)
 
 			d := metadata.ResourceData
 

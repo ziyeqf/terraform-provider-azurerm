@@ -6,7 +6,6 @@ package containerapps
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/hashicorp/go-azure-helpers/lang/pointer"
@@ -288,12 +287,12 @@ func (r ContainerAppResource) Read() sdk.ResourceFunc {
 				}
 			}
 
-			secretsResp, err := client.ListSecrets(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("retrieving secrets for %s: %+v", *id, err)
-			}
+			// secretsResp, err := client.ListSecrets(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("retrieving secrets for %s: %+v", *id, err)
+			// }
 
-			state.Secrets = helpers.FlattenContainerAppSecrets(secretsResp.Model)
+			// state.Secrets = helpers.FlattenContainerAppSecrets(secretsResp.Model)
 
 			return metadata.Encode(&state)
 		},
@@ -351,14 +350,14 @@ func (r ContainerAppResource) Update() sdk.ResourceFunc {
 				model.Properties.Configuration = &containerapps.Configuration{}
 			}
 
-			// Delta-updates need the secrets back from the list API, or we'll end up removing them or erroring out.
-			secretsResp, err := client.ListSecrets(ctx, *id)
-			if err != nil || secretsResp.Model == nil {
-				if !response.WasStatusCode(secretsResp.HttpResponse, http.StatusNoContent) {
-					return fmt.Errorf("retrieving secrets for update for %s: %+v", *id, err)
-				}
-			}
-			model.Properties.Configuration.Secrets = helpers.UnpackContainerSecretsCollection(secretsResp.Model)
+			// // Delta-updates need the secrets back from the list API, or we'll end up removing them or erroring out.
+			// secretsResp, err := client.ListSecrets(ctx, *id)
+			// if err != nil || secretsResp.Model == nil {
+			// 	if !response.WasStatusCode(secretsResp.HttpResponse, http.StatusNoContent) {
+			// 		return fmt.Errorf("retrieving secrets for update for %s: %+v", *id, err)
+			// 	}
+			// }
+			// model.Properties.Configuration.Secrets = helpers.UnpackContainerSecretsCollection(secretsResp.Model)
 
 			if metadata.ResourceData.HasChange("revision_mode") {
 				model.Properties.Configuration.ActiveRevisionsMode = pointer.To(containerapps.ActiveRevisionsMode(state.RevisionMode))

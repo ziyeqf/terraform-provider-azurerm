@@ -182,12 +182,12 @@ func (r ContainerAppDataSource) Read() sdk.ResourceFunc {
 				}
 			}
 
-			secretsResp, err := client.ListSecrets(ctx, id)
-			if err != nil {
-				return fmt.Errorf("listing secrets for %s: %+v", id, err)
-			}
+			// secretsResp, err := client.ListSecrets(ctx, id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing secrets for %s: %+v", id, err)
+			// }
 
-			containerApp.Secrets = helpers.FlattenContainerAppSecrets(secretsResp.Model)
+			// containerApp.Secrets = helpers.FlattenContainerAppSecrets(secretsResp.Model)
 			metadata.SetID(id)
 
 			return metadata.Encode(&containerApp)

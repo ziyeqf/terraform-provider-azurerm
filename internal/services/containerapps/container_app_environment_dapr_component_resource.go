@@ -205,12 +205,12 @@ func (r ContainerAppEnvironmentDaprComponentResource) Read() sdk.ResourceFunc {
 				}
 			}
 
-			secretsResp, err := client.ListSecrets(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("retrieving secrets for %s: %+v", *id, err)
-			}
+			// secretsResp, err := client.ListSecrets(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("retrieving secrets for %s: %+v", *id, err)
+			// }
 
-			state.Secrets = helpers.FlattenContainerAppDaprSecrets(secretsResp.Model)
+			// state.Secrets = helpers.FlattenContainerAppDaprSecrets(secretsResp.Model)
 
 			return metadata.Encode(&state)
 		},
@@ -257,12 +257,12 @@ func (r ContainerAppEnvironmentDaprComponentResource) Update() sdk.ResourceFunc 
 			}
 
 			// Populate the secrets from the List API to prevent accidental removal.
-			secretsResp, err := client.ListSecrets(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("retrieving secrets for %s: %+v", *id, err)
-			}
+			// secretsResp, err := client.ListSecrets(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("retrieving secrets for %s: %+v", *id, err)
+			// }
 
-			existing.Model.Properties.Secrets = helpers.UnpackContainerDaprSecretsCollection(secretsResp.Model)
+			// existing.Model.Properties.Secrets = helpers.UnpackContainerDaprSecretsCollection(secretsResp.Model)
 
 			if metadata.ResourceData.HasChange("version") {
 				existing.Model.Properties.Version = pointer.To(state.Version)
