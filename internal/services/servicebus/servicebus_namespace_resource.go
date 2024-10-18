@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/identity"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/servicebus/2021-06-01-preview/namespacesauthorizationrule"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/servicebus/2022-10-01-preview/namespaces"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/azure"
@@ -403,7 +402,7 @@ func resourceServiceBusNamespaceCreateUpdate(d *pluginsdk.ResourceData, meta int
 
 func resourceServiceBusNamespaceRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	client := meta.(*clients.Client).ServiceBus.NamespacesClient
-	namespaceAuthClient := meta.(*clients.Client).ServiceBus.NamespacesAuthClient
+	//namespaceAuthClient := meta.(*clients.Client).ServiceBus.NamespacesAuthClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
 
@@ -479,19 +478,19 @@ func resourceServiceBusNamespaceRead(d *pluginsdk.ResourceData, meta interface{}
 		}
 	}
 
-	authRuleId := namespacesauthorizationrule.NewAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, serviceBusNamespaceDefaultAuthorizationRule)
+	//authRuleId := namespacesauthorizationrule.NewAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, serviceBusNamespaceDefaultAuthorizationRule)
 
-	keys, err := namespaceAuthClient.NamespacesListKeys(ctx, authRuleId)
-	if err != nil {
-		log.Printf("[WARN] listing default keys for %s: %+v", id, err)
-	} else {
-		if keysModel := keys.Model; keysModel != nil {
-			d.Set("default_primary_connection_string", keysModel.PrimaryConnectionString)
-			d.Set("default_secondary_connection_string", keysModel.SecondaryConnectionString)
-			d.Set("default_primary_key", keysModel.PrimaryKey)
-			d.Set("default_secondary_key", keysModel.SecondaryKey)
-		}
-	}
+	// keys, err := namespaceAuthClient.NamespacesListKeys(ctx, authRuleId)
+	// if err != nil {
+	// 	log.Printf("[WARN] listing default keys for %s: %+v", id, err)
+	// } else {
+	// 	if keysModel := keys.Model; keysModel != nil {
+	// 		d.Set("default_primary_connection_string", keysModel.PrimaryConnectionString)
+	// 		d.Set("default_secondary_connection_string", keysModel.SecondaryConnectionString)
+	// 		d.Set("default_primary_key", keysModel.PrimaryKey)
+	// 		d.Set("default_secondary_key", keysModel.SecondaryKey)
+	// 	}
+	// }
 
 	networkRuleSet, err := client.GetNetworkRuleSet(ctx, *id)
 	if err != nil {

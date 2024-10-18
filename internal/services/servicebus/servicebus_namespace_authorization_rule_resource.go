@@ -145,19 +145,19 @@ func resourceServiceBusNamespaceAuthorizationRuleRead(d *pluginsdk.ResourceData,
 		}
 	}
 
-	keysResp, err := client.NamespacesListKeys(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("listing keys for %s: %+v", id, err)
-	}
+	// keysResp, err := client.NamespacesListKeys(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("listing keys for %s: %+v", id, err)
+	// }
 
-	if keysModel := keysResp.Model; keysModel != nil {
-		d.Set("primary_key", keysModel.PrimaryKey)
-		d.Set("primary_connection_string", keysModel.PrimaryConnectionString)
-		d.Set("secondary_key", keysModel.SecondaryKey)
-		d.Set("secondary_connection_string", keysModel.SecondaryConnectionString)
-		d.Set("primary_connection_string_alias", keysModel.AliasPrimaryConnectionString)
-		d.Set("secondary_connection_string_alias", keysModel.AliasSecondaryConnectionString)
-	}
+	// if keysModel := keysResp.Model; keysModel != nil {
+	// 	d.Set("primary_key", keysModel.PrimaryKey)
+	// 	d.Set("primary_connection_string", keysModel.PrimaryConnectionString)
+	// 	d.Set("secondary_key", keysModel.SecondaryKey)
+	// 	d.Set("secondary_connection_string", keysModel.SecondaryConnectionString)
+	// 	d.Set("primary_connection_string_alias", keysModel.AliasPrimaryConnectionString)
+	// 	d.Set("secondary_connection_string_alias", keysModel.AliasSecondaryConnectionString)
+	// }
 
 	return nil
 }

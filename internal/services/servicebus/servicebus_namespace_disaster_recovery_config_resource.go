@@ -6,7 +6,6 @@ package servicebus
 import (
 	"context"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 
@@ -208,27 +207,27 @@ func resourceServiceBusNamespaceDisasterRecoveryConfigRead(d *pluginsdk.Resource
 	}
 
 	// the auth rule cannot be retrieved by dr config name, the shared access policy should either be specified by user or using the default one which is `RootManageSharedAccessKey`
-	authRuleId := disasterrecoveryconfigs.NewDisasterRecoveryConfigAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, id.DisasterRecoveryConfigName, serviceBusNamespaceDefaultAuthorizationRule)
-	if input := d.Get("alias_authorization_rule_id").(string); input != "" {
-		ruleId, err := disasterrecoveryconfigs.ParseDisasterRecoveryConfigAuthorizationRuleID(input)
-		if err != nil {
-			return fmt.Errorf("parsing primary namespace auth rule id error: %+v", err)
-		}
-		authRuleId = *ruleId
-	}
+	// authRuleId := disasterrecoveryconfigs.NewDisasterRecoveryConfigAuthorizationRuleID(id.SubscriptionId, id.ResourceGroupName, id.NamespaceName, id.DisasterRecoveryConfigName, serviceBusNamespaceDefaultAuthorizationRule)
+	// if input := d.Get("alias_authorization_rule_id").(string); input != "" {
+	// 	ruleId, err := disasterrecoveryconfigs.ParseDisasterRecoveryConfigAuthorizationRuleID(input)
+	// 	if err != nil {
+	// 		return fmt.Errorf("parsing primary namespace auth rule id error: %+v", err)
+	// 	}
+	// 	authRuleId = *ruleId
+	// }
 
-	keys, err := client.ListKeys(ctx, authRuleId)
+	// keys, err := client.ListKeys(ctx, authRuleId)
 
-	if err != nil {
-		log.Printf("[WARN] listing default keys for %s: %+v", id, err)
-	} else {
-		if keysModel := keys.Model; keysModel != nil {
-			d.Set("primary_connection_string_alias", keysModel.AliasPrimaryConnectionString)
-			d.Set("secondary_connection_string_alias", keysModel.AliasSecondaryConnectionString)
-			d.Set("default_primary_key", keysModel.PrimaryKey)
-			d.Set("default_secondary_key", keysModel.SecondaryKey)
-		}
-	}
+	// if err != nil {
+	// 	log.Printf("[WARN] listing default keys for %s: %+v", id, err)
+	// } else {
+	// 	if keysModel := keys.Model; keysModel != nil {
+	// 		d.Set("primary_connection_string_alias", keysModel.AliasPrimaryConnectionString)
+	// 		d.Set("secondary_connection_string_alias", keysModel.AliasSecondaryConnectionString)
+	// 		d.Set("default_primary_key", keysModel.PrimaryKey)
+	// 		d.Set("default_secondary_key", keysModel.SecondaryKey)
+	// 	}
+	// }
 
 	return nil
 }
