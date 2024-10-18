@@ -5,7 +5,6 @@ package search
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -14,13 +13,10 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/identity"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/tags"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/search/2023-11-01/adminkeys"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/search/2023-11-01/querykeys"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/search/2023-11-01/services"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/timeouts"
-	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
 
 func dataSourceSearchService() *pluginsdk.Resource {
@@ -142,36 +138,36 @@ func dataSourceSearchServiceRead(d *pluginsdk.ResourceData, meta interface{}) er
 		}
 	}
 
-	primaryKey := ""
-	secondaryKey := ""
-	adminKeysClient := meta.(*clients.Client).Search.AdminKeysClient
-	adminKeysId, err := adminkeys.ParseSearchServiceID(d.Id())
-	if err != nil {
-		return err
-	}
-	adminKeysResp, err := adminKeysClient.Get(ctx, *adminKeysId, adminkeys.GetOperationOptions{})
-	if err != nil && !response.WasStatusCode(adminKeysResp.HttpResponse, http.StatusForbidden) {
-		return fmt.Errorf("retrieving Admin Keys for %s: %+v", id, err)
-	}
-	if model := adminKeysResp.Model; model != nil {
-		primaryKey = utils.NormalizeNilableString(model.PrimaryKey)
-		secondaryKey = utils.NormalizeNilableString(model.SecondaryKey)
-	}
-	d.Set("primary_key", primaryKey)
-	d.Set("secondary_key", secondaryKey)
+	// primaryKey := ""
+	// secondaryKey := ""
+	//adminKeysClient := meta.(*clients.Client).Search.AdminKeysClient
+	// adminKeysId, err := adminkeys.ParseSearchServiceID(d.Id())
+	// if err != nil {
+	// 	return err
+	// }
+	// adminKeysResp, err := adminKeysClient.Get(ctx, *adminKeysId, adminkeys.GetOperationOptions{})
+	// if err != nil && !response.WasStatusCode(adminKeysResp.HttpResponse, http.StatusForbidden) {
+	// 	return fmt.Errorf("retrieving Admin Keys for %s: %+v", id, err)
+	// }
+	// if model := adminKeysResp.Model; model != nil {
+	// 	primaryKey = utils.NormalizeNilableString(model.PrimaryKey)
+	// 	secondaryKey = utils.NormalizeNilableString(model.SecondaryKey)
+	// }
+	// d.Set("primary_key", primaryKey)
+	// d.Set("secondary_key", secondaryKey)
 
-	queryKeysClient := meta.(*clients.Client).Search.QueryKeysClient
-	queryKeysId, err := querykeys.ParseSearchServiceID(d.Id())
-	if err != nil {
-		return err
-	}
-	queryKeysResp, err := queryKeysClient.ListBySearchService(ctx, *queryKeysId, querykeys.ListBySearchServiceOperationOptions{})
-	if err != nil && !response.WasStatusCode(queryKeysResp.HttpResponse, http.StatusForbidden) {
-		return fmt.Errorf("retrieving Query Keys for %s: %+v", id, err)
-	}
-	if err := d.Set("query_keys", flattenSearchQueryKeys(queryKeysResp.Model)); err != nil {
-		return fmt.Errorf("setting `query_keys`: %+v", err)
-	}
+	// queryKeysClient := meta.(*clients.Client).Search.QueryKeysClient
+	// queryKeysId, err := querykeys.ParseSearchServiceID(d.Id())
+	// if err != nil {
+	// 	return err
+	// }
+	// queryKeysResp, err := queryKeysClient.ListBySearchService(ctx, *queryKeysId, querykeys.ListBySearchServiceOperationOptions{})
+	// if err != nil && !response.WasStatusCode(queryKeysResp.HttpResponse, http.StatusForbidden) {
+	// 	return fmt.Errorf("retrieving Query Keys for %s: %+v", id, err)
+	// }
+	// if err := d.Set("query_keys", flattenSearchQueryKeys(queryKeysResp.Model)); err != nil {
+	// 	return fmt.Errorf("setting `query_keys`: %+v", err)
+	// }
 
 	return nil
 }

@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/identity"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/tags"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/search/2023-11-01/adminkeys"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/search/2023-11-01/querykeys"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/search/2023-11-01/services"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
@@ -599,33 +598,33 @@ func resourceSearchServiceRead(d *pluginsdk.ResourceData, meta interface{}) erro
 		}
 	}
 
-	adminKeysClient := meta.(*clients.Client).Search.AdminKeysClient
-	adminKeysId, err := adminkeys.ParseSearchServiceID(d.Id())
-	if err != nil {
-		return err
-	}
+	// adminKeysClient := meta.(*clients.Client).Search.AdminKeysClient
+	// adminKeysId, err := adminkeys.ParseSearchServiceID(d.Id())
+	// if err != nil {
+	// 	return err
+	// }
 
-	adminKeysResp, err := adminKeysClient.Get(ctx, *adminKeysId, adminkeys.GetOperationOptions{})
-	if err != nil {
-		return fmt.Errorf("retrieving Admin Keys for %s: %+v", *id, err)
-	}
-	if model := adminKeysResp.Model; model != nil {
-		d.Set("primary_key", model.PrimaryKey)
-		d.Set("secondary_key", model.SecondaryKey)
-	}
+	// adminKeysResp, err := adminKeysClient.Get(ctx, *adminKeysId, adminkeys.GetOperationOptions{})
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Admin Keys for %s: %+v", *id, err)
+	// }
+	// if model := adminKeysResp.Model; model != nil {
+	// 	d.Set("primary_key", model.PrimaryKey)
+	// 	d.Set("secondary_key", model.SecondaryKey)
+	// }
 
-	queryKeysClient := meta.(*clients.Client).Search.QueryKeysClient
-	queryKeysId, err := querykeys.ParseSearchServiceID(d.Id())
-	if err != nil {
-		return err
-	}
-	queryKeysResp, err := queryKeysClient.ListBySearchService(ctx, *queryKeysId, querykeys.ListBySearchServiceOperationOptions{})
-	if err != nil {
-		return fmt.Errorf("retrieving Query Keys for %s: %+v", *id, err)
-	}
-	if err := d.Set("query_keys", flattenSearchQueryKeys(queryKeysResp.Model)); err != nil {
-		return fmt.Errorf("setting `query_keys`: %+v", err)
-	}
+	// queryKeysClient := meta.(*clients.Client).Search.QueryKeysClient
+	// queryKeysId, err := querykeys.ParseSearchServiceID(d.Id())
+	// if err != nil {
+	// 	return err
+	// }
+	// queryKeysResp, err := queryKeysClient.ListBySearchService(ctx, *queryKeysId, querykeys.ListBySearchServiceOperationOptions{})
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Query Keys for %s: %+v", *id, err)
+	// }
+	// if err := d.Set("query_keys", flattenSearchQueryKeys(queryKeysResp.Model)); err != nil {
+	// 	return fmt.Errorf("setting `query_keys`: %+v", err)
+	// }
 
 	return nil
 }
