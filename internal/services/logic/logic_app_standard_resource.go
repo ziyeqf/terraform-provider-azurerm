@@ -517,27 +517,27 @@ func resourceLogicAppStandardRead(d *pluginsdk.ResourceData, meta interface{}) e
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	appSettingsResp, err := client.ListApplicationSettings(ctx, id.ResourceGroup, id.SiteName)
-	if err != nil {
-		return fmt.Errorf("listing application settings for %s: %+v", *id, err)
-	}
+	// appSettingsResp, err := client.ListApplicationSettings(ctx, id.ResourceGroup, id.SiteName)
+	// if err != nil {
+	// 	return fmt.Errorf("listing application settings for %s: %+v", *id, err)
+	// }
 
-	connectionStringsResp, err := client.ListConnectionStrings(ctx, id.ResourceGroup, id.SiteName)
-	if err != nil {
-		return fmt.Errorf("listing connection strings for %s: %+v", *id, err)
-	}
+	// connectionStringsResp, err := client.ListConnectionStrings(ctx, id.ResourceGroup, id.SiteName)
+	// if err != nil {
+	// 	return fmt.Errorf("listing connection strings for %s: %+v", *id, err)
+	// }
 
-	siteCredFuture, err := client.ListPublishingCredentials(ctx, id.ResourceGroup, id.SiteName)
-	if err != nil {
-		return fmt.Errorf("listing publishing credentials for %s: %+v", *id, err)
-	}
-	if err = siteCredFuture.WaitForCompletionRef(ctx, client.Client); err != nil {
-		return fmt.Errorf("waiting to list the publishing credentials for %s: %+v", *id, err)
-	}
-	siteCredResp, err := siteCredFuture.Result(*client)
-	if err != nil {
-		return fmt.Errorf("retrieving the publishing credentials for %s: %+v", *id, err)
-	}
+	// siteCredFuture, err := client.ListPublishingCredentials(ctx, id.ResourceGroup, id.SiteName)
+	// if err != nil {
+	// 	return fmt.Errorf("listing publishing credentials for %s: %+v", *id, err)
+	// }
+	// if err = siteCredFuture.WaitForCompletionRef(ctx, client.Client); err != nil {
+	// 	return fmt.Errorf("waiting to list the publishing credentials for %s: %+v", *id, err)
+	// }
+	// siteCredResp, err := siteCredFuture.Result(*client)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving the publishing credentials for %s: %+v", *id, err)
+	// }
 
 	d.Set("name", id.SiteName)
 	d.Set("resource_group_name", id.ResourceGroup)
@@ -569,59 +569,59 @@ func resourceLogicAppStandardRead(d *pluginsdk.ResourceData, meta interface{}) e
 		d.Set("client_certificate_mode", clientCertMode)
 	}
 
-	appSettings := flattenLogicAppStandardAppSettings(appSettingsResp.Properties)
+	// appSettings := flattenLogicAppStandardAppSettings(appSettingsResp.Properties)
 
-	if err = d.Set("connection_string", flattenLogicAppStandardConnectionStrings(connectionStringsResp.Properties)); err != nil {
-		return err
-	}
+	// if err = d.Set("connection_string", flattenLogicAppStandardConnectionStrings(connectionStringsResp.Properties)); err != nil {
+	// 	return err
+	// }
 
-	connectionString := appSettings["AzureWebJobsStorage"]
+	// connectionString := appSettings["AzureWebJobsStorage"]
 
 	// This teases out the necessary attributes from the storage connection string
-	connectionStringParts := strings.Split(connectionString, ";")
-	for _, part := range connectionStringParts {
-		if strings.HasPrefix(part, "AccountName") {
-			accountNameParts := strings.Split(part, "AccountName=")
-			if len(accountNameParts) > 1 {
-				d.Set("storage_account_name", accountNameParts[1])
-			}
-		}
-		if strings.HasPrefix(part, "AccountKey") {
-			accountKeyParts := strings.Split(part, "AccountKey=")
-			if len(accountKeyParts) > 1 {
-				d.Set("storage_account_access_key", accountKeyParts[1])
-			}
-		}
-	}
+	// connectionStringParts := strings.Split(connectionString, ";")
+	// for _, part := range connectionStringParts {
+	// 	if strings.HasPrefix(part, "AccountName") {
+	// 		accountNameParts := strings.Split(part, "AccountName=")
+	// 		if len(accountNameParts) > 1 {
+	// 			d.Set("storage_account_name", accountNameParts[1])
+	// 		}
+	// 	}
+	// 	if strings.HasPrefix(part, "AccountKey") {
+	// 		accountKeyParts := strings.Split(part, "AccountKey=")
+	// 		if len(accountKeyParts) > 1 {
+	// 			d.Set("storage_account_access_key", accountKeyParts[1])
+	// 		}
+	// 	}
+	// }
 
-	d.Set("version", appSettings["FUNCTIONS_EXTENSION_VERSION"])
+	// d.Set("version", appSettings["FUNCTIONS_EXTENSION_VERSION"])
 
-	if _, ok := appSettings["AzureFunctionsJobHost__extensionBundle__id"]; ok {
-		d.Set("use_extension_bundle", true)
-		if val, ok := appSettings["AzureFunctionsJobHost__extensionBundle__version"]; ok {
-			d.Set("bundle_version", val)
-		}
-	} else {
-		d.Set("use_extension_bundle", false)
-		d.Set("bundle_version", "[1.*, 2.0.0)")
-	}
+	// if _, ok := appSettings["AzureFunctionsJobHost__extensionBundle__id"]; ok {
+	// 	d.Set("use_extension_bundle", true)
+	// 	if val, ok := appSettings["AzureFunctionsJobHost__extensionBundle__version"]; ok {
+	// 		d.Set("bundle_version", val)
+	// 	}
+	// } else {
+	// 	d.Set("use_extension_bundle", false)
+	// 	d.Set("bundle_version", "[1.*, 2.0.0)")
+	// }
 
-	d.Set("storage_account_share_name", appSettings["WEBSITE_CONTENTSHARE"])
+	// d.Set("storage_account_share_name", appSettings["WEBSITE_CONTENTSHARE"])
 
-	// Remove all the settings that are created by this resource so we don't to have to specify in app_settings
-	// block whenever we use azurerm_logic_app_standard.
-	delete(appSettings, "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING")
-	delete(appSettings, "APP_KIND")
-	delete(appSettings, "AzureFunctionsJobHost__extensionBundle__id")
-	delete(appSettings, "AzureFunctionsJobHost__extensionBundle__version")
-	delete(appSettings, "AzureWebJobsDashboard")
-	delete(appSettings, "AzureWebJobsStorage")
-	delete(appSettings, "FUNCTIONS_EXTENSION_VERSION")
-	delete(appSettings, "WEBSITE_CONTENTSHARE")
+	// // Remove all the settings that are created by this resource so we don't to have to specify in app_settings
+	// // block whenever we use azurerm_logic_app_standard.
+	// delete(appSettings, "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING")
+	// delete(appSettings, "APP_KIND")
+	// delete(appSettings, "AzureFunctionsJobHost__extensionBundle__id")
+	// delete(appSettings, "AzureFunctionsJobHost__extensionBundle__version")
+	// delete(appSettings, "AzureWebJobsDashboard")
+	// delete(appSettings, "AzureWebJobsStorage")
+	// delete(appSettings, "FUNCTIONS_EXTENSION_VERSION")
+	// delete(appSettings, "WEBSITE_CONTENTSHARE")
 
-	if err = d.Set("app_settings", appSettings); err != nil {
-		return err
-	}
+	// if err = d.Set("app_settings", appSettings); err != nil {
+	// 	return err
+	// }
 
 	identity, err := flattenLogicAppStandardIdentity(resp.Identity)
 	if err != nil {
@@ -641,10 +641,10 @@ func resourceLogicAppStandardRead(d *pluginsdk.ResourceData, meta interface{}) e
 		return err
 	}
 
-	siteCred := flattenLogicAppStandardSiteCredential(siteCredResp.UserProperties)
-	if err = d.Set("site_credential", siteCred); err != nil {
-		return err
-	}
+	// siteCred := flattenLogicAppStandardSiteCredential(siteCredResp.UserProperties)
+	// if err = d.Set("site_credential", siteCred); err != nil {
+	// 	return err
+	// }
 
 	return tags.FlattenAndSet(d, resp.Tags)
 }
