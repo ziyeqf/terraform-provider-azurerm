@@ -125,7 +125,6 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/trafficmanager"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/vmware"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/voiceservices"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/services/web"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/workloads"
 )
 
@@ -213,7 +212,6 @@ func SupportedTypedServices() []sdk.TypedServiceRegistration {
 		systemcentervirtualmachinemanager.Registration{},
 		vmware.Registration{},
 		voiceservices.Registration{},
-		web.Registration{},
 		workloads.Registration{},
 	}
 	services = append(services, autoRegisteredTypedServices()...)
@@ -316,7 +314,6 @@ func SupportedUntypedServices() []sdk.UntypedServiceRegistration {
 			synapse.Registration{},
 			trafficmanager.Registration{},
 			vmware.Registration{},
-			web.Registration{},
 		}
 		return out
 	}()
