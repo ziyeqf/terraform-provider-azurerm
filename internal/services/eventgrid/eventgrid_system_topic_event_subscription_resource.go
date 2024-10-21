@@ -248,14 +248,14 @@ func resourceEventGridSystemTopicEventSubscriptionRead(d *pluginsdk.ResourceData
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	fullUrlResp, err := client.SystemTopicEventSubscriptionsGetFullUrl(ctx, *id)
-	if err != nil {
-		// unexpected status 400 with error: InvalidRequest: Destination type of the event subscription XXXX
-		// is StorageQueue which doesn't support full URL. Only webhook destination type supports full URL.
-		if !response.WasBadRequest(fullUrlResp.HttpResponse) {
-			return fmt.Errorf("retrieving full url for %s: %+v", *id, err)
-		}
-	}
+	// fullUrlResp, err := client.SystemTopicEventSubscriptionsGetFullUrl(ctx, *id)
+	// if err != nil {
+	// 	// unexpected status 400 with error: InvalidRequest: Destination type of the event subscription XXXX
+	// 	// is StorageQueue which doesn't support full URL. Only webhook destination type supports full URL.
+	// 	if !response.WasBadRequest(fullUrlResp.HttpResponse) {
+	// 		return fmt.Errorf("retrieving full url for %s: %+v", *id, err)
+	// 	}
+	// }
 
 	d.Set("name", id.EventSubscriptionName)
 	d.Set("system_topic", id.SystemTopicName)
@@ -300,9 +300,9 @@ func resourceEventGridSystemTopicEventSubscriptionRead(d *pluginsdk.ResourceData
 			if err := d.Set("storage_queue_endpoint", flattenEventSubscriptionDestinationStorageQueueEndpoint(destination)); err != nil {
 				return fmt.Errorf("setting `storage_queue_endpoint` for %s: %+v", *id, err)
 			}
-			if err := d.Set("webhook_endpoint", flattenEventSubscriptionWebhookEndpoint(destination, fullUrlResp.Model)); err != nil {
-				return fmt.Errorf("setting `webhook_endpoint` for %s: %+v", *id, err)
-			}
+			// if err := d.Set("webhook_endpoint", flattenEventSubscriptionWebhookEndpoint(destination, fullUrlResp.Model)); err != nil {
+			// 	return fmt.Errorf("setting `webhook_endpoint` for %s: %+v", *id, err)
+			// }
 
 			deadLetterDestination := props.DeadLetterDestination
 			deadLetterIdentityFlattened := make([]interface{}, 0)
