@@ -106,10 +106,10 @@ func dataSourceNotificationHubRead(d *pluginsdk.ResourceData, meta interface{}) 
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
-	credentials, err := client.NotificationHubsGetPnsCredentials(ctx, id)
-	if err != nil {
-		return fmt.Errorf("retrieving credentials for %s: %+v", id, err)
-	}
+	// credentials, err := client.NotificationHubsGetPnsCredentials(ctx, id)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving credentials for %s: %+v", id, err)
+	// }
 
 	d.SetId(id.ID())
 
@@ -117,19 +117,19 @@ func dataSourceNotificationHubRead(d *pluginsdk.ResourceData, meta interface{}) 
 	d.Set("namespace_name", id.NamespaceName)
 	d.Set("resource_group_name", id.ResourceGroupName)
 
-	if credentialsModel := credentials.Model; credentialsModel != nil {
-		if props := credentialsModel.Properties; props != nil {
-			apns := flattenNotificationHubsDataSourceAPNSCredentials(props.ApnsCredential)
-			if setErr := d.Set("apns_credential", apns); setErr != nil {
-				return fmt.Errorf("setting `apns_credential`: %+v", err)
-			}
+	// if credentialsModel := credentials.Model; credentialsModel != nil {
+	// 	if props := credentialsModel.Properties; props != nil {
+	// 		apns := flattenNotificationHubsDataSourceAPNSCredentials(props.ApnsCredential)
+	// 		if setErr := d.Set("apns_credential", apns); setErr != nil {
+	// 			return fmt.Errorf("setting `apns_credential`: %+v", err)
+	// 		}
 
-			gcm := flattenNotificationHubsDataSourceGCMCredentials(props.GcmCredential)
-			if setErr := d.Set("gcm_credential", gcm); setErr != nil {
-				return fmt.Errorf("setting `gcm_credential`: %+v", err)
-			}
-		}
-	}
+	// 		gcm := flattenNotificationHubsDataSourceGCMCredentials(props.GcmCredential)
+	// 		if setErr := d.Set("gcm_credential", gcm); setErr != nil {
+	// 			return fmt.Errorf("setting `gcm_credential`: %+v", err)
+	// 		}
+	// 	}
+	// }
 
 	if model := resp.Model; model != nil {
 		d.Set("location", location.NormalizeNilable(&model.Location))
