@@ -12,9 +12,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/hashicorp/go-azure-helpers/lang/pointer"
-	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonids"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-12-01/webapps"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 )
 
@@ -23,87 +20,87 @@ const (
 	zipDeployComplete = 4
 )
 
-func GetCredentialsAndPublish(ctx context.Context, client *webapps.WebAppsClient, appID commonids.AppServiceId, sourceFile string) error {
-	site, err := client.Get(ctx, appID)
-	if err != nil || site.Model == nil {
-		return fmt.Errorf("reading site %s to perform zip deploy: %+v", appID.SiteName, err)
-	}
-	props := *site.Model.Properties
-	if sslStates := props.HostNameSslStates; sslStates != nil {
-		for _, v := range *sslStates {
-			if v.Name != nil && *v.Name != "" && pointer.From(v.HostType) == webapps.HostTypeRepository {
-				user, passwd, err := GetSitePublishingCredentials(ctx, client, appID)
-				if err != nil {
-					return err
-				}
-				httpsHost := fmt.Sprintf("https://%s", *v.Name)
+// func GetCredentialsAndPublish(ctx context.Context, client *webapps.WebAppsClient, appID commonids.AppServiceId, sourceFile string) error {
+// 	site, err := client.Get(ctx, appID)
+// 	if err != nil || site.Model == nil {
+// 		return fmt.Errorf("reading site %s to perform zip deploy: %+v", appID.SiteName, err)
+// 	}
+// 	props := *site.Model.Properties
+// 	if sslStates := props.HostNameSslStates; sslStates != nil {
+// 		for _, v := range *sslStates {
+// 			if v.Name != nil && *v.Name != "" && pointer.From(v.HostType) == webapps.HostTypeRepository {
+// 				user, passwd, err := GetSitePublishingCredentials(ctx, client, appID)
+// 				if err != nil {
+// 					return err
+// 				}
+// 				httpsHost := fmt.Sprintf("https://%s", *v.Name)
 
-				if err := PublishZipDeployLocalFileKuduPush(ctx, httpsHost, *user, *passwd, client.Client.UserAgent, sourceFile); err != nil {
-					return fmt.Errorf("publishing source (%s) to site %s: %+v", sourceFile, appID, err)
-				}
+// 				if err := PublishZipDeployLocalFileKuduPush(ctx, httpsHost, *user, *passwd, client.Client.UserAgent, sourceFile); err != nil {
+// 					return fmt.Errorf("publishing source (%s) to site %s: %+v", sourceFile, appID, err)
+// 				}
 
-				continue
-			}
-		}
-	} else {
-		return fmt.Errorf("could not determine SCM Site name for Site %s for Zip Deployment", appID)
-	}
+// 				continue
+// 			}
+// 		}
+// 	} else {
+// 		return fmt.Errorf("could not determine SCM Site name for Site %s for Zip Deployment", appID)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func GetCredentialsAndPublishSlot(ctx context.Context, client *webapps.WebAppsClient, id webapps.SlotId, sourceFile string) error {
-	site, err := client.GetSlot(ctx, id)
-	if err != nil || site.Model == nil || site.Model.Properties == nil {
-		return fmt.Errorf("reading site %s to perform zip deploy: %+v", id.SiteName, err)
-	}
-	props := *site.Model.Properties
-	if sslStates := props.HostNameSslStates; sslStates != nil {
-		for _, v := range *sslStates {
-			if v.Name != nil && *v.Name != "" && pointer.From(v.HostType) == webapps.HostTypeRepository {
-				user, passwd, err := GetSitePublishingCredentialsSlot(ctx, client, id)
-				if err != nil {
-					return err
-				}
-				httpsHost := fmt.Sprintf("https://%s", *v.Name)
+// func GetCredentialsAndPublishSlot(ctx context.Context, client *webapps.WebAppsClient, id webapps.SlotId, sourceFile string) error {
+// 	site, err := client.GetSlot(ctx, id)
+// 	if err != nil || site.Model == nil || site.Model.Properties == nil {
+// 		return fmt.Errorf("reading site %s to perform zip deploy: %+v", id.SiteName, err)
+// 	}
+// 	props := *site.Model.Properties
+// 	if sslStates := props.HostNameSslStates; sslStates != nil {
+// 		for _, v := range *sslStates {
+// 			if v.Name != nil && *v.Name != "" && pointer.From(v.HostType) == webapps.HostTypeRepository {
+// 				user, passwd, err := GetSitePublishingCredentialsSlot(ctx, client, id)
+// 				if err != nil {
+// 					return err
+// 				}
+// 				httpsHost := fmt.Sprintf("https://%s", *v.Name)
 
-				if err := PublishZipDeployLocalFileKuduPush(ctx, httpsHost, *user, *passwd, client.Client.UserAgent, sourceFile); err != nil {
-					return fmt.Errorf("publishing source (%s) to site %s: %+v", sourceFile, id, err)
-				}
+// 				if err := PublishZipDeployLocalFileKuduPush(ctx, httpsHost, *user, *passwd, client.Client.UserAgent, sourceFile); err != nil {
+// 					return fmt.Errorf("publishing source (%s) to site %s: %+v", sourceFile, id, err)
+// 				}
 
-				continue
-			}
-		}
-	} else {
-		return fmt.Errorf("could not determine SCM Site name for Slot %s for Zip Deployment", id)
-	}
+// 				continue
+// 			}
+// 		}
+// 	} else {
+// 		return fmt.Errorf("could not determine SCM Site name for Slot %s for Zip Deployment", id)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func GetSitePublishingCredentials(ctx context.Context, client *webapps.WebAppsClient, appID commonids.AppServiceId) (user *string, passwd *string, err error) {
-	siteCredentials, err := ListPublishingCredentials(ctx, client, appID)
-	if err != nil {
-		return nil, nil, err
-	}
+// func GetSitePublishingCredentials(ctx context.Context, client *webapps.WebAppsClient, appID commonids.AppServiceId) (user *string, passwd *string, err error) {
+// 	siteCredentials, err := ListPublishingCredentials(ctx, client, appID)
+// 	if err != nil {
+// 		return nil, nil, err
+// 	}
 
-	if siteCredentials.Properties != nil {
-		return pointer.To(siteCredentials.Properties.PublishingUserName), siteCredentials.Properties.PublishingPassword, nil
-	}
-	return nil, nil, fmt.Errorf("could not decode Publishing Credential information for %s", appID)
-}
+// 	if siteCredentials.Properties != nil {
+// 		return pointer.To(siteCredentials.Properties.PublishingUserName), siteCredentials.Properties.PublishingPassword, nil
+// 	}
+// 	return nil, nil, fmt.Errorf("could not decode Publishing Credential information for %s", appID)
+// }
 
-func GetSitePublishingCredentialsSlot(ctx context.Context, client *webapps.WebAppsClient, id webapps.SlotId) (user *string, passwd *string, err error) {
-	siteCredentials, err := ListPublishingCredentialsSlot(ctx, client, id)
-	if err != nil {
-		return nil, nil, err
-	}
+// func GetSitePublishingCredentialsSlot(ctx context.Context, client *webapps.WebAppsClient, id webapps.SlotId) (user *string, passwd *string, err error) {
+// 	siteCredentials, err := ListPublishingCredentialsSlot(ctx, client, id)
+// 	if err != nil {
+// 		return nil, nil, err
+// 	}
 
-	if siteCredentials.Properties != nil {
-		return pointer.To(siteCredentials.Properties.PublishingUserName), siteCredentials.Properties.PublishingPassword, nil
-	}
-	return nil, nil, fmt.Errorf("could not decode Publishing Credential information for %s", id)
-}
+// 	if siteCredentials.Properties != nil {
+// 		return pointer.To(siteCredentials.Properties.PublishingUserName), siteCredentials.Properties.PublishingPassword, nil
+// 	}
+// 	return nil, nil, fmt.Errorf("could not decode Publishing Credential information for %s", id)
+// }
 
 func PublishZipDeployLocalFileKuduPush(ctx context.Context, host string, user string, passwd string, userAgent string, zipSource string) error {
 	f, err := os.Open(zipSource)

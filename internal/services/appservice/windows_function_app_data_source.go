@@ -354,44 +354,44 @@ func (d WindowsFunctionAppDataSource) Read() sdk.ResourceFunc {
 				functionApp.PublishingFTPBasicAuthEnabled = basicAuthFTP
 				functionApp.PublishingDeployBasicAuthEnabled = basicAuthWebDeploy
 
-				appSettingsResp, err := client.ListApplicationSettings(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading App Settings for Windows %s: %+v", id, err)
-				}
+				// appSettingsResp, err := client.ListApplicationSettings(ctx, *id)
+				// if err != nil {
+				// 	return fmt.Errorf("reading App Settings for Windows %s: %+v", id, err)
+				// }
 
-				connectionStrings, err := client.ListConnectionStrings(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading Connection String information for Windows %s: %+v", id, err)
-				}
+				// connectionStrings, err := client.ListConnectionStrings(ctx, *id)
+				// if err != nil {
+				// 	return fmt.Errorf("reading Connection String information for Windows %s: %+v", id, err)
+				// }
 
 				stickySettings, err := client.ListSlotConfigurationNames(ctx, *id)
 				if err != nil {
 					return fmt.Errorf("reading Sticky Settings for Windows %s: %+v", id, err)
 				}
 
-				siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
-				if err != nil {
-					return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
-				}
+				// siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
+				// if err != nil {
+				// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
+				// }
 
-				auth, err := client.GetAuthSettings(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading Auth Settings for Windows %s: %+v", id, err)
-				}
+				// auth, err := client.GetAuthSettings(ctx, *id)
+				// if err != nil {
+				// 	return fmt.Errorf("reading Auth Settings for Windows %s: %+v", id, err)
+				// }
 
-				var authV2 webapps.SiteAuthSettingsV2
-				authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
-				}
-				authV2 = *authV2Resp.Model
+				// var authV2 webapps.SiteAuthSettingsV2
+				// authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
+				// if err != nil {
+				// 	return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
+				// }
+				// authV2 = *authV2Resp.Model
 
-				backup, err := client.GetBackupConfiguration(ctx, *id)
-				if err != nil {
-					if !response.WasNotFound(backup.HttpResponse) {
-						return fmt.Errorf("reading Backup Settings for Windows %s: %+v", id, err)
-					}
-				}
+				// backup, err := client.GetBackupConfiguration(ctx, *id)
+				// if err != nil {
+				// 	if !response.WasNotFound(backup.HttpResponse) {
+				// 		return fmt.Errorf("reading Backup Settings for Windows %s: %+v", id, err)
+				// 	}
+				// }
 
 				logs, err := client.GetDiagnosticLogsConfiguration(ctx, *id)
 				if err != nil {
@@ -410,17 +410,17 @@ func (d WindowsFunctionAppDataSource) Read() sdk.ResourceFunc {
 
 				functionApp.SiteConfig = []helpers.SiteConfigWindowsFunctionApp{*siteConfig}
 
-				functionApp.unpackWindowsFunctionAppSettings(appSettingsResp.Model)
+				// functionApp.unpackWindowsFunctionAppSettings(appSettingsResp.Model)
 
-				functionApp.ConnectionStrings = helpers.FlattenConnectionStrings(connectionStrings.Model)
+				// functionApp.ConnectionStrings = helpers.FlattenConnectionStrings(connectionStrings.Model)
 
-				functionApp.SiteCredentials = helpers.FlattenSiteCredentials(siteCredentials)
+				// functionApp.SiteCredentials = helpers.FlattenSiteCredentials(siteCredentials)
 
-				functionApp.AuthSettings = helpers.FlattenAuthSettings(auth.Model)
+				// functionApp.AuthSettings = helpers.FlattenAuthSettings(auth.Model)
 
-				functionApp.AuthV2Settings = helpers.FlattenAuthV2Settings(authV2)
+				// functionApp.AuthV2Settings = helpers.FlattenAuthV2Settings(authV2)
 
-				functionApp.Backup = helpers.FlattenBackupConfig(backup.Model)
+				// functionApp.Backup = helpers.FlattenBackupConfig(backup.Model)
 
 				functionApp.SiteConfig[0].AppServiceLogs = helpers.FlattenFunctionAppAppServiceLogs(logs.Model)
 

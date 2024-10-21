@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/identity"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-12-01/webapps"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/sdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/appservice/helpers"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/appservice/validate"
@@ -281,54 +280,54 @@ func (r LinuxWebAppDataSource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("reading Site Config for Linux %s: %+v", id, err)
 			}
 
-			auth, err := client.GetAuthSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
-			}
+			// auth, err := client.GetAuthSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
+			// }
 
-			var authV2 webapps.SiteAuthSettingsV2
-			authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
-			}
-			authV2 = *authV2Resp.Model
+			// var authV2 webapps.SiteAuthSettingsV2
+			// authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
+			// }
+			// authV2 = *authV2Resp.Model
 
-			backup, err := client.GetBackupConfiguration(ctx, *id)
-			if err != nil {
-				if !response.WasNotFound(backup.HttpResponse) {
-					return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
-				}
-			}
+			// backup, err := client.GetBackupConfiguration(ctx, *id)
+			// if err != nil {
+			// 	if !response.WasNotFound(backup.HttpResponse) {
+			// 		return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
+			// 	}
+			// }
 
 			logsConfig, err := client.GetDiagnosticLogsConfiguration(ctx, *id)
 			if err != nil {
 				return fmt.Errorf("reading Diagnostic Logs information for Linux %s: %+v", id, err)
 			}
 
-			appSettings, err := client.ListApplicationSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
-			}
+			// appSettings, err := client.ListApplicationSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
+			// }
 
-			storageAccounts, err := client.ListAzureStorageAccounts(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Storage Account information for Linux %s: %+v", id, err)
-			}
+			// storageAccounts, err := client.ListAzureStorageAccounts(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Storage Account information for Linux %s: %+v", id, err)
+			// }
 
-			connectionStrings, err := client.ListConnectionStrings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
-			}
+			// connectionStrings, err := client.ListConnectionStrings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
+			// }
 
 			stickySettings, err := client.ListSlotConfigurationNames(ctx, *id)
 			if err != nil {
 				return fmt.Errorf("reading Sticky Settings for Linux %s: %+v", id, err)
 			}
 
-			siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
-			if err != nil {
-				return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
-			}
+			// siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
+			// }
 
 			basicAuthFTP := true
 			if basicAuthFTPResp, err := client.GetFtpAllowed(ctx, *id); err != nil && basicAuthFTPResp.Model != nil {
@@ -346,17 +345,17 @@ func (r LinuxWebAppDataSource) Read() sdk.ResourceFunc {
 
 			webApp.PublishingFTPBasicAuthEnabled = basicAuthFTP
 			webApp.PublishingDeployBasicAuthEnabled = basicAuthWebDeploy
-			webApp.AuthSettings = helpers.FlattenAuthSettings(auth.Model)
-			webApp.AuthV2Settings = helpers.FlattenAuthV2Settings(authV2)
-			webApp.Backup = helpers.FlattenBackupConfig(backup.Model)
+			// webApp.AuthSettings = helpers.FlattenAuthSettings(auth.Model)
+			// webApp.AuthV2Settings = helpers.FlattenAuthV2Settings(authV2)
+			// webApp.Backup = helpers.FlattenBackupConfig(backup.Model)
 			webApp.LogsConfig = helpers.FlattenLogsConfig(logsConfig.Model)
-			webApp.StorageAccounts = helpers.FlattenStorageAccounts(storageAccounts.Model)
-			webApp.ConnectionStrings = helpers.FlattenConnectionStrings(connectionStrings.Model)
+			//webApp.StorageAccounts = helpers.FlattenStorageAccounts(storageAccounts.Model)
+			// webApp.ConnectionStrings = helpers.FlattenConnectionStrings(connectionStrings.Model)
 			webApp.StickySettings = helpers.FlattenStickySettings(stickySettings.Model.Properties)
-			webApp.SiteCredentials = helpers.FlattenSiteCredentials(siteCredentials)
+			// webApp.SiteCredentials = helpers.FlattenSiteCredentials(siteCredentials)
 
 			if model := existing.Model; model != nil {
-				webApp.AppSettings = helpers.FlattenWebStringDictionary(appSettings.Model)
+				// webApp.AppSettings = helpers.FlattenWebStringDictionary(appSettings.Model)
 				webApp.Kind = pointer.From(model.Kind)
 				webApp.Location = location.Normalize(model.Location)
 				webApp.Tags = pointer.From(model.Tags)

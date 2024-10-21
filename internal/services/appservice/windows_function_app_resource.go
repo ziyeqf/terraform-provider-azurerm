@@ -658,11 +658,11 @@ func (r WindowsFunctionAppResource) Create() sdk.ResourceFunc {
 				}
 			}
 
-			if functionApp.ZipDeployFile != "" {
-				if err = helpers.GetCredentialsAndPublish(ctx, client, *id, functionApp.ZipDeployFile); err != nil {
-					return err
-				}
-			}
+			// if functionApp.ZipDeployFile != "" {
+			// 	if err = helpers.GetCredentialsAndPublish(ctx, client, *id, functionApp.ZipDeployFile); err != nil {
+			// 		return err
+			// 	}
+			// }
 
 			return nil
 		},
@@ -686,51 +686,51 @@ func (r WindowsFunctionAppResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("reading Windows %s: %+v", id, err)
 			}
 
-			appSettingsResp, err := client.ListApplicationSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading App Settings for Windows %s: %+v", *id, err)
-			}
+			// appSettingsResp, err := client.ListApplicationSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading App Settings for Windows %s: %+v", *id, err)
+			// }
 
-			connectionStrings, err := client.ListConnectionStrings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Connection String information for Windows %s: %+v", *id, err)
-			}
+			// connectionStrings, err := client.ListConnectionStrings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Connection String information for Windows %s: %+v", *id, err)
+			// }
 
 			stickySettings, err := client.ListSlotConfigurationNames(ctx, *id)
 			if err != nil {
 				return fmt.Errorf("reading Sticky Settings for Windows %s: %+v", *id, err)
 			}
 
-			storageAccounts, err := client.ListAzureStorageAccounts(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Storage Account information for Windows %s: %+v", id, err)
-			}
+			// storageAccounts, err := client.ListAzureStorageAccounts(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Storage Account information for Windows %s: %+v", id, err)
+			// }
 
-			siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
-			if err != nil {
-				return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", *id, err)
-			}
+			// siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", *id, err)
+			// }
 
-			auth, err := client.GetAuthSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Auth Settings for Windows %s: %+v", id, err)
-			}
+			// auth, err := client.GetAuthSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Auth Settings for Windows %s: %+v", id, err)
+			// }
 
-			var authV2 webapps.SiteAuthSettingsV2
-			if auth.Model != nil && auth.Model.Properties != nil && strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
-				authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading authV2 settings for Linux %s: %+v", *id, err)
-				}
-				authV2 = *authV2Resp.Model
-			}
+			// var authV2 webapps.SiteAuthSettingsV2
+			// if auth.Model != nil && auth.Model.Properties != nil && strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
+			// 	authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
+			// 	if err != nil {
+			// 		return fmt.Errorf("reading authV2 settings for Linux %s: %+v", *id, err)
+			// 	}
+			// 	authV2 = *authV2Resp.Model
+			// }
 
-			backup, err := client.GetBackupConfiguration(ctx, *id)
-			if err != nil {
-				if !response.WasNotFound(backup.HttpResponse) {
-					return fmt.Errorf("reading Backup Settings for Windows %s: %+v", id, err)
-				}
-			}
+			// backup, err := client.GetBackupConfiguration(ctx, *id)
+			// if err != nil {
+			// 	if !response.WasNotFound(backup.HttpResponse) {
+			// 		return fmt.Errorf("reading Backup Settings for Windows %s: %+v", id, err)
+			// 	}
+			// }
 
 			logs, err := client.GetDiagnosticLogsConfiguration(ctx, *id)
 			if err != nil {
@@ -822,21 +822,21 @@ func (r WindowsFunctionAppResource) Read() sdk.ResourceFunc {
 
 				state.SiteConfig = []helpers.SiteConfigWindowsFunctionApp{*siteConfig}
 
-				state.unpackWindowsFunctionAppSettings(appSettingsResp.Model, metadata)
+				// state.unpackWindowsFunctionAppSettings(appSettingsResp.Model, metadata)
 
-				state.ConnectionStrings = helpers.FlattenConnectionStrings(connectionStrings.Model)
+				// state.ConnectionStrings = helpers.FlattenConnectionStrings(connectionStrings.Model)
 
-				state.SiteCredentials = helpers.FlattenSiteCredentials(siteCredentials)
+				// state.SiteCredentials = helpers.FlattenSiteCredentials(siteCredentials)
 
-				state.AuthSettings = helpers.FlattenAuthSettings(auth.Model)
+				// state.AuthSettings = helpers.FlattenAuthSettings(auth.Model)
 
-				state.AuthV2Settings = helpers.FlattenAuthV2Settings(authV2)
+				// state.AuthV2Settings = helpers.FlattenAuthV2Settings(authV2)
 
-				state.Backup = helpers.FlattenBackupConfig(backup.Model)
+				// state.Backup = helpers.FlattenBackupConfig(backup.Model)
 
 				state.SiteConfig[0].AppServiceLogs = helpers.FlattenFunctionAppAppServiceLogs(logs.Model)
 
-				state.StorageAccounts = helpers.FlattenStorageAccounts(storageAccounts.Model)
+				// state.StorageAccounts = helpers.FlattenStorageAccounts(storageAccounts.Model)
 
 				// Zip Deploys are not retrievable, so attempt to get from config. This doesn't matter for imports as an unexpected value here could break the deployment.
 				if deployFile, ok := metadata.ResourceData.Get("zip_deploy_file").(string); ok {
@@ -1022,14 +1022,14 @@ func (r WindowsFunctionAppResource) Update() sdk.ResourceFunc {
 			}
 
 			if sendContentSettings {
-				appSettingsResp, err := client.ListApplicationSettings(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading App Settings for Windows %s: %+v", *id, err)
-				}
+				// appSettingsResp, err := client.ListApplicationSettings(ctx, *id)
+				// if err != nil {
+				// 	return fmt.Errorf("reading App Settings for Windows %s: %+v", *id, err)
+				// }
 				if state.AppSettings == nil {
 					state.AppSettings = make(map[string]string)
 				}
-				state.AppSettings = helpers.ParseContentSettings(appSettingsResp.Model, state.AppSettings)
+				// state.AppSettings = helpers.ParseContentSettings(appSettingsResp.Model, state.AppSettings)
 
 				if !state.StorageUsesMSI {
 					suffix := uuid.New().String()[0:4]
@@ -1207,11 +1207,11 @@ func (r WindowsFunctionAppResource) Update() sdk.ResourceFunc {
 				}
 			}
 
-			if metadata.ResourceData.HasChange("zip_deploy_file") {
-				if err = helpers.GetCredentialsAndPublish(ctx, client, *id, state.ZipDeployFile); err != nil {
-					return err
-				}
-			}
+			// if metadata.ResourceData.HasChange("zip_deploy_file") {
+			// 	if err = helpers.GetCredentialsAndPublish(ctx, client, *id, state.ZipDeployFile); err != nil {
+			// 		return err
+			// 	}
+			// }
 
 			return nil
 		},

@@ -445,11 +445,11 @@ func (r LinuxWebAppSlotResource) Create() sdk.ResourceFunc {
 				}
 			}
 
-			if webAppSlot.ZipDeployFile != "" {
-				if err = helpers.GetCredentialsAndPublishSlot(ctx, client, id, webAppSlot.ZipDeployFile); err != nil {
-					return err
-				}
-			}
+			// if webAppSlot.ZipDeployFile != "" {
+			// 	if err = helpers.GetCredentialsAndPublishSlot(ctx, client, id, webAppSlot.ZipDeployFile); err != nil {
+			// 		return err
+			// 	}
+			// }
 
 			if !webAppSlot.PublishingDeployBasicAuthEnabled {
 				sitePolicy := webapps.CsmPublishingCredentialsPoliciesEntity{
@@ -502,51 +502,51 @@ func (r LinuxWebAppSlotResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("reading Site Config for Linux %s: %+v", id, err)
 			}
 
-			auth, err := client.GetAuthSettingsSlot(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
-			}
+			// auth, err := client.GetAuthSettingsSlot(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
+			// }
 
-			var authV2 webapps.SiteAuthSettingsV2
-			if strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
-				authV2Resp, err := client.GetAuthSettingsV2Slot(ctx, *id)
-				if err != nil || authV2Resp.Model == nil {
-					return fmt.Errorf("reading authV2 settings for Linux %s: %+v", *id, err)
-				}
-				authV2 = *authV2Resp.Model
-			}
+			// var authV2 webapps.SiteAuthSettingsV2
+			// if strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
+			// 	authV2Resp, err := client.GetAuthSettingsV2Slot(ctx, *id)
+			// 	if err != nil || authV2Resp.Model == nil {
+			// 		return fmt.Errorf("reading authV2 settings for Linux %s: %+v", *id, err)
+			// 	}
+			// 	authV2 = *authV2Resp.Model
+			// }
 
-			backup, err := client.GetBackupConfigurationSlot(ctx, *id)
-			if err != nil {
-				if !response.WasNotFound(backup.HttpResponse) {
-					return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
-				}
-			}
+			// backup, err := client.GetBackupConfigurationSlot(ctx, *id)
+			// if err != nil {
+			// 	if !response.WasNotFound(backup.HttpResponse) {
+			// 		return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
+			// 	}
+			// }
 
 			logsConfig, err := client.GetDiagnosticLogsConfigurationSlot(ctx, *id)
 			if err != nil {
 				return fmt.Errorf("reading Diagnostic Logs information for Linux %s: %+v", id, err)
 			}
 
-			appSettings, err := client.ListApplicationSettingsSlot(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
-			}
+			// appSettings, err := client.ListApplicationSettingsSlot(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
+			// }
 
-			storageAccounts, err := client.ListAzureStorageAccountsSlot(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Storage Account information for Linux %s: %+v", id, err)
-			}
+			// storageAccounts, err := client.ListAzureStorageAccountsSlot(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Storage Account information for Linux %s: %+v", id, err)
+			// }
 
-			connectionStrings, err := client.ListConnectionStringsSlot(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
-			}
+			// connectionStrings, err := client.ListConnectionStringsSlot(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
+			// }
 
-			siteCredentials, err := helpers.ListPublishingCredentialsSlot(ctx, client, *id)
-			if err != nil {
-				return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
-			}
+			// siteCredentials, err := helpers.ListPublishingCredentialsSlot(ctx, client, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
+			// }
 
 			appId := commonids.NewAppServiceID(id.SubscriptionId, id.ResourceGroupName, id.SiteName)
 
@@ -574,20 +574,20 @@ func (r LinuxWebAppSlotResource) Read() sdk.ResourceFunc {
 
 			if model := webAppSlot.Model; model != nil {
 				state := LinuxWebAppSlotModel{
-					Name:                             id.SlotName,
-					AppServiceId:                     appId.ID(),
-					Kind:                             pointer.From(model.Kind),
-					Tags:                             pointer.From(model.Tags),
-					AppSettings:                      helpers.FlattenWebStringDictionary(appSettings.Model),
-					AuthSettings:                     helpers.FlattenAuthSettings(auth.Model),
-					AuthV2Settings:                   helpers.FlattenAuthV2Settings(authV2),
-					Backup:                           helpers.FlattenBackupConfig(backup.Model),
+					Name:         id.SlotName,
+					AppServiceId: appId.ID(),
+					Kind:         pointer.From(model.Kind),
+					Tags:         pointer.From(model.Tags),
+					// AppSettings:  helpers.FlattenWebStringDictionary(appSettings.Model),
+					// AuthSettings:                     helpers.FlattenAuthSettings(auth.Model),
+					// AuthV2Settings:                   helpers.FlattenAuthV2Settings(authV2),
+					// Backup:                           helpers.FlattenBackupConfig(backup.Model),
 					LogsConfig:                       helpers.FlattenLogsConfig(logsConfig.Model),
 					PublishingFTPBasicAuthEnabled:    basicAuthFTP,
 					PublishingDeployBasicAuthEnabled: basicAuthWebDeploy,
-					StorageAccounts:                  helpers.FlattenStorageAccounts(storageAccounts.Model),
-					ConnectionStrings:                helpers.FlattenConnectionStrings(connectionStrings.Model),
-					SiteCredentials:                  helpers.FlattenSiteCredentials(siteCredentials),
+					// StorageAccounts:                  helpers.FlattenStorageAccounts(storageAccounts.Model),
+					// ConnectionStrings: helpers.FlattenConnectionStrings(connectionStrings.Model),
+					// SiteCredentials: helpers.FlattenSiteCredentials(siteCredentials),
 				}
 
 				if props := model.Properties; props != nil {
@@ -931,11 +931,11 @@ func (r LinuxWebAppSlotResource) Update() sdk.ResourceFunc {
 				}
 			}
 
-			if metadata.ResourceData.HasChange("zip_deploy_file") {
-				if err = helpers.GetCredentialsAndPublishSlot(ctx, client, *id, state.ZipDeployFile); err != nil {
-					return err
-				}
-			}
+			// if metadata.ResourceData.HasChange("zip_deploy_file") {
+			// 	if err = helpers.GetCredentialsAndPublishSlot(ctx, client, *id, state.ZipDeployFile); err != nil {
+			// 		return err
+			// 	}
+			// }
 
 			if metadata.ResourceData.HasChange("ftp_publish_basic_authentication_enabled") {
 				sitePolicy := webapps.CsmPublishingCredentialsPoliciesEntity{

@@ -666,46 +666,46 @@ func (r LinuxFunctionAppSlotResource) Read() sdk.ResourceFunc {
 
 			functionAppId := commonids.NewAppServiceID(id.SubscriptionId, id.ResourceGroupName, id.SiteName)
 
-			appSettingsResp, err := client.ListApplicationSettingsSlot(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading App Settings for Linux %s: %+v", *id, err)
-			}
+			// appSettingsResp, err := client.ListApplicationSettingsSlot(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading App Settings for Linux %s: %+v", *id, err)
+			// }
 
-			connectionStrings, err := client.ListConnectionStringsSlot(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
-			}
+			// connectionStrings, err := client.ListConnectionStringsSlot(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
+			// }
 
-			storageAccounts, err := client.ListAzureStorageAccountsSlot(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Storage Account information for Linux %s: %+v", id, err)
-			}
+			// storageAccounts, err := client.ListAzureStorageAccountsSlot(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Storage Account information for Linux %s: %+v", id, err)
+			// }
 
-			siteCredentials, err := helpers.ListPublishingCredentialsSlot(ctx, client, *id)
-			if err != nil {
-				return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", *id, err)
-			}
+			// siteCredentials, err := helpers.ListPublishingCredentialsSlot(ctx, client, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", *id, err)
+			// }
 
-			auth, err := client.GetAuthSettingsSlot(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
-			}
+			// auth, err := client.GetAuthSettingsSlot(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
+			// }
 
-			var authV2 webapps.SiteAuthSettingsV2
-			if strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
-				authV2Resp, err := client.GetAuthSettingsV2Slot(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading authV2 settings for Linux %s: %+v", *id, err)
-				}
-				authV2 = *authV2Resp.Model
-			}
+			// var authV2 webapps.SiteAuthSettingsV2
+			// if strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
+			// 	authV2Resp, err := client.GetAuthSettingsV2Slot(ctx, *id)
+			// 	if err != nil {
+			// 		return fmt.Errorf("reading authV2 settings for Linux %s: %+v", *id, err)
+			// 	}
+			// 	authV2 = *authV2Resp.Model
+			// }
 
-			backup, err := client.GetBackupConfigurationSlot(ctx, *id)
-			if err != nil {
-				if !response.WasNotFound(backup.HttpResponse) {
-					return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
-				}
-			}
+			// backup, err := client.GetBackupConfigurationSlot(ctx, *id)
+			// if err != nil {
+			// 	if !response.WasNotFound(backup.HttpResponse) {
+			// 		return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
+			// 	}
+			// }
 
 			logs, err := client.GetDiagnosticLogsConfigurationSlot(ctx, *id)
 			if err != nil {
@@ -736,15 +736,15 @@ func (r LinuxFunctionAppSlotResource) Read() sdk.ResourceFunc {
 					FunctionAppID:                    functionAppId.ID(),
 					PublishingFTPBasicAuthEnabled:    basicAuthFTP,
 					PublishingDeployBasicAuthEnabled: basicAuthWebDeploy,
-					ConnectionStrings:                helpers.FlattenConnectionStrings(connectionStrings.Model),
-					SiteCredentials:                  helpers.FlattenSiteCredentials(siteCredentials),
-					AuthSettings:                     helpers.FlattenAuthSettings(auth.Model),
-					AuthV2Settings:                   helpers.FlattenAuthV2Settings(authV2),
-					Backup:                           helpers.FlattenBackupConfig(backup.Model),
-					StorageAccounts:                  helpers.FlattenStorageAccounts(storageAccounts.Model),
-					Tags:                             pointer.From(model.Tags),
-					Kind:                             pointer.From(model.Kind),
-					Identity:                         pointer.From(flattenedIdentity),
+					// ConnectionStrings:                helpers.FlattenConnectionStrings(connectionStrings.Model),
+					// SiteCredentials: helpers.FlattenSiteCredentials(siteCredentials),
+					// AuthSettings:                     helpers.FlattenAuthSettings(auth.Model),
+					// AuthV2Settings:                   helpers.FlattenAuthV2Settings(authV2),
+					// Backup: helpers.FlattenBackupConfig(backup.Model),
+					// StorageAccounts: helpers.FlattenStorageAccounts(storageAccounts.Model),
+					Tags:     pointer.From(model.Tags),
+					Kind:     pointer.From(model.Kind),
+					Identity: pointer.From(flattenedIdentity),
 				}
 
 				if props := model.Properties; props != nil {
@@ -795,7 +795,7 @@ func (r LinuxFunctionAppSlotResource) Read() sdk.ResourceFunc {
 					}
 					state.SiteConfig = []helpers.SiteConfigLinuxFunctionAppSlot{*siteConfig}
 
-					state.unpackLinuxFunctionAppSettings(*appSettingsResp.Model, metadata)
+					// state.unpackLinuxFunctionAppSettings(*appSettingsResp.Model, metadata)
 
 					state.SiteConfig[0].AppServiceLogs = helpers.FlattenFunctionAppAppServiceLogs(logs.Model)
 
@@ -870,10 +870,10 @@ func (r LinuxFunctionAppSlotResource) Update() sdk.ResourceFunc {
 
 			model := *existing.Model
 
-			_, planSKU, err := helpers.ServicePlanInfoForAppSlot(ctx, metadata, *id)
-			if err != nil {
-				return err
-			}
+			// _, planSKU, err := helpers.ServicePlanInfoForAppSlot(ctx, metadata, *id)
+			// if err != nil {
+			// 	return err
+			// }
 
 			if metadata.ResourceData.HasChange("service_plan_id") {
 				o, n := metadata.ResourceData.GetChange("service_plan_id")
@@ -896,7 +896,7 @@ func (r LinuxFunctionAppSlotResource) Update() sdk.ResourceFunc {
 				model.Properties.ServerFarmId = pointer.To(newPlan.ID())
 			}
 
-			sendContentSettings := helpers.PlanIsElastic(planSKU) && !state.ForceDisableContentShare
+			// sendContentSettings := helpers.PlanIsElastic(planSKU) && !state.ForceDisableContentShare
 
 			if metadata.ResourceData.HasChange("enabled") {
 				model.Properties.Enabled = pointer.To(state.Enabled)
@@ -967,16 +967,16 @@ func (r LinuxFunctionAppSlotResource) Update() sdk.ResourceFunc {
 				}
 			}
 
-			if sendContentSettings {
-				appSettingsResp, err := client.ListApplicationSettingsSlot(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
-				}
-				if state.AppSettings == nil {
-					state.AppSettings = make(map[string]string)
-				}
-				state.AppSettings = helpers.ParseContentSettings(appSettingsResp.Model, state.AppSettings)
-			}
+			// if sendContentSettings {
+			// 	appSettingsResp, err := client.ListApplicationSettingsSlot(ctx, *id)
+			// 	if err != nil {
+			// 		return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
+			// 	}
+			// 	if state.AppSettings == nil {
+			// 		state.AppSettings = make(map[string]string)
+			// 	}
+			// 	state.AppSettings = helpers.ParseContentSettings(appSettingsResp.Model, state.AppSettings)
+			// }
 
 			// Note: We process this regardless to give us a "clean" view of service-side app_settings, so we can reconcile the user-defined entries later
 			siteConfig, err := helpers.ExpandSiteConfigLinuxFunctionAppSlot(state.SiteConfig, model.Properties.SiteConfig, metadata, state.FunctionExtensionsVersion, storageString, state.StorageUsesMSI)

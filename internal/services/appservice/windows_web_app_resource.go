@@ -490,11 +490,11 @@ func (r WindowsWebAppResource) Create() sdk.ResourceFunc {
 				}
 			}
 
-			if webApp.ZipDeployFile != "" {
-				if err = helpers.GetCredentialsAndPublish(ctx, client, *id, webApp.ZipDeployFile); err != nil {
-					return err
-				}
-			}
+			// if webApp.ZipDeployFile != "" {
+			// 	if err = helpers.GetCredentialsAndPublish(ctx, client, *id, webApp.ZipDeployFile); err != nil {
+			// 		return err
+			// 	}
+			// }
 
 			if !webApp.PublishingDeployBasicAuthEnabled {
 				sitePolicy := webapps.CsmPublishingCredentialsPoliciesEntity{
@@ -548,61 +548,61 @@ func (r WindowsWebAppResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("reading Site Config for Windows %s: %+v", id, err)
 			}
 
-			auth, err := client.GetAuthSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Auth Settings for Windows %s: %+v", id, err)
-			}
+			// auth, err := client.GetAuthSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Auth Settings for Windows %s: %+v", id, err)
+			// }
 
-			var authV2 webapps.SiteAuthSettingsV2
-			if strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
-				authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
-				}
-				authV2 = *authV2Resp.Model
-			}
+			// var authV2 webapps.SiteAuthSettingsV2
+			// if strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
+			// 	authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
+			// 	if err != nil {
+			// 		return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
+			// 	}
+			// 	authV2 = *authV2Resp.Model
+			// }
 
-			backup, err := client.GetBackupConfiguration(ctx, *id)
-			if err != nil {
-				if !response.WasNotFound(backup.HttpResponse) {
-					return fmt.Errorf("reading Backup Settings for Windows %s: %+v", *id, err)
-				}
-			}
+			// backup, err := client.GetBackupConfiguration(ctx, *id)
+			// if err != nil {
+			// 	if !response.WasNotFound(backup.HttpResponse) {
+			// 		return fmt.Errorf("reading Backup Settings for Windows %s: %+v", *id, err)
+			// 	}
+			// }
 
 			logsConfig, err := client.GetDiagnosticLogsConfiguration(ctx, *id)
 			if err != nil {
 				return fmt.Errorf("reading Diagnostic Logs information for Windows %s: %+v", *id, err)
 			}
 
-			appSettings, err := client.ListApplicationSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading App Settings for Windows %s: %+v", *id, err)
-			}
+			// appSettings, err := client.ListApplicationSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading App Settings for Windows %s: %+v", *id, err)
+			// }
 
 			stickySettings, err := client.ListSlotConfigurationNames(ctx, *id)
 			if err != nil {
 				return fmt.Errorf("reading Sticky Settings for Linux %s: %+v", *id, err)
 			}
 
-			storageAccounts, err := client.ListAzureStorageAccounts(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Storage Account information for Windows %s: %+v", *id, err)
-			}
+			// storageAccounts, err := client.ListAzureStorageAccounts(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Storage Account information for Windows %s: %+v", *id, err)
+			// }
 
-			connectionStrings, err := client.ListConnectionStrings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Connection String information for Windows %s: %+v", id, err)
-			}
+			// connectionStrings, err := client.ListConnectionStrings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Connection String information for Windows %s: %+v", id, err)
+			// }
 
-			siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
-			if err != nil {
-				return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
-			}
+			// siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
+			// }
 
-			siteMetadata, err := client.ListMetadata(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Site Metadata for Windows %s: %+v", id, err)
-			}
+			// siteMetadata, err := client.ListMetadata(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Site Metadata for Windows %s: %+v", id, err)
+			// }
 
 			basicAuthFTP := true
 			if basicAuthFTPResp, err := client.GetFtpAllowed(ctx, *id); err != nil || basicAuthFTPResp.Model == nil {
@@ -619,16 +619,16 @@ func (r WindowsWebAppResource) Read() sdk.ResourceFunc {
 			}
 
 			state := WindowsWebAppModel{
-				Name:              id.SiteName,
-				ResourceGroup:     id.ResourceGroupName,
-				AuthSettings:      helpers.FlattenAuthSettings(auth.Model),
-				AuthV2Settings:    helpers.FlattenAuthV2Settings(authV2),
-				Backup:            helpers.FlattenBackupConfig(backup.Model),
-				ConnectionStrings: helpers.FlattenConnectionStrings(connectionStrings.Model),
-				LogsConfig:        helpers.FlattenLogsConfig(logsConfig.Model),
-				StickySettings:    helpers.FlattenStickySettings(stickySettings.Model.Properties),
-				SiteCredentials:   helpers.FlattenSiteCredentials(siteCredentials),
-				StorageAccounts:   helpers.FlattenStorageAccounts(storageAccounts.Model),
+				Name:          id.SiteName,
+				ResourceGroup: id.ResourceGroupName,
+				// AuthSettings:      helpers.FlattenAuthSettings(auth.Model),
+				// AuthV2Settings:    helpers.FlattenAuthV2Settings(authV2),
+				// Backup:            helpers.FlattenBackupConfig(backup.Model),
+				// ConnectionStrings: helpers.FlattenConnectionStrings(connectionStrings.Model),
+				LogsConfig:     helpers.FlattenLogsConfig(logsConfig.Model),
+				StickySettings: helpers.FlattenStickySettings(stickySettings.Model.Properties),
+				// SiteCredentials: helpers.FlattenSiteCredentials(siteCredentials),
+				// StorageAccounts:   helpers.FlattenStorageAccounts(storageAccounts.Model),
 			}
 
 			if model := webApp.Model; model != nil {
@@ -678,15 +678,15 @@ func (r WindowsWebAppResource) Read() sdk.ResourceFunc {
 					state.PublishingFTPBasicAuthEnabled = basicAuthFTP
 					state.PublishingDeployBasicAuthEnabled = basicAuthWebDeploy
 
-					state.AppSettings = helpers.FlattenWebStringDictionary(appSettings.Model)
+					// state.AppSettings = helpers.FlattenWebStringDictionary(appSettings.Model)
 
 					currentStack := ""
-					if m := siteMetadata.Model; m != nil && m.Properties != nil {
-						p := *m.Properties
-						if v, ok := p["CURRENT_STACK"]; ok {
-							currentStack = v
-						}
-					}
+					// if m := siteMetadata.Model; m != nil && m.Properties != nil {
+					// 	p := *m.Properties
+					// 	if v, ok := p["CURRENT_STACK"]; ok {
+					// 		currentStack = v
+					// 	}
+					// }
 
 					siteConfig := helpers.SiteConfigWindows{}
 					if err := siteConfig.Flatten(webAppSiteConfig.Model.Properties, currentStack); err != nil {
@@ -1029,11 +1029,11 @@ func (r WindowsWebAppResource) Update() sdk.ResourceFunc {
 				}
 			}
 
-			if metadata.ResourceData.HasChange("zip_deploy_file") {
-				if err = helpers.GetCredentialsAndPublish(ctx, client, *id, state.ZipDeployFile); err != nil {
-					return err
-				}
-			}
+			// if metadata.ResourceData.HasChange("zip_deploy_file") {
+			// 	if err = helpers.GetCredentialsAndPublish(ctx, client, *id, state.ZipDeployFile); err != nil {
+			// 		return err
+			// 	}
+			// }
 
 			if metadata.ResourceData.HasChange("ftp_publish_basic_authentication_enabled") {
 				sitePolicy := webapps.CsmPublishingCredentialsPoliciesEntity{

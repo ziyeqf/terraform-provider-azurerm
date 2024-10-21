@@ -475,11 +475,11 @@ func (r LinuxWebAppResource) Create() sdk.ResourceFunc {
 				}
 			}
 
-			if webApp.ZipDeployFile != "" {
-				if err = helpers.GetCredentialsAndPublish(ctx, client, id, webApp.ZipDeployFile); err != nil {
-					return err
-				}
-			}
+			// if webApp.ZipDeployFile != "" {
+			// 	if err = helpers.GetCredentialsAndPublish(ctx, client, id, webApp.ZipDeployFile); err != nil {
+			// 		return err
+			// 	}
+			// }
 
 			if !webApp.PublishingDeployBasicAuthEnabled {
 				sitePolicy := webapps.CsmPublishingCredentialsPoliciesEntity{
@@ -532,56 +532,56 @@ func (r LinuxWebAppResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("reading Site Config for Linux %s: %+v", id, err)
 			}
 
-			auth, err := client.GetAuthSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
-			}
+			// auth, err := client.GetAuthSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
+			// }
 
-			var authV2 webapps.SiteAuthSettingsV2
-			if strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
-				authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
-				}
-				authV2 = *authV2Resp.Model
-			}
+			// var authV2 webapps.SiteAuthSettingsV2
+			// if strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
+			// 	authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
+			// 	if err != nil {
+			// 		return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
+			// 	}
+			// 	authV2 = *authV2Resp.Model
+			// }
 
-			backup, err := client.GetBackupConfiguration(ctx, *id)
-			if err != nil {
-				if !response.WasNotFound(backup.HttpResponse) {
-					return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
-				}
-			}
+			// backup, err := client.GetBackupConfiguration(ctx, *id)
+			// if err != nil {
+			// 	if !response.WasNotFound(backup.HttpResponse) {
+			// 		return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
+			// 	}
+			// }
 
 			logsConfig, err := client.GetDiagnosticLogsConfiguration(ctx, *id)
 			if err != nil {
 				return fmt.Errorf("reading Diagnostic Logs information for Linux %s: %+v", id, err)
 			}
 
-			appSettings, err := client.ListApplicationSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
-			}
+			// appSettings, err := client.ListApplicationSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
+			// }
 
 			stickySettings, err := client.ListSlotConfigurationNames(ctx, *id)
 			if err != nil {
 				return fmt.Errorf("reading Sticky Settings for Linux %s: %+v", id, err)
 			}
 
-			storageAccounts, err := client.ListAzureStorageAccounts(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Storage Account information for Linux %s: %+v", id, err)
-			}
+			// storageAccounts, err := client.ListAzureStorageAccounts(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Storage Account information for Linux %s: %+v", id, err)
+			// }
 
-			connectionStrings, err := client.ListConnectionStrings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
-			}
+			// connectionStrings, err := client.ListConnectionStrings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
+			// }
 
-			siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
-			if err != nil {
-				return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
-			}
+			// siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
+			// }
 
 			basicAuthFTP := true
 			if basicAuthFTPResp, err := client.GetFtpAllowed(ctx, *id); err != nil || basicAuthFTPResp.Model == nil {
@@ -598,20 +598,20 @@ func (r LinuxWebAppResource) Read() sdk.ResourceFunc {
 			}
 			if model := webApp.Model; model != nil {
 				state := LinuxWebAppModel{
-					Name:              id.SiteName,
-					ResourceGroup:     id.ResourceGroupName,
-					Location:          location.Normalize(model.Location),
-					AppSettings:       helpers.FlattenWebStringDictionary(appSettings.Model),
-					AuthSettings:      helpers.FlattenAuthSettings(auth.Model),
-					AuthV2Settings:    helpers.FlattenAuthV2Settings(authV2),
-					Backup:            helpers.FlattenBackupConfig(backup.Model),
-					Kind:              pointer.From(model.Kind),
-					LogsConfig:        helpers.FlattenLogsConfig(logsConfig.Model),
-					StickySettings:    helpers.FlattenStickySettings(stickySettings.Model.Properties),
-					StorageAccounts:   helpers.FlattenStorageAccounts(storageAccounts.Model),
-					ConnectionStrings: helpers.FlattenConnectionStrings(connectionStrings.Model),
-					SiteCredentials:   helpers.FlattenSiteCredentials(siteCredentials),
-					Tags:              pointer.From(model.Tags),
+					Name:          id.SiteName,
+					ResourceGroup: id.ResourceGroupName,
+					Location:      location.Normalize(model.Location),
+					// AppSettings:       helpers.FlattenWebStringDictionary(appSettings.Model),
+					// AuthSettings:      helpers.FlattenAuthSettings(auth.Model),
+					// AuthV2Settings:    helpers.FlattenAuthV2Settings(authV2),
+					// Backup:         helpers.FlattenBackupConfig(backup.Model),
+					Kind:           pointer.From(model.Kind),
+					LogsConfig:     helpers.FlattenLogsConfig(logsConfig.Model),
+					StickySettings: helpers.FlattenStickySettings(stickySettings.Model.Properties),
+					// StorageAccounts:   helpers.FlattenStorageAccounts(storageAccounts.Model),
+					// ConnectionStrings: helpers.FlattenConnectionStrings(connectionStrings.Model),
+					// SiteCredentials: helpers.FlattenSiteCredentials(siteCredentials),
+					Tags: pointer.From(model.Tags),
 				}
 
 				if props := model.Properties; props != nil {
@@ -976,11 +976,11 @@ func (r LinuxWebAppResource) Update() sdk.ResourceFunc {
 				}
 			}
 
-			if metadata.ResourceData.HasChange("zip_deploy_file") {
-				if err = helpers.GetCredentialsAndPublish(ctx, client, *id, state.ZipDeployFile); err != nil {
-					return err
-				}
-			}
+			// if metadata.ResourceData.HasChange("zip_deploy_file") {
+			// 	if err = helpers.GetCredentialsAndPublish(ctx, client, *id, state.ZipDeployFile); err != nil {
+			// 		return err
+			// 	}
+			// }
 
 			if metadata.ResourceData.HasChange("ftp_publish_basic_authentication_enabled") {
 				sitePolicy := webapps.CsmPublishingCredentialsPoliciesEntity{

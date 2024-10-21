@@ -301,44 +301,44 @@ func (d LinuxFunctionAppDataSource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("reading Linux %s: %+v", id, err)
 			}
 
-			appSettingsResp, err := client.ListApplicationSettings(ctx, id)
-			if err != nil {
-				return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
-			}
+			// appSettingsResp, err := client.ListApplicationSettings(ctx, id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading App Settings for Linux %s: %+v", id, err)
+			// }
 
-			connectionStrings, err := client.ListConnectionStrings(ctx, id)
-			if err != nil {
-				return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
-			}
+			// connectionStrings, err := client.ListConnectionStrings(ctx, id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Connection String information for Linux %s: %+v", id, err)
+			// }
 
 			stickySettings, err := client.ListSlotConfigurationNames(ctx, id)
 			if err != nil {
 				return fmt.Errorf("reading Sticky Settings for Linux %s: %+v", id, err)
 			}
 
-			siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, id)
-			if err != nil {
-				return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
-			}
+			// siteCredentials, err := helpers.ListPublishingCredentials(ctx, client, id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", id, err)
+			// }
 
-			auth, err := client.GetAuthSettings(ctx, id)
-			if err != nil {
-				return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
-			}
+			// auth, err := client.GetAuthSettings(ctx, id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading Auth Settings for Linux %s: %+v", id, err)
+			// }
 
-			var authV2 webapps.SiteAuthSettingsV2
-			authV2Resp, err := client.GetAuthSettingsV2(ctx, id)
-			if err != nil {
-				return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
-			}
-			authV2 = *authV2Resp.Model
+			// var authV2 webapps.SiteAuthSettingsV2
+			// authV2Resp, err := client.GetAuthSettingsV2(ctx, id)
+			// if err != nil {
+			// 	return fmt.Errorf("reading authV2 settings for Linux %s: %+v", id, err)
+			// }
+			// authV2 = *authV2Resp.Model
 
-			backup, err := client.GetBackupConfiguration(ctx, id)
-			if err != nil {
-				if !response.WasNotFound(backup.HttpResponse) {
-					return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
-				}
-			}
+			// backup, err := client.GetBackupConfiguration(ctx, id)
+			// if err != nil {
+			// 	if !response.WasNotFound(backup.HttpResponse) {
+			// 		return fmt.Errorf("reading Backup Settings for Linux %s: %+v", id, err)
+			// 	}
+			// }
 
 			logs, err := client.GetDiagnosticLogsConfiguration(ctx, id)
 			if err != nil {
@@ -364,11 +364,11 @@ func (d LinuxFunctionAppDataSource) Read() sdk.ResourceFunc {
 				ResourceGroup:                    id.ResourceGroupName,
 				PublishingFTPBasicAuthEnabled:    basicAuthFTP,
 				PublishingDeployBasicAuthEnabled: basicAuthWebDeploy,
-				ConnectionStrings:                helpers.FlattenConnectionStrings(connectionStrings.Model),
-				SiteCredentials:                  helpers.FlattenSiteCredentials(siteCredentials),
-				AuthSettings:                     helpers.FlattenAuthSettings(auth.Model),
-				AuthV2Settings:                   helpers.FlattenAuthV2Settings(authV2),
-				Backup:                           helpers.FlattenBackupConfig(backup.Model),
+				// ConnectionStrings:                helpers.FlattenConnectionStrings(connectionStrings.Model),
+				// SiteCredentials: helpers.FlattenSiteCredentials(siteCredentials),
+				// AuthSettings:                     helpers.FlattenAuthSettings(auth.Model),
+				// AuthV2Settings:                   helpers.FlattenAuthV2Settings(authV2),
+				// Backup: helpers.FlattenBackupConfig(backup.Model),
 			}
 
 			if model := functionApp.Model; model != nil {
@@ -419,7 +419,7 @@ func (d LinuxFunctionAppDataSource) Read() sdk.ResourceFunc {
 				}
 				state.SiteConfig = []helpers.SiteConfigLinuxFunctionApp{*siteConfig}
 
-				state.unpackLinuxFunctionAppSettings(appSettingsResp.Model, metadata)
+				// state.unpackLinuxFunctionAppSettings(appSettingsResp.Model, metadata)
 
 				state.SiteConfig[0].AppServiceLogs = helpers.FlattenFunctionAppAppServiceLogs(logs.Model)
 
