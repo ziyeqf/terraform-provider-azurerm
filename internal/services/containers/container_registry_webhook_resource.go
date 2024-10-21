@@ -199,10 +199,10 @@ func resourceContainerRegistryWebhookRead(d *pluginsdk.ResourceData, meta interf
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	callbackConfig, err := client.GetCallbackConfig(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("retrieving Callback Config for %s: %+v", *id, err)
-	}
+	// callbackConfig, err := client.GetCallbackConfig(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Callback Config for %s: %+v", *id, err)
+	// }
 
 	d.Set("resource_group_name", id.ResourceGroupName)
 	d.Set("registry_name", id.RegistryName)
@@ -236,19 +236,19 @@ func resourceContainerRegistryWebhookRead(d *pluginsdk.ResourceData, meta interf
 		}
 	}
 
-	if callbackModel := callbackConfig.Model; callbackModel != nil {
-		if props := callbackModel; props != nil {
-			d.Set("service_uri", props.ServiceUri)
+	// if callbackModel := callbackConfig.Model; callbackModel != nil {
+	// 	if props := callbackModel; props != nil {
+	// 		d.Set("service_uri", props.ServiceUri)
 
-			customHeaders := make(map[string]string)
-			if props.CustomHeaders != nil {
-				for k, v := range *props.CustomHeaders {
-					customHeaders[k] = v
-				}
-			}
-			d.Set("custom_headers", customHeaders)
-		}
-	}
+	// 		customHeaders := make(map[string]string)
+	// 		if props.CustomHeaders != nil {
+	// 			for k, v := range *props.CustomHeaders {
+	// 				customHeaders[k] = v
+	// 			}
+	// 		}
+	// 		d.Set("custom_headers", customHeaders)
+	// 	}
+	// }
 	return nil
 }
 
