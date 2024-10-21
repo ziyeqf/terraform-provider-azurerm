@@ -2256,23 +2256,23 @@ func resourceStorageAccountRead(d *pluginsdk.ResourceData, meta interface{}) err
 		return fmt.Errorf("setting `share_properties` for %s: %+v", *id, err)
 	}
 
-	staticWebsiteProperties := make([]interface{}, 0)
-	if supportLevel.supportStaticWebsite {
-		accountsClient, err := storageClient.AccountsDataPlaneClient(ctx, *account, storageClient.DataPlaneOperationSupportingAnyAuthMethod())
-		if err != nil {
-			return fmt.Errorf("building Accounts Data Plane Client: %s", err)
-		}
+	// staticWebsiteProperties := make([]interface{}, 0)
+	// if supportLevel.supportStaticWebsite {
+	// 	accountsClient, err := storageClient.AccountsDataPlaneClient(ctx, *account, storageClient.DataPlaneOperationSupportingAnyAuthMethod())
+	// 	if err != nil {
+	// 		return fmt.Errorf("building Accounts Data Plane Client: %s", err)
+	// 	}
 
-		staticWebsiteProps, err := accountsClient.GetServiceProperties(ctx, id.StorageAccountName)
-		if err != nil {
-			return fmt.Errorf("retrieving static website properties for %s: %+v", *id, err)
-		}
+	// 	staticWebsiteProps, err := accountsClient.GetServiceProperties(ctx, id.StorageAccountName)
+	// 	if err != nil {
+	// 		return fmt.Errorf("retrieving static website properties for %s: %+v", *id, err)
+	// 	}
 
-		staticWebsiteProperties = flattenAccountStaticWebsiteProperties(staticWebsiteProps)
-	}
-	if err := d.Set("static_website", staticWebsiteProperties); err != nil {
-		return fmt.Errorf("setting `static_website`: %+v", err)
-	}
+	// 	staticWebsiteProperties = flattenAccountStaticWebsiteProperties(staticWebsiteProps)
+	// }
+	// if err := d.Set("static_website", staticWebsiteProperties); err != nil {
+	// 	return fmt.Errorf("setting `static_website`: %+v", err)
+	// }
 
 	return nil
 }
