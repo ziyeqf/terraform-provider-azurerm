@@ -320,7 +320,7 @@ func resourceHDInsightInteractiveQueryClusterCreate(d *pluginsdk.ResourceData, m
 
 func resourceHDInsightInteractiveQueryClusterRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	clustersClient := meta.(*clients.Client).HDInsight.Clusters
-	configurationsClient := meta.(*clients.Client).HDInsight.Configurations
+	//configurationsClient := meta.(*clients.Client).HDInsight.Configurations
 	extensionsClient := meta.(*clients.Client).HDInsight.Extensions
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
@@ -342,20 +342,20 @@ func resourceHDInsightInteractiveQueryClusterRead(d *pluginsdk.ResourceData, met
 	}
 
 	// Each call to configurationsClient methods is HTTP request. Getting all settings in one operation
-	configurationsResp, err := configurationsClient.List(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("retrieving Configuration for Interactive Query %s: %+v", id, err)
-	}
+	// configurationsResp, err := configurationsClient.List(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Configuration for Interactive Query %s: %+v", id, err)
+	// }
 
-	configurations := make(map[string]map[string]string)
-	if model := configurationsResp.Model; model != nil && model.Configurations != nil {
-		configurations = *model.Configurations
-	}
+	// configurations := make(map[string]map[string]string)
+	// if model := configurationsResp.Model; model != nil && model.Configurations != nil {
+	// 	configurations = *model.Configurations
+	// }
 
-	gateway, exists := configurations["gateway"]
-	if !exists {
-		return fmt.Errorf("retrieving Gateway Configuration for Interactive Query %s: %+v", id, err)
-	}
+	// gateway, exists := configurations["gateway"]
+	// if !exists {
+	// 	return fmt.Errorf("retrieving Gateway Configuration for Interactive Query %s: %+v", id, err)
+	// }
 
 	monitor, err := extensionsClient.GetMonitoringStatus(ctx, *id)
 	if err != nil {
@@ -383,11 +383,11 @@ func resourceHDInsightInteractiveQueryClusterRead(d *pluginsdk.ResourceData, met
 				return fmt.Errorf("flattening `component_version`: %+v", err)
 			}
 
-			if err := d.Set("gateway", FlattenHDInsightsConfigurations(gateway, d)); err != nil {
-				return fmt.Errorf("flattening `gateway`: %+v", err)
-			}
+			// if err := d.Set("gateway", FlattenHDInsightsConfigurations(gateway, d)); err != nil {
+			// 	return fmt.Errorf("flattening `gateway`: %+v", err)
+			// }
 
-			flattenHDInsightsMetastores(d, configurations)
+			// flattenHDInsightsMetastores(d, configurations)
 
 			if props.EncryptionInTransitProperties != nil {
 				d.Set("encryption_in_transit_enabled", props.EncryptionInTransitProperties.IsEncryptionInTransitEnabled)

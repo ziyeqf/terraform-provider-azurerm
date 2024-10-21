@@ -285,7 +285,7 @@ func resourceHDInsightHBaseClusterCreate(d *pluginsdk.ResourceData, meta interfa
 
 func resourceHDInsightHBaseClusterRead(d *pluginsdk.ResourceData, meta interface{}) error {
 	clustersClient := meta.(*clients.Client).HDInsight.Clusters
-	configurationsClient := meta.(*clients.Client).HDInsight.Configurations
+	//configurationsClient := meta.(*clients.Client).HDInsight.Configurations
 	extensionsClient := meta.(*clients.Client).HDInsight.Extensions
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
@@ -306,21 +306,21 @@ func resourceHDInsightHBaseClusterRead(d *pluginsdk.ResourceData, meta interface
 		return fmt.Errorf("retrieving HBase %s: %+v", id, err)
 	}
 
-	// Each call to configurationsClient methods is HTTP request. Getting all settings in one operation
-	configurationsResp, err := configurationsClient.List(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("retrieving Configurations for HBase %s: %+v", id, err)
-	}
+	// // Each call to configurationsClient methods is HTTP request. Getting all settings in one operation
+	// configurationsResp, err := configurationsClient.List(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Configurations for HBase %s: %+v", id, err)
+	// }
 
-	configurations := make(map[string]map[string]string)
-	if model := configurationsResp.Model; model != nil && model.Configurations != nil {
-		configurations = *model.Configurations
-	}
+	// configurations := make(map[string]map[string]string)
+	// if model := configurationsResp.Model; model != nil && model.Configurations != nil {
+	// 	configurations = *model.Configurations
+	// }
 
-	gateway, exists := configurations["gateway"]
-	if !exists {
-		return fmt.Errorf("retrieving Gateway Configuration for HBase %s: %+v", id, err)
-	}
+	// gateway, exists := configurations["gateway"]
+	// if !exists {
+	// 	return fmt.Errorf("retrieving Gateway Configuration for HBase %s: %+v", id, err)
+	// }
 
 	monitor, err := extensionsClient.GetMonitoringStatus(ctx, *id)
 	if err != nil {
@@ -348,11 +348,11 @@ func resourceHDInsightHBaseClusterRead(d *pluginsdk.ResourceData, meta interface
 				return fmt.Errorf("failure flattening `component_version`: %+v", err)
 			}
 
-			if err := d.Set("gateway", FlattenHDInsightsConfigurations(gateway, d)); err != nil {
-				return fmt.Errorf("failure flattening `gateway`: %+v", err)
-			}
+			// if err := d.Set("gateway", FlattenHDInsightsConfigurations(gateway, d)); err != nil {
+			// 	return fmt.Errorf("failure flattening `gateway`: %+v", err)
+			// }
 
-			flattenHDInsightsMetastores(d, configurations)
+			// flattenHDInsightsMetastores(d, configurations)
 
 			if err := d.Set("network", flattenHDInsightsNetwork(props.NetworkProperties)); err != nil {
 				return fmt.Errorf("flattening `network`: %+v", err)
