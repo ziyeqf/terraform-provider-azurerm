@@ -2224,24 +2224,24 @@ func resourceStorageAccountRead(d *pluginsdk.ResourceData, meta interface{}) err
 		return fmt.Errorf("setting `blob_properties` for %s: %+v", *id, err)
 	}
 
-	queueProperties := make([]interface{}, 0)
-	if supportLevel.supportQueue {
-		queueClient, err := storageClient.QueuesDataPlaneClient(ctx, *account, storageClient.DataPlaneOperationSupportingAnyAuthMethod())
-		if err != nil {
-			return fmt.Errorf("building Queues Client: %s", err)
-		}
+	// queueProperties := make([]interface{}, 0)
+	// if supportLevel.supportQueue {
+	// 	queueClient, err := storageClient.QueuesDataPlaneClient(ctx, *account, storageClient.DataPlaneOperationSupportingAnyAuthMethod())
+	// 	if err != nil {
+	// 		return fmt.Errorf("building Queues Client: %s", err)
+	// 	}
 
-		queueProps, err := queueClient.GetServiceProperties(ctx)
-		if err != nil {
-			return fmt.Errorf("retrieving queue properties for %s: %+v", *id, err)
-		}
+	// 	queueProps, err := queueClient.GetServiceProperties(ctx)
+	// 	if err != nil {
+	// 		return fmt.Errorf("retrieving queue properties for %s: %+v", *id, err)
+	// 	}
 
-		queueProperties = flattenAccountQueueProperties(queueProps)
-	}
+	// 	queueProperties = flattenAccountQueueProperties(queueProps)
+	// }
 
-	if err := d.Set("queue_properties", queueProperties); err != nil {
-		return fmt.Errorf("setting `queue_properties`: %+v", err)
-	}
+	// if err := d.Set("queue_properties", queueProperties); err != nil {
+	// 	return fmt.Errorf("setting `queue_properties`: %+v", err)
+	// }
 
 	shareProperties := make([]interface{}, 0)
 	if supportLevel.supportShare {
