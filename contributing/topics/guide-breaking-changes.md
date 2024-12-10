@@ -166,7 +166,7 @@ The following example follows a fictional resource that will have the following 
          },
       }
    
-      if !features.FivePointOhBeta {
+      if !features.FivePointOhBeta() {
          args["enable_scaling"] = &pluginsdk.Schema{
             Type:     pluginsdk.TypeBool,
             Optional: true,
