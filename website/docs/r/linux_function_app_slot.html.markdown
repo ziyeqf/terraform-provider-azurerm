@@ -126,6 +126,8 @@ The following arguments are supported:
 
 * `tags` - (Optional) A mapping of tags which should be assigned to the Linux Function App.
 
+* `virtual_network_backup_restore_enabled` - (Optional) Whether backup and restore operations over the linked virtual network are enabled. Defaults to `false`.
+
 * `virtual_network_subnet_id` - (Optional) The subnet id which will be used by this Function App Slot for [regional virtual network integration](https://docs.microsoft.com/en-us/azure/app-service/overview-vnet-integration#regional-virtual-network-integration).
 
 ~> **NOTE on regional virtual network integration:** The AzureRM Terraform provider provides regional virtual network integration via the standalone resource [app_service_virtual_network_swift_connection](app_service_virtual_network_swift_connection.html) and in-line within this resource using the `virtual_network_subnet_id` property. You cannot use both methods simultaneously. If the virtual network is set via the resource `app_service_virtual_network_swift_connection` then `ignore_changes` should be used in the function app slot configuration.
@@ -493,13 +495,13 @@ A `site_config` block supports the following:
 
 * `managed_pipeline_mode` - (Optional) The Managed Pipeline mode. Possible values include: `Integrated`, `Classic`. Defaults to `Integrated`.
 
-* `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
+* `minimum_tls_version` - (Optional) The configures the minimum version of TLS required for SSL requests. Possible values include: `1.0`, `1.1`, `1.2` and `1.3`. Defaults to `1.2`.
 
 * `pre_warmed_instance_count` - (Optional) The number of pre-warmed instances for this function app. Only affects apps on an Elastic Premium plan.
 
 * `remote_debugging_enabled` - (Optional) Should Remote Debugging be enabled. Defaults to `false`.
 
-* `remote_debugging_version` - (Optional) The Remote Debugging Version. Possible values include `VS2017`, `VS2019`, and `VS2022`
+* `remote_debugging_version` - (Optional) The Remote Debugging Version. Currently only `VS2022` is supported.
 
 * `runtime_scale_monitoring_enabled` - (Optional) Should Functions Runtime Scale Monitoring be enabled.
 
@@ -509,7 +511,7 @@ A `site_config` block supports the following:
 
 * `scm_ip_restriction_default_action` - (Optional) The Default action for traffic that does not match any `scm_ip_restriction` rule. possible values include `Allow` and `Deny`. Defaults to `Allow`.
 
-* `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, and `1.2`. Defaults to `1.2`.
+* `scm_minimum_tls_version` - (Optional) Configures the minimum version of TLS required for SSL requests to the SCM site Possible values include: `1.0`, `1.1`, `1.2` and `1.3`. Defaults to `1.2`.
 
 * `scm_type` - The SCM Type in use by the Linux Function App.
 
@@ -637,13 +639,13 @@ An `application_stack` block supports the following:
 
 * `docker` - (Optional) a `docker` block as detailed below.
 
-* `dotnet_version` - (Optional) The version of .Net. Possible values are `3.1`, `6.0`, `7.0` and `8.0`.
+* `dotnet_version` - (Optional) The version of .Net. Possible values are `3.1`, `6.0`, `7.0`, `8.0` and `9.0`.
 
 * `use_dotnet_isolated_runtime` - (Optional) Should the DotNet process use an isolated runtime. Defaults to `false`.
 
 * `java_version` - (Optional) The version of Java to use. Possible values are `8`, `11` & `17` (In-Preview).
 
-* `node_version` - (Optional) The version of Node to use. Possible values include `12`, `14`, `16`, `18` and `20`
+* `node_version` - (Optional) The version of Node to use. Possible values include `12`, `14`, `16`, `18`, `20` and `22`.
 
 * `powershell_core_version` - (Optional) The version of PowerShell Core to use. Possibles values are `7` , `7.2`, and `7.4`.
 

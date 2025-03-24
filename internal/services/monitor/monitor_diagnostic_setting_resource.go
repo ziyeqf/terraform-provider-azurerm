@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/go-azure-helpers/lang/pointer"
 	"github.com/hashicorp/go-azure-helpers/lang/response"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonids"
 	authRuleParse "github.com/hashicorp/go-azure-sdk/resource-manager/eventhub/2021-11-01/authorizationrulesnamespaces"
@@ -335,10 +336,10 @@ func resourceMonitorDiagnosticSettingUpdate(d *pluginsdk.ResourceData, meta inte
 
 	var logs []diagnosticsettings.LogSettings
 	hasEnabledLogs := false
-	logChanged := false
 
 	if d.HasChange("enabled_log") {
 		enabledLogs := d.Get("enabled_log").(*pluginsdk.Set).List()
+		log.Printf("[DEBUG] enabled_logs: %+v", enabledLogs)
 		if len(enabledLogs) > 0 {
 			expandEnabledLogs, err := expandMonitorDiagnosticsSettingsEnabledLogs(enabledLogs)
 			if err != nil {
@@ -346,8 +347,15 @@ func resourceMonitorDiagnosticSettingUpdate(d *pluginsdk.ResourceData, meta inte
 			}
 			logs = *expandEnabledLogs
 			hasEnabledLogs = true
+		} else if existing.Model != nil && existing.Model.Properties != nil && existing.Model.Properties.Logs != nil {
+			// if the enabled_log is updated to empty, we disable the log explicitly
+			for _, v := range *existing.Model.Properties.Logs {
+				disabledLog := v
+				disabledLog.Enabled = false
+				logs = append(logs, disabledLog)
+			}
 		}
-	} else if !logChanged && existing.Model != nil && existing.Model.Properties != nil && existing.Model.Properties.Logs != nil {
+	} else if existing.Model != nil && existing.Model.Properties != nil && existing.Model.Properties.Logs != nil {
 		logs = *existing.Model.Properties.Logs
 		for _, v := range logs {
 			if v.Enabled {
@@ -443,7 +451,7 @@ func resourceMonitorDiagnosticSettingRead(d *pluginsdk.ResourceData, meta interf
 			d.Set("eventhub_name", props.EventHubName)
 			eventhubAuthorizationRuleId := ""
 			if props.EventHubAuthorizationRuleId != nil && *props.EventHubAuthorizationRuleId != "" {
-				authRuleId := utils.NormalizeNilableString(props.EventHubAuthorizationRuleId)
+				authRuleId := pointer.From(props.EventHubAuthorizationRuleId)
 				parsedId, err := authRuleParse.ParseAuthorizationRuleIDInsensitively(authRuleId)
 				if err != nil {
 					return err
@@ -463,21 +471,17 @@ func resourceMonitorDiagnosticSettingRead(d *pluginsdk.ResourceData, meta interf
 			}
 			d.Set("log_analytics_workspace_id", workspaceId)
 
-			storageAccountId := ""
 			if props.StorageAccountId != nil && *props.StorageAccountId != "" {
 				parsedId, err := commonids.ParseStorageAccountIDInsensitively(*props.StorageAccountId)
 				if err != nil {
 					return err
 				}
 
-				storageAccountId = parsedId.ID()
-				d.Set("storage_account_id", storageAccountId)
+				d.Set("storage_account_id", parsedId.ID())
 			}
 
-			partnerSolutionId := ""
 			if props.MarketplacePartnerId != nil && *props.MarketplacePartnerId != "" {
-				partnerSolutionId = *props.MarketplacePartnerId
-				d.Set("partner_solution_id", partnerSolutionId)
+				d.Set("partner_solution_id", props.MarketplacePartnerId)
 			}
 
 			logAnalyticsDestinationType := ""

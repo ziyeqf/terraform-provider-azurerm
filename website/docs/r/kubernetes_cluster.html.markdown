@@ -10,6 +10,8 @@ description: |-
 
 Manages a Managed Kubernetes Cluster (also known as AKS / Azure Kubernetes Service)
 
+!> **Note:** As per Microsoft's AKS preview API [deprecation plan](https://learn.microsoft.com/en-us/azure/aks/concepts-preview-api-life-cycle#upcoming-deprecations) several preview APIs have a deprecation schedule and Microsoft recommends performing updates before the deprecation date. Additionally, Microsoft and HashiCorp recommend upgrading to the penultimate 3.x version v3.116.0 to avoid disruption or, ideally, to the latest 4.x provider version to take advantage of the most current API version that the provider supports. Please see [this GitHub issue](https://github.com/hashicorp/terraform-provider-azurerm/issues/28707) for more details.
+
 -> **Note:** Due to the fast-moving nature of AKS, we recommend using the latest version of the Azure Provider when using AKS - you can find [the latest version of the Azure Provider here](https://registry.terraform.io/providers/hashicorp/azurerm/latest).
 
 ~> **Note:** All arguments including the client secret will be stored in the raw state as plain-text. [Read more about sensitive data in state](/docs/state/sensitive-data.html).
@@ -69,7 +71,7 @@ The following arguments are supported:
 
 * `resource_group_name` - (Required) Specifies the Resource Group where the Managed Kubernetes Cluster should exist. Changing this forces a new resource to be created.
 
-* `default_node_pool` - (Required) A `default_node_pool` block as defined below.
+* `default_node_pool` - (Required) Specifies configuration for "System" mode node pool. A `default_node_pool` block as defined below.
 
 * `dns_prefix` - (Optional) DNS prefix specified when creating the managed cluster. Possible values must begin and end with a letter or number, contain only letters, numbers, and hyphens and be between 1 and 54 characters in length. Changing this forces a new resource to be created.
 
@@ -103,7 +105,7 @@ In addition, one of either `identity` or `service_principal` blocks must be spec
 
 * `disk_encryption_set_id` - (Optional) The ID of the Disk Encryption Set which should be used for the Nodes and Volumes. More information [can be found in the documentation](https://docs.microsoft.com/azure/aks/azure-disk-customer-managed-keys). Changing this forces a new resource to be created.
 
-* `edge_zone` - (Optional) Specifies the Edge Zone within the Azure Region where this Managed Kubernetes Cluster should exist. Changing this forces a new resource to be created.
+* `edge_zone` - (Optional) Specifies the Extended Zone (formerly called Edge Zone) within the Azure Region where this Managed Kubernetes Cluster should exist. Changing this forces a new resource to be created.
 
 * `http_application_routing_enabled` - (Optional) Should HTTP Application Routing be enabled?
 
@@ -245,6 +247,8 @@ resource "azurerm_kubernetes_cluster" "example" {
 
 * `tags` - (Optional) A mapping of tags to assign to the resource.
 
+* `upgrade_override` - (Optional) A `upgrade_override` block as defined below.
+
 * `web_app_routing` - (Optional) A `web_app_routing` block as defined below.
 
 * `windows_profile` - (Optional) A `windows_profile` block as defined below.
@@ -286,7 +290,13 @@ An `auto_scaler_profile` block supports the following:
 
 * `balance_similar_node_groups` - (Optional) Detect similar node groups and balance the number of nodes between them. Defaults to `false`.
 
+* `daemonset_eviction_for_empty_nodes_enabled` - (Optional) Whether DaemonSet pods will be gracefully terminated from empty nodes. Defaults to `false`.
+
+* `daemonset_eviction_for_occupied_nodes_enabled` - (Optional) Whether DaemonSet pods will be gracefully terminated from non-empty nodes. Defaults to `true`.
+
 * `expander` - (Optional) Expander to use. Possible values are `least-waste`, `priority`, `most-pods` and `random`. Defaults to `random`.
+
+* `ignore_daemonsets_utilization_enabled` - (Optional) Whether DaemonSet pods will be ignored when calculating resource utilization for scale down. Defaults to `false`.
 
 * `max_graceful_termination_sec` - (Optional) Maximum number of seconds the cluster autoscaler waits for pod termination when trying to scale down a node. Defaults to `600`.
 
@@ -468,7 +478,7 @@ A `key_vault_secrets_provider` block supports the following:
 
 * `secret_rotation_enabled` - (Optional) Should the secret store CSI driver on the AKS cluster be enabled?
 
-* `secret_rotation_interval` - (Optional) The interval to poll for secret rotation. This attribute is only set when `secret_rotation` is true. Defaults to `2m`.
+* `secret_rotation_interval` - (Optional) The interval to poll for secret rotation. This attribute is only set when `secret_rotation_enabled` is true. Defaults to `2m`.
 
 -> **Note:** To enable`key_vault_secrets_provider` either `secret_rotation_enabled` or `secret_rotation_interval` must be specified.
 
@@ -529,8 +539,6 @@ A `node_network_profile` block supports the following:
 * `application_security_group_ids` - (Optional) A list of Application Security Group IDs which should be associated with this Node Pool.
 
 * `node_public_ip_tags` - (Optional) Specifies a mapping of tags to the instance-level public IPs. Changing this forces a new resource to be created.
-
--> **Note:** This requires that the Preview Feature `Microsoft.ContainerService/NodePublicIPTagsPreview` is enabled and the Resource Provider is re-registered, see [the documentation](https://learn.microsoft.com/en-us/azure/aks/use-node-public-ips#use-public-ip-tags-on-node-public-ips-preview) for more information.
 
 ---
 
@@ -692,6 +700,8 @@ Examples of how to use [AKS with Advanced Networking](https://docs.microsoft.com
 A `load_balancer_profile` block supports the following:
 
 ~> **Note:** The fields `managed_outbound_ip_count`, `outbound_ip_address_ids` and `outbound_ip_prefix_ids` are mutually exclusive. Note that when specifying `outbound_ip_address_ids` ([azurerm_public_ip](/docs/providers/azurerm/r/public_ip.html)) the SKU must be `standard`.
+
+* `backend_pool_type` - (Optional) The type of the managed inbound Load Balancer Backend Pool. Possible values are `NodeIP` and `NodeIPConfiguration`. Defaults to `NodeIPConfiguration`. See [the documentation](https://learn.microsoft.com/en-us/azure/aks/load-balancer-standard#change-the-inbound-pool-type) for more information.
 
 * `idle_timeout_in_minutes` - (Optional) Desired outbound flow idle timeout in minutes for the cluster load balancer. Must be between `4` and `100` inclusive. Defaults to `30`.
 
@@ -869,6 +879,20 @@ A `sysctl_config` block supports the following:
 
 ---
 
+The `upgrade_override` block supports the following:
+
+-> **Note:** Once set, the `upgrade_override` block cannot be removed from the configuration.
+
+* `force_upgrade_enabled` - (Required) Whether to force upgrade the cluster. Possible values are `true` or `false`.
+
+!> **Note:** The `force_upgrade_enabled` field instructs the upgrade operation to bypass upgrade protections (e.g. checking for deprecated API usage) which may render the cluster inoperative after the upgrade process has completed. Use the `force_upgrade_enabled` option with extreme caution only.
+
+* `effective_until` - (Optional) Specifies the duration, in RFC 3339 format (e.g., `2025-10-01T13:00:00Z`), the `upgrade_override` values are effective. This field must be set for the `upgrade_override` values to take effect. The date-time must be within the next 30 days.
+
+-> **Note:** This only matches the start time of an upgrade, and the effectiveness won't change once an upgrade starts even if the `effective_until` value expires as the upgrade proceeds.
+
+---
+
 A `web_app_routing` block supports the following:
 
 * `dns_zone_ids` - (Required) Specifies the list of the DNS Zone IDs in which DNS entries are created for applications deployed to the cluster when Web App Routing is enabled. If not using Bring-Your-Own DNS zones this property should be set to an empty list.
@@ -999,15 +1023,17 @@ The `kubelet_identity` block exports the following:
 
 ---
 
-A `load_balancer_profile` block exports the following:
+A `network_profile` block exports the following:
 
-* `effective_outbound_ips` - The outcome (resource IDs) of the specified arguments.
+* `load_balancer_profile` - A `load_balancer_profile` block as defined below.
+
+* `nat_gateway_profile` - A `nat_gateway_profile` block as defined below.
 
 ---
 
-A `network_profile` block supports the following:
+A `load_balancer_profile` block exports the following:
 
-* `nat_gateway_profile` - A `nat_gateway_profile` block as defined below.
+* `effective_outbound_ips` - The outcome (resource IDs) of the specified arguments.
 
 ---
 

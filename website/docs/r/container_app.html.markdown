@@ -32,6 +32,7 @@ resource "azurerm_container_app_environment" "example" {
   resource_group_name        = azurerm_resource_group.example.name
   log_analytics_workspace_id = azurerm_log_analytics_workspace.example.id
 }
+
 resource "azurerm_container_app" "example" {
   name                         = "example-app"
   container_app_environment_id = azurerm_container_app_environment.example.id
@@ -79,6 +80,8 @@ The following arguments are supported:
 
 ~> **Note:** Omit this value to use the default `Consumption` Workload Profile.
 
+* `max_inactive_revisions` - (Optional) The maximum of inactive revisions allowed for this Container App.
+
 * `tags` - (Optional) A mapping of tags to assign to the Container App.
 
 ---
@@ -120,6 +123,8 @@ A `template` block supports the following:
 * `tcp_scale_rule` - (Optional) One or more `tcp_scale_rule` blocks as defined below.
 
 * `revision_suffix` - (Optional) The suffix for the revision. This value must be unique for the lifetime of the Resource. If omitted the service will use a hash function to create one.
+
+* `termination_grace_period_seconds` - (Optional)   The time in seconds after the container is sent the termination signal before the process if forcibly killed.
 
 * `volume` - (Optional) A `volume` block as detailed below.
 
@@ -184,6 +189,8 @@ A `volume` block supports the following:
 * `storage_name` - (Optional) The name of the `AzureFile` storage.
 
 * `storage_type` - (Optional) The type of storage volume. Possible values are `AzureFile`, `EmptyDir` and `Secret`. Defaults to `EmptyDir`.
+
+* `mount_options` - Mount options used while mounting the AzureFile. Must be a comma-separated string e.g. `dir_mode=0751,file_mode=0751`.
 
 ---
 
@@ -257,15 +264,13 @@ A `liveness_probe` block supports the following:
 
 * `host` - (Optional) The probe hostname. Defaults to the pod IP address. Setting a value for `Host` in `headers` can be used to override this for `HTTP` and `HTTPS` type probes.
 
-* `initial_delay` - (Optional) The time in seconds to wait after the container has started before the probe is started.
+* `initial_delay` - (Optional) The number of seconds elapsed after the container has started before the probe is initiated. Possible values are between `0` and `60`. Defaults to `1` seconds.
 
 * `interval_seconds` - (Optional) How often, in seconds, the probe should run. Possible values are in the range `1` - `240`. Defaults to `10`.
 
 * `path` - (Optional) The URI to use with the `host` for http type probes. Not valid for `TCP` type probes. Defaults to `/`.
 
 * `port` - (Required) The port number on which to connect. Possible values are between `1` and `65535`.
-
-* `termination_grace_period_seconds` - The time in seconds after the container is sent the termination signal before the process if forcibly killed.
 
 * `timeout` - (Optional) Time in seconds after which the probe times out. Possible values are in the range `1` - `240`. Defaults to `1`.
 
@@ -295,11 +300,13 @@ An `env` block supports the following:
 
 A `readiness_probe` block supports the following:
 
-* `failure_count_threshold` - (Optional) The number of consecutive failures required to consider this probe as failed. Possible values are between `1` and `10`. Defaults to `3`.
+* `failure_count_threshold` - (Optional) The number of consecutive failures required to consider this probe as failed. Possible values are between `1` and `30`. Defaults to `3`.
 
 * `header` - (Optional) A `header` block as detailed below.
 
 * `host` - (Optional) The probe hostname. Defaults to the pod IP address. Setting a value for `Host` in `headers` can be used to override this for `HTTP` and `HTTPS` type probes.
+
+* `initial_delay` - (Optional) The number of seconds elapsed after the container has started before the probe is initiated. Possible values are between `0` and `60`. Defaults to `0` seconds.
 
 * `interval_seconds` - (Optional) How often, in seconds, the probe should run. Possible values are between `1` and `240`. Defaults to `10`
 
@@ -325,19 +332,19 @@ A `header` block supports the following:
 
 A `startup_probe` block supports the following:
 
-* `failure_count_threshold` - (Optional) The number of consecutive failures required to consider this probe as failed. Possible values are between `1` and `10`. Defaults to `3`.
+* `failure_count_threshold` - (Optional) The number of consecutive failures required to consider this probe as failed. Possible values are between `1` and `30`. Defaults to `3`.
 
 * `header` - (Optional) A `header` block as detailed below.
 
 * `host` - (Optional) The value for the host header which should be sent with this probe. If unspecified, the IP Address of the Pod is used as the host header. Setting a value for `Host` in `headers` can be used to override this for `HTTP` and `HTTPS` type probes.
+
+* `initial_delay` - (Optional) The number of seconds elapsed after the container has started before the probe is initiated. Possible values are between `0` and `60`. Defaults to `0` seconds.
 
 * `interval_seconds` - (Optional) How often, in seconds, the probe should run. Possible values are between `1` and `240`. Defaults to `10`
 
 * `path` - (Optional) The URI to use with the `host` for http type probes. Not valid for `TCP` type probes. Defaults to `/`.
 
 * `port` - (Required) The port number on which to connect. Possible values are between `1` and `65535`.
-
-* `termination_grace_period_seconds` - The time in seconds after the container is sent the termination signal before the process if forcibly killed.
 
 * `timeout` - (Optional) Time in seconds after which the probe times out. Possible values are in the range `1` - `240`. Defaults to `1`.
 
@@ -359,6 +366,7 @@ A `volume_mounts` block supports the following:
 
 * `path` - (Required) The path in the container at which to mount this volume.
 
+* `sub_path` - (Optional) The sub path of the volume to be mounted in the container.
 ---
 
 An `identity` block supports the following:
@@ -390,6 +398,8 @@ An `ingress` block supports the following:
 * `transport` - (Optional) The transport method for the Ingress. Possible values are `auto`, `http`, `http2` and `tcp`. Defaults to `auto`.
 
 ~> **Note:**  if `transport` is set to `tcp`, `exposed_port` and `target_port` should be set at the same time.
+
+* `client_certificate_mode` - (Optional) The client certificate mode for the Ingress. Possible values are `require`, `accept`, and `ignore`.
 
 ---
 

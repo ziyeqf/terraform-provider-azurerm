@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/servicebus/2022-10-01-preview/namespaces"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/clients"
-	"github.com/hashicorp/terraform-provider-azurerm/internal/features"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tags"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/timeouts"
@@ -87,14 +86,6 @@ func dataSourceServiceBusNamespace() *pluginsdk.Resource {
 		},
 	}
 
-	if !features.FourPointOhBeta() {
-		resource.Schema["zone_redundant"] = &pluginsdk.Schema{
-			Type:       pluginsdk.TypeBool,
-			Computed:   true,
-			Deprecated: "The `zone_redundant` property has been deprecated and will be removed in v4.0 of the provider.",
-		}
-	}
-
 	return resource
 }
 
@@ -127,10 +118,6 @@ func dataSourceServiceBusNamespaceRead(d *pluginsdk.ResourceData, meta interface
 		if props := model.Properties; props != nil {
 			d.Set("premium_messaging_partitions", props.PremiumMessagingPartitions)
 			d.Set("endpoint", props.ServiceBusEndpoint)
-
-			if !features.FourPointOhBeta() {
-				d.Set("zone_redundant", props.ZoneRedundant)
-			}
 		}
 	}
 

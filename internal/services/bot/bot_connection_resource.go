@@ -8,6 +8,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/hashicorp/go-azure-helpers/lang/pointer"
 	"github.com/hashicorp/go-azure-helpers/lang/response"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/location"
@@ -18,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/validation"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/timeouts"
 	"github.com/hashicorp/terraform-provider-azurerm/utils"
-	"github.com/tombuildsstuff/kermit/sdk/botservice/2021-05-01-preview/botservice"
+	"github.com/jackofallops/kermit/sdk/botservice/2021-05-01-preview/botservice"
 )
 
 func resourceArmBotConnection() *pluginsdk.Resource {
@@ -117,8 +118,7 @@ func resourceArmBotConnectionCreate(d *pluginsdk.ResourceData, meta interface{})
 	}
 
 	// serviceProviderName := d.Get("service_provider_name").(string)
-	// var serviceProviderId *string
-	// var availableProviders []string
+	var serviceProviderId *string
 
 	// serviceProviders, err := client.ListServiceProviders(ctx)
 	// if err != nil {
@@ -126,8 +126,10 @@ func resourceArmBotConnectionCreate(d *pluginsdk.ResourceData, meta interface{})
 	// }
 
 	// if serviceProviders.Value == nil {
-	// 	return fmt.Errorf("no service providers were returned from the Azure API")
+	// 	return errors.New("no service providers were returned from the Azure API")
 	// }
+
+	// availableProviders := make([]string, 0, len(*serviceProviders.Value))
 	// for _, provider := range *serviceProviders.Value {
 	// 	if provider.Properties == nil || provider.Properties.ServiceProviderName == nil {
 	// 		continue
@@ -146,13 +148,13 @@ func resourceArmBotConnectionCreate(d *pluginsdk.ResourceData, meta interface{})
 
 	connection := botservice.ConnectionSetting{
 		Properties: &botservice.ConnectionSettingProperties{
-			ServiceProviderID: nil,
-			ClientID:          utils.String(d.Get("client_id").(string)),
-			ClientSecret:      utils.String(d.Get("client_secret").(string)),
-			Scopes:            utils.String(d.Get("scopes").(string)),
+			ServiceProviderID: serviceProviderId,
+			ClientID:          pointer.To(d.Get("client_id").(string)),
+			ClientSecret:      pointer.To(d.Get("client_secret").(string)),
+			Scopes:            pointer.To(d.Get("scopes").(string)),
 		},
 		Kind:     botservice.KindBot,
-		Location: utils.String(d.Get("location").(string)),
+		Location: pointer.To(d.Get("location").(string)),
 	}
 
 	if v, ok := d.GetOk("parameters"); ok {

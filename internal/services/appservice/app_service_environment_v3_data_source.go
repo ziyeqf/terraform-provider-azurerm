@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/sdk"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tags"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/pluginsdk"
-	"github.com/hashicorp/terraform-provider-azurerm/utils"
 )
 
 type AppServiceEnvironmentV3DataSource struct{}
@@ -230,7 +229,7 @@ func (r AppServiceEnvironmentV3DataSource) Read() sdk.ResourceFunc {
 					state.DedicatedHostCount = pointer.From(props.DedicatedHostCount)
 					state.PricingTier = pointer.From(props.MultiSize)
 					state.ClusterSetting = flattenClusterSettingsModel(props.ClusterSettings)
-					state.DnsSuffix = utils.NormalizeNilableString(props.DnsSuffix)
+					state.DnsSuffix = pointer.From(props.DnsSuffix)
 					state.IpSSLAddressCount = pointer.From(props.IPsslAddressCount)
 					state.ZoneRedundant = pointer.From(props.ZoneRedundant)
 				}
@@ -258,7 +257,6 @@ func (r AppServiceEnvironmentV3DataSource) Read() sdk.ResourceFunc {
 				state.InboundNetworkDependencies = *inboundNetworkDependencies
 
 				state.Tags = pointer.From(model.Tags)
-
 			}
 
 			metadata.SetID(id)
