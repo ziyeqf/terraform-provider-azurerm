@@ -157,14 +157,14 @@ func (ApiManagementSubscriptionDataSource) Read() sdk.ResourceFunc {
 			}
 
 			// Primary and secondary keys must be got from this additional api
-			keyResp, err := client.ListSecrets(ctx, id)
-			if err != nil {
-				return fmt.Errorf("listing Primary and Secondary Keys for %s: %+v", id, err)
-			}
-			if model := keyResp.Model; model != nil {
-				state.SecondaryKey = pointer.From(model.SecondaryKey)
-				state.PrimaryKey = pointer.From(model.PrimaryKey)
-			}
+			// keyResp, err := client.ListSecrets(ctx, id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing Primary and Secondary Keys for %s: %+v", id, err)
+			// }
+			// if model := keyResp.Model; model != nil {
+			// 	state.SecondaryKey = pointer.From(model.SecondaryKey)
+			// 	state.PrimaryKey = pointer.From(model.PrimaryKey)
+			// }
 
 			return metadata.Encode(&state)
 		},

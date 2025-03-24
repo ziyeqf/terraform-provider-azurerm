@@ -484,13 +484,13 @@ func (r MongoClusterResource) Read() sdk.ResourceFunc {
 				state.Tags = pointer.From(model.Tags)
 			}
 
-			csResp, err := client.ListConnectionStrings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("listing connection strings for %s: %+v", *id, err)
-			}
-			if model := csResp.Model; model != nil {
-				state.ConnectionStrings = flattenMongoClusterConnectionStrings(model.ConnectionStrings, state.AdministratorUserName, state.AdministratorPassword)
-			}
+			// csResp, err := client.ListConnectionStrings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing connection strings for %s: %+v", *id, err)
+			// }
+			// if model := csResp.Model; model != nil {
+			// 	state.ConnectionStrings = flattenMongoClusterConnectionStrings(model.ConnectionStrings, state.AdministratorUserName, state.AdministratorPassword)
+			// }
 
 			return metadata.Encode(&state)
 		},

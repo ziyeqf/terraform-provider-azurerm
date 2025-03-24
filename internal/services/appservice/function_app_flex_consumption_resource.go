@@ -577,19 +577,19 @@ func (r FunctionAppFlexConsumptionResource) Read() sdk.ResourceFunc {
 			// 	return fmt.Errorf("listing Site Publishing Credential information for %s: %+v", *id, err)
 			// }
 
-			auth, err := client.GetAuthSettings(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("retrieving Auth Settings for %s: %+v", id, err)
-			}
+			// auth, err := client.GetAuthSettings(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("retrieving Auth Settings for %s: %+v", id, err)
+			// }
 
-			var authV2 webapps.SiteAuthSettingsV2
-			if auth.Model != nil && auth.Model.Properties != nil && strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
-				authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
-				if err != nil {
-					return fmt.Errorf("retrieving authV2 settings for %s: %+v", *id, err)
-				}
-				authV2 = *authV2Resp.Model
-			}
+			// var authV2 webapps.SiteAuthSettingsV2
+			// if auth.Model != nil && auth.Model.Properties != nil && strings.EqualFold(pointer.From(auth.Model.Properties.ConfigVersion), "v2") {
+			// 	authV2Resp, err := client.GetAuthSettingsV2(ctx, *id)
+			// 	if err != nil {
+			// 		return fmt.Errorf("retrieving authV2 settings for %s: %+v", *id, err)
+			// 	}
+			// 	authV2 = *authV2Resp.Model
+			// }
 
 			basicAuthWebDeploy := true
 			if basicAuthWebDeployResp, err := client.GetScmAllowed(ctx, *id); err != nil && basicAuthWebDeployResp.Model != nil {
@@ -613,8 +613,8 @@ func (r FunctionAppFlexConsumptionResource) Read() sdk.ResourceFunc {
 				// ConnectionStrings:                helpers.FlattenConnectionStrings(connectionStrings.Model),
 				// StickySettings:                   helpers.FlattenStickySettings(stickySettings.Model.Properties),
 				// SiteCredentials:                  helpers.FlattenSiteCredentials(siteCredentials),
-				AuthSettings:                     helpers.FlattenAuthSettings(auth.Model),
-				AuthV2Settings:                   helpers.FlattenAuthV2Settings(authV2),
+				// AuthSettings:                     helpers.FlattenAuthSettings(auth.Model),
+				// AuthV2Settings:                   helpers.FlattenAuthV2Settings(authV2),
 				PublishingDeployBasicAuthEnabled: basicAuthWebDeploy,
 				Tags:                             pointer.From(model.Tags),
 				Kind:                             pointer.From(model.Kind),

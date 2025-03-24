@@ -341,10 +341,10 @@ func (w WebPubSubSocketIOResource) Read() sdk.ResourceFunc {
 				return fmt.Errorf("retrieving %s: %+v", *id, err)
 			}
 
-			keys, err := client.ListKeys(ctx, *id)
-			if err != nil {
-				return fmt.Errorf("listing keys for %s: %+v", *id, err)
-			}
+			// keys, err := client.ListKeys(ctx, *id)
+			// if err != nil {
+			// 	return fmt.Errorf("listing keys for %s: %+v", *id, err)
+			// }
 
 			state := WebPubSubSocketIOResourceModel{
 				Name:              id.WebPubSubName,
@@ -392,12 +392,12 @@ func (w WebPubSubSocketIOResource) Read() sdk.ResourceFunc {
 				}
 			}
 
-			if keyModel := keys.Model; keyModel != nil {
-				state.PrimaryAccessKey = pointer.From(keyModel.PrimaryKey)
-				state.PrimaryConnectionString = pointer.From(keyModel.PrimaryConnectionString)
-				state.SecondaryAccessKey = pointer.From(keyModel.SecondaryKey)
-				state.SecondaryConnectionString = pointer.From(keyModel.SecondaryConnectionString)
-			}
+			// if keyModel := keys.Model; keyModel != nil {
+			// 	state.PrimaryAccessKey = pointer.From(keyModel.PrimaryKey)
+			// 	state.PrimaryConnectionString = pointer.From(keyModel.PrimaryConnectionString)
+			// 	state.SecondaryAccessKey = pointer.From(keyModel.SecondaryKey)
+			// 	state.SecondaryConnectionString = pointer.From(keyModel.SecondaryConnectionString)
+			// }
 
 			return metadata.Encode(&state)
 		},
