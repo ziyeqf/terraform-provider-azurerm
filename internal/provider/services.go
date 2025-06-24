@@ -131,6 +131,7 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/videoindexer"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/vmware"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/voiceservices"
+	"github.com/hashicorp/terraform-provider-azurerm/internal/services/web"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/services/workloads"
 )
 
@@ -228,6 +229,7 @@ func SupportedTypedServices() []sdk.TypedServiceRegistration {
 		vmware.Registration{},
 		voiceservices.Registration{},
 		workloads.Registration{},
+		web.Registration{},
 	}
 	services = append(services, autoRegisteredTypedServices()...)
 	return services
@@ -329,6 +331,7 @@ func SupportedUntypedServices() []sdk.UntypedServiceRegistration {
 			synapse.Registration{},
 			trafficmanager.Registration{},
 			vmware.Registration{},
+			web.Registration{},
 		}
 		return out
 	}()
