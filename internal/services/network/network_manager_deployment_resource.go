@@ -62,6 +62,7 @@ func (r ManagerDeploymentResource) Arguments() map[string]*pluginsdk.Schema {
 			ValidateFunc: validation.StringInSlice([]string{
 				string(networkmanagers.ConfigurationTypeConnectivity),
 				string(networkmanagers.ConfigurationTypeSecurityAdmin),
+				string(networkmanagers.ConfigurationTypeRouting),
 			}, false),
 		},
 

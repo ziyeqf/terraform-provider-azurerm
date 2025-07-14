@@ -645,10 +645,6 @@ A `slow_request` block exports the following:
 
 * `interval` - The time interval.
 
-* `path` - The App Path for which this rule applies.
-
-~> **NOTE:** `path` in `slow_request` block will be deprecated in 4.0 provider. Please use `slow_request_with_path` to set a slow request trigger with path specified.
-
 * `time_taken` - The amount of time that qualifies as slow for this rule.
 
 ---
@@ -730,3 +726,9 @@ A `twitter` block exports the following:
 The `timeouts` block allows you to specify [timeouts](https://www.terraform.io/language/resources/syntax#operation-timeouts) for certain actions:
 
 * `read` - (Defaults to 5 minutes) Used when retrieving the Linux Web App.
+
+## API Providers
+<!-- This section is generated, changes will be overwritten -->
+This data source uses the following Azure API Providers:
+
+* `Microsoft.Web`: 2023-12-01

@@ -108,6 +108,12 @@ func TestAccNetworkManager(t *testing.T) {
 			"update":         testAccNetorkManagerVerifierWorkspace_update,
 			"requiresImport": testAccNetorkManagerVerifierWorkspace_requiresImport,
 		},
+		"RoutingConfiguration": {
+			"basic":          testAccNetworkManagerRoutingConfiguration_basic,
+			"complete":       testAccNetworkManagerRoutingConfiguration_complete,
+			"update":         testAccNetworkManagerRoutingConfiguration_update,
+			"requiresImport": testAccNetworkManagerRoutingConfiguration_requiresImport,
+		},
 	}
 
 	for group, m := range testCases {
@@ -223,7 +229,6 @@ resource "azurerm_network_manager" "test" {
   scope {
     subscription_ids = [data.azurerm_subscription.current.id]
   }
-  scope_accesses = ["SecurityAdmin"]
 }
 `, r.template(data), data.RandomInteger)
 }
@@ -238,7 +243,6 @@ resource "azurerm_network_manager" "import" {
   scope {
     subscription_ids = azurerm_network_manager.test.scope.0.subscription_ids
   }
-  scope_accesses = azurerm_network_manager.test.scope_accesses
 }
 `, r.basic(data))
 }

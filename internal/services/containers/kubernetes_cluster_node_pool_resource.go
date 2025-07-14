@@ -110,8 +110,10 @@ func resourceKubernetesClusterNodePoolSchema() map[string]*pluginsdk.Schema {
 		"tags": commonschema.Tags(),
 
 		"vm_size": {
-			Type:         pluginsdk.TypeString,
-			Required:     true,
+			Type:     pluginsdk.TypeString,
+			Optional: true,
+			// NOTE: O+C AKS RP provides a new feature that will automatically select an available vm size when it's omitted.
+			Computed:     true,
 			ValidateFunc: validation.StringIsNotEmpty,
 		},
 
@@ -731,6 +733,10 @@ func resourceKubernetesClusterNodePoolUpdate(d *pluginsdk.ResourceData, meta int
 		props.KubeletConfig = expandAgentPoolKubeletConfig(kubeletConfigRaw)
 	}
 
+	if d.HasChange("kubelet_disk_type") {
+		props.KubeletDiskType = pointer.To(agentpools.KubeletDiskType(d.Get("kubelet_disk_type").(string)))
+	}
+
 	if d.HasChange("linux_os_config") {
 		linuxOSConfigRaw := d.Get("linux_os_config").([]interface{})
 		if d.Get("os_type").(string) != string(managedclusters.OSTypeLinux) {
@@ -900,6 +906,7 @@ func resourceKubernetesClusterNodePoolUpdate(d *pluginsdk.ResourceData, meta int
 		"fips_enabled",
 		"host_encryption_enabled",
 		"kubelet_config",
+		"kubelet_disk_type",
 		"linux_os_config",
 		"max_pods",
 		"node_public_ip_enabled",
