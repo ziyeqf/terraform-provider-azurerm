@@ -140,7 +140,7 @@ func (s *GRPCServer) Stop() {
 	s.server.Stop()
 
 	if s.broker != nil {
-		s.broker.Close()
+		_ = s.broker.Close()
 		s.broker = nil
 	}
 }
@@ -151,7 +151,7 @@ func (s *GRPCServer) GracefulStop() {
 	s.server.GracefulStop()
 
 	if s.broker != nil {
-		s.broker.Close()
+		_ = s.broker.Close()
 		s.broker = nil
 	}
 }
