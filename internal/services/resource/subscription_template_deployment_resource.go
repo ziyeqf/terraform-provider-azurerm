@@ -283,10 +283,10 @@ func subscriptionTemplateDeploymentResourceRead(d *pluginsdk.ResourceData, meta 
 		return fmt.Errorf("retrieving Subscription Template Deployment %q: %+v", id.DeploymentName, err)
 	}
 
-	templateContents, err := client.ExportTemplateAtSubscriptionScope(ctx, id.DeploymentName)
-	if err != nil {
-		return fmt.Errorf("retrieving Template Content for Subscription Template Deployment %q: %+v", id.DeploymentName, err)
-	}
+	// templateContents, err := client.ExportTemplateAtSubscriptionScope(ctx, id.DeploymentName)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Template Content for Subscription Template Deployment %q: %+v", id.DeploymentName, err)
+	// }
 
 	d.Set("name", id.DeploymentName)
 	d.Set("location", location.NormalizeNilable(resp.Location))
@@ -316,11 +316,11 @@ func subscriptionTemplateDeploymentResourceRead(d *pluginsdk.ResourceData, meta 
 		d.Set("template_spec_version_id", templateLinkId)
 	}
 
-	flattenedTemplate, err := flattenTemplateDeploymentBody(templateContents.Template)
-	if err != nil {
-		return fmt.Errorf("flattening `template_content`: %+v", err)
-	}
-	d.Set("template_content", flattenedTemplate)
+	// flattenedTemplate, err := flattenTemplateDeploymentBody(templateContents.Template)
+	// if err != nil {
+	// 	return fmt.Errorf("flattening `template_content`: %+v", err)
+	// }
+	// d.Set("template_content", flattenedTemplate)
 
 	return tags.FlattenAndSet(d, resp.Tags)
 }

@@ -612,10 +612,10 @@ func resourceAppConfigurationRead(d *pluginsdk.ResourceData, meta interface{}) e
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
 
-	resultPage, err := client.ListKeysComplete(ctx, *id)
-	if err != nil {
-		return fmt.Errorf("retrieving access keys for %s: %+v", *id, err)
-	}
+	// resultPage, err := client.ListKeysComplete(ctx, *id)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving access keys for %s: %+v", *id, err)
+	// }
 
 	d.Set("name", id.ConfigurationStoreName)
 	d.Set("resource_group_name", id.ResourceGroupName)
@@ -654,11 +654,11 @@ func resourceAppConfigurationRead(d *pluginsdk.ResourceData, meta interface{}) e
 			d.Set("soft_delete_retention_days", softDeleteRetentionDays)
 		}
 
-		accessKeys := flattenAppConfigurationAccessKeys(resultPage.Items)
-		d.Set("primary_read_key", accessKeys.primaryReadKey)
-		d.Set("primary_write_key", accessKeys.primaryWriteKey)
-		d.Set("secondary_read_key", accessKeys.secondaryReadKey)
-		d.Set("secondary_write_key", accessKeys.secondaryWriteKey)
+		// accessKeys := flattenAppConfigurationAccessKeys(resultPage.Items)
+		// d.Set("primary_read_key", accessKeys.primaryReadKey)
+		// d.Set("primary_write_key", accessKeys.primaryWriteKey)
+		// d.Set("secondary_read_key", accessKeys.secondaryReadKey)
+		// d.Set("secondary_write_key", accessKeys.secondaryWriteKey)
 
 		flattenedIdentity, err := identity.FlattenSystemAndUserAssignedMap(model.Identity)
 		if err != nil {

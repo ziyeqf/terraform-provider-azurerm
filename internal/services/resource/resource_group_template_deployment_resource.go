@@ -319,10 +319,10 @@ func resourceGroupTemplateDeploymentResourceRead(d *pluginsdk.ResourceData, meta
 		return fmt.Errorf("retrieving Template Deployment %q (Resource Group %q): %+v", id.DeploymentName, id.ResourceGroup, err)
 	}
 
-	templateContents, err := client.ExportTemplate(ctx, id.ResourceGroup, id.DeploymentName)
-	if err != nil {
-		return fmt.Errorf("retrieving Template Content for Template Deployment %q (Resource Group %q): %+v", id.DeploymentName, id.ResourceGroup, err)
-	}
+	// templateContents, err := client.ExportTemplate(ctx, id.ResourceGroup, id.DeploymentName)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Template Content for Template Deployment %q (Resource Group %q): %+v", id.DeploymentName, id.ResourceGroup, err)
+	// }
 
 	d.Set("name", id.DeploymentName)
 	d.Set("resource_group_name", id.ResourceGroup)
@@ -353,11 +353,11 @@ func resourceGroupTemplateDeploymentResourceRead(d *pluginsdk.ResourceData, meta
 		d.Set("template_spec_version_id", templateLinkId)
 	}
 
-	flattenedTemplate, err := flattenTemplateDeploymentBody(templateContents.Template)
-	if err != nil {
-		return fmt.Errorf("flattening `template_content`: %+v", err)
-	}
-	d.Set("template_content", flattenedTemplate)
+	// flattenedTemplate, err := flattenTemplateDeploymentBody(templateContents.Template)
+	// if err != nil {
+	// 	return fmt.Errorf("flattening `template_content`: %+v", err)
+	// }
+	// d.Set("template_content", flattenedTemplate)
 
 	return tags.FlattenAndSet(d, resp.Tags)
 }

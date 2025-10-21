@@ -549,7 +549,7 @@ func resourceLogAnalyticsWorkspaceUpdate(d *pluginsdk.ResourceData, meta interfa
 }
 
 func resourceLogAnalyticsWorkspaceRead(d *pluginsdk.ResourceData, meta interface{}) error {
-	sharedKeyClient := meta.(*clients.Client).LogAnalytics.SharedKeyWorkspacesClient
+	//sharedKeyClient := meta.(*clients.Client).LogAnalytics.SharedKeyWorkspacesClient
 	client := meta.(*clients.Client).LogAnalytics.WorkspaceClient
 	ctx, cancel := timeouts.ForRead(meta.(*clients.Client).StopContext, d)
 	defer cancel()
@@ -643,16 +643,16 @@ func resourceLogAnalyticsWorkspaceRead(d *pluginsdk.ResourceData, meta interface
 			}
 			d.Set("data_collection_rule_id", defaultDataCollectionRuleResourceId)
 
-			sharedKeyId := sharedKeyWorkspaces.NewWorkspaceID(id.SubscriptionId, id.ResourceGroupName, id.WorkspaceName)
-			sharedKeysResp, err := sharedKeyClient.SharedKeysGetSharedKeys(ctx, sharedKeyId)
-			if err != nil {
-				log.Printf("[ERROR] Unable to List Shared keys for Log Analytics workspaces %s: %+v", id.WorkspaceName, err)
-			} else {
-				if sharedKeysModel := sharedKeysResp.Model; sharedKeysModel != nil {
-					d.Set("primary_shared_key", pointer.From(sharedKeysModel.PrimarySharedKey))
-					d.Set("secondary_shared_key", pointer.From(sharedKeysModel.SecondarySharedKey))
-				}
-			}
+			//sharedKeyId := sharedKeyWorkspaces.NewWorkspaceID(id.SubscriptionId, id.ResourceGroupName, id.WorkspaceName)
+			// sharedKeysResp, err := sharedKeyClient.SharedKeysGetSharedKeys(ctx, sharedKeyId)
+			// if err != nil {
+			// 	log.Printf("[ERROR] Unable to List Shared keys for Log Analytics workspaces %s: %+v", id.WorkspaceName, err)
+			// } else {
+			// 	if sharedKeysModel := sharedKeysResp.Model; sharedKeysModel != nil {
+			// 		d.Set("primary_shared_key", pointer.From(sharedKeysModel.PrimarySharedKey))
+			// 		d.Set("secondary_shared_key", pointer.From(sharedKeysModel.SecondarySharedKey))
+			// 	}
+			// }
 		}
 
 		d.Set("location", location.Normalize(model.Location))

@@ -284,10 +284,10 @@ func tenantTemplateDeploymentResourceRead(d *pluginsdk.ResourceData, meta interf
 		return fmt.Errorf("retrieving Tenant Template Deployment %q: %+v", id.DeploymentName, err)
 	}
 
-	templateContents, err := client.ExportTemplateAtTenantScope(ctx, id.DeploymentName)
-	if err != nil {
-		return fmt.Errorf("retrieving Template Content for Tenant Template Deployment %q: %+v", id.DeploymentName, err)
-	}
+	// templateContents, err := client.ExportTemplateAtTenantScope(ctx, id.DeploymentName)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Template Content for Tenant Template Deployment %q: %+v", id.DeploymentName, err)
+	// }
 
 	d.Set("name", id.DeploymentName)
 	d.Set("location", location.NormalizeNilable(resp.Location))
@@ -317,11 +317,11 @@ func tenantTemplateDeploymentResourceRead(d *pluginsdk.ResourceData, meta interf
 		d.Set("template_spec_version_id", templateLinkId)
 	}
 
-	flattenedTemplate, err := flattenTemplateDeploymentBody(templateContents.Template)
-	if err != nil {
-		return fmt.Errorf("flattening `template_content`: %+v", err)
-	}
-	d.Set("template_content", flattenedTemplate)
+	// flattenedTemplate, err := flattenTemplateDeploymentBody(templateContents.Template)
+	// if err != nil {
+	// 	return fmt.Errorf("flattening `template_content`: %+v", err)
+	// }
+	// d.Set("template_content", flattenedTemplate)
 
 	return tags.FlattenAndSet(d, resp.Tags)
 }

@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/go-azure-helpers/lang/response"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonids"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
-	"github.com/hashicorp/go-azure-helpers/resourcemanager/resourceids"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/appplatform/2024-01-01-preview/appplatform"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/features"
@@ -323,20 +322,20 @@ func (s SpringCloudNewRelicApplicationPerformanceMonitoringResource) Read() sdk.
 			}
 
 			springId := commonids.NewSpringCloudServiceID(id.SubscriptionId, id.ResourceGroupName, id.SpringName)
-			result, err := client.ServicesListGloballyEnabledApms(ctx, springId)
-			if err != nil {
-				return fmt.Errorf("listing globally enabled apms: %+v", err)
-			}
+			// result, err := client.ServicesListGloballyEnabledApms(ctx, springId)
+			// if err != nil {
+			// 	return fmt.Errorf("listing globally enabled apms: %+v", err)
+			// }
 			globallyEnabled := false
-			if result.Model != nil && result.Model.Value != nil {
-				for _, value := range *result.Model.Value {
-					apmId, err := appplatform.ParseApmIDInsensitively(value)
-					if err == nil && resourceids.Match(apmId, id) {
-						globallyEnabled = true
-						break
-					}
-				}
-			}
+			// if result.Model != nil && result.Model.Value != nil {
+			// 	for _, value := range *result.Model.Value {
+			// 		apmId, err := appplatform.ParseApmIDInsensitively(value)
+			// 		if err == nil && resourceids.Match(apmId, id) {
+			// 			globallyEnabled = true
+			// 			break
+			// 		}
+			// 	}
+			// }
 
 			var model SpringCloudNewRelicApplicationPerformanceMonitoringModel
 			if err := metadata.Decode(&model); err != nil {

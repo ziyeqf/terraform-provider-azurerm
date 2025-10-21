@@ -298,10 +298,10 @@ func managementGroupTemplateDeploymentResourceRead(d *pluginsdk.ResourceData, me
 		return fmt.Errorf("retrieving Management Group Template Deployment %q: %+v", id.DeploymentName, err)
 	}
 
-	templateContents, err := client.ExportTemplateAtManagementGroupScope(ctx, id.ManagementGroupName, id.DeploymentName)
-	if err != nil {
-		return fmt.Errorf("retrieving Template Content for Management Group Template Deployment %q: %+v", id.DeploymentName, err)
-	}
+	// templateContents, err := client.ExportTemplateAtManagementGroupScope(ctx, id.ManagementGroupName, id.DeploymentName)
+	// if err != nil {
+	// 	return fmt.Errorf("retrieving Template Content for Management Group Template Deployment %q: %+v", id.DeploymentName, err)
+	// }
 
 	d.Set("name", id.DeploymentName)
 	managementGroupId := mgParse.NewManagementGroupId(id.ManagementGroupName)
@@ -333,11 +333,11 @@ func managementGroupTemplateDeploymentResourceRead(d *pluginsdk.ResourceData, me
 		d.Set("template_spec_version_id", templateLinkId)
 	}
 
-	flattenedTemplate, err := flattenTemplateDeploymentBody(templateContents.Template)
-	if err != nil {
-		return fmt.Errorf("flattening `template_content`: %+v", err)
-	}
-	d.Set("template_content", flattenedTemplate)
+	// flattenedTemplate, err := flattenTemplateDeploymentBody(templateContents.Template)
+	// if err != nil {
+	// 	return fmt.Errorf("flattening `template_content`: %+v", err)
+	// }
+	// d.Set("template_content", flattenedTemplate)
 
 	return tags.FlattenAndSet(d, resp.Tags)
 }
