@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonids"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/commonschema"
 	"github.com/hashicorp/go-azure-helpers/resourcemanager/identity"
-	"github.com/hashicorp/go-azure-sdk/resource-manager/batch/2024-07-01/pool"
+	pool "github.com/hashicorp/go-azure-sdk/resource-manager/batch/2024-07-01/pools"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/azure"
 	"github.com/hashicorp/terraform-provider-azurerm/helpers/tf"
@@ -29,6 +29,8 @@ import (
 	"github.com/hashicorp/terraform-provider-azurerm/internal/tf/validation"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/timeouts"
 )
+
+//go:generate go run ../../tools/generator-tests resourceidentity -resource-name batch_pool -service-package-name batch -properties "name,resource_group_name,batch_account_name:account_name" -known-values "subscription_id:data.Subscriptions.Primary"
 
 func resourceBatchPool() *pluginsdk.Resource {
 	resource := &pluginsdk.Resource{
@@ -44,10 +46,8 @@ func resourceBatchPool() *pluginsdk.Resource {
 			Delete: pluginsdk.DefaultTimeout(30 * time.Minute),
 		},
 
-		Importer: pluginsdk.ImporterValidatingResourceId(func(id string) error {
-			_, err := pool.ParsePoolID(id)
-			return err
-		}),
+		Importer: pluginsdk.ImporterValidatingIdentity(&pool.PoolId{}),
+
 		Schema: map[string]*pluginsdk.Schema{
 			"name": {
 				Type:         pluginsdk.TypeString,
@@ -866,6 +866,10 @@ func resourceBatchPool() *pluginsdk.Resource {
 		}
 	}
 
+	resource.Identity = &schema.ResourceIdentity{
+		SchemaFunc: pluginsdk.GenerateIdentitySchema(&pool.PoolId{}),
+	}
+
 	return resource
 }
 
@@ -877,7 +881,7 @@ func resourceBatchPoolCreate(d *pluginsdk.ResourceData, meta interface{}) error 
 
 	id := pool.NewPoolID(subscriptionId, d.Get("resource_group_name").(string), d.Get("account_name").(string), d.Get("name").(string))
 
-	existing, err := client.Get(ctx, id)
+	existing, err := client.PoolGet(ctx, id)
 	if err != nil {
 		if !response.WasNotFound(existing.HttpResponse) {
 			return fmt.Errorf("checking for presence of existing %s: %+v", id, err)
@@ -980,17 +984,20 @@ func resourceBatchPoolCreate(d *pluginsdk.ResourceData, meta interface{}) error 
 		parameters.Properties.TargetNodeCommunicationMode = pointer.To(pool.NodeCommunicationMode(v.(string)))
 	}
 
-	_, err = client.Create(ctx, id, parameters, pool.CreateOperationOptions{})
+	_, err = client.PoolCreate(ctx, id, parameters, pool.PoolCreateOperationOptions{})
 	if err != nil {
 		return fmt.Errorf("creating %s: %+v", id, err)
 	}
 
-	read, err := client.Get(ctx, id)
+	read, err := client.PoolGet(ctx, id)
 	if err != nil {
 		return fmt.Errorf("retrieving %s: %+v", id, err)
 	}
 
 	d.SetId(id.ID())
+	if err := pluginsdk.SetResourceIdentityData(d, &id); err != nil {
+		return err
+	}
 
 	// if the pool is not Steady after the create operation, wait for it to be Steady
 	if model := read.Model; model != nil {
@@ -1014,7 +1021,7 @@ func resourceBatchPoolUpdate(d *pluginsdk.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	resp, err := client.Get(ctx, *id)
+	resp, err := client.PoolGet(ctx, *id)
 	if err != nil {
 		return fmt.Errorf("retrieving %s: %+v", *id, err)
 	}
@@ -1028,7 +1035,7 @@ func resourceBatchPoolUpdate(d *pluginsdk.ResourceData, meta interface{}) error 
 			}
 
 			log.Printf("[INFO] stopping the pending resize operation on this pool...")
-			if _, err = client.StopResize(ctx, *id); err != nil {
+			if _, err = client.PoolStopResize(ctx, *id); err != nil {
 				return fmt.Errorf("stopping resize operation for %s: %+v", *id, err)
 			}
 
@@ -1124,7 +1131,7 @@ func resourceBatchPoolUpdate(d *pluginsdk.ResourceData, meta interface{}) error 
 		parameters.Properties.TargetNodeCommunicationMode = pointer.To(pool.NodeCommunicationMode(d.Get("target_node_communication_mode").(string)))
 	}
 
-	result, err := client.Update(ctx, *id, parameters, pool.UpdateOperationOptions{})
+	result, err := client.PoolUpdate(ctx, *id, parameters, pool.PoolUpdateOperationOptions{})
 	if err != nil {
 		return fmt.Errorf("updating %s: %+v", *id, err)
 	}
@@ -1151,7 +1158,7 @@ func resourceBatchPoolRead(d *pluginsdk.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	resp, err := client.Get(ctx, *id)
+	resp, err := client.PoolGet(ctx, *id)
 	if err != nil {
 		if response.WasNotFound(resp.HttpResponse) {
 			log.Printf("[INFO] %s was not found - removing from state", *id)
@@ -1271,7 +1278,7 @@ func resourceBatchPoolRead(d *pluginsdk.ResourceData, meta interface{}) error {
 								extension["settings_json"] = string(settingValue)
 							}
 
-							for i := 0; i < n; i++ {
+							for i := range n {
 								if v, ok := d.GetOk(fmt.Sprintf("extensions.%d.name", i)); ok && v == item.Name {
 									extension["protected_settings"] = d.Get(fmt.Sprintf("extensions.%d.protected_settings", i))
 									break
@@ -1348,7 +1355,7 @@ func resourceBatchPoolRead(d *pluginsdk.ResourceData, meta interface{}) error {
 		}
 	}
 
-	return nil
+	return pluginsdk.SetResourceIdentityData(d, id)
 }
 
 func resourceBatchPoolDelete(d *pluginsdk.ResourceData, meta interface{}) error {
@@ -1361,7 +1368,7 @@ func resourceBatchPoolDelete(d *pluginsdk.ResourceData, meta interface{}) error 
 		return err
 	}
 
-	if err := client.DeleteThenPoll(ctx, *id); err != nil {
+	if err := client.PoolDeleteThenPoll(ctx, *id); err != nil {
 		return fmt.Errorf("deleting %s: %+v", *id, err)
 	}
 
@@ -1420,12 +1427,12 @@ func expandBatchPoolScaleSettings(d *pluginsdk.ResourceData) (*pool.ScaleSetting
 	return scaleSettings, nil
 }
 
-func waitForBatchPoolPendingResizeOperation(ctx context.Context, client *pool.PoolClient, id pool.PoolId) error {
+func waitForBatchPoolPendingResizeOperation(ctx context.Context, client *pool.PoolsClient, id pool.PoolId) error {
 	// waiting for the pool to be in steady state
 	log.Printf("[INFO] waiting for the pending resize operation on this pool to be stopped...")
 	isSteady := false
 	for !isSteady {
-		resp, err := client.Get(ctx, id)
+		resp, err := client.PoolGet(ctx, id)
 		if err != nil {
 			return fmt.Errorf("retrieving %s: %+v", id, err)
 		}
