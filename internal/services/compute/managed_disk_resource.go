@@ -814,7 +814,7 @@ func resourceManagedDiskUpdate(d *pluginsdk.ResourceData, meta interface{}) erro
 
 	// if we are attached to a VM we bring down the VM as necessary for the operations which are not allowed while it's online
 	if shouldShutDown {
-		virtualMachineId, err := virtualmachines.ParseVirtualMachineID(*disk.Model.ManagedBy)
+		virtualMachineId, err := virtualmachines.ParseVirtualMachineIDInsensitively(*disk.Model.ManagedBy)
 		if err != nil {
 			return fmt.Errorf("parsing VMID %q for disk attachment: %+v", *disk.Model.ManagedBy, err)
 		}
