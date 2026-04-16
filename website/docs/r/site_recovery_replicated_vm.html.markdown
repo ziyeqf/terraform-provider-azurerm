@@ -284,6 +284,8 @@ A `managed_disk` block supports the following:
 
 * `target_replica_disk_type` - (Required) What type should the disk be that holds the replication data. Possible values are `Standard_LRS`, `Premium_LRS`, `PremiumV2_LRS`, `StandardSSD_LRS`, `UltraSSD_LRS`, `StandardSSD_ZRS` and `Premium_ZRS`. Changing this forces a new resource to be created.
 
+-> **Note:** Azure requires `PremiumV2_LRS` disks to be attached to zonal VMs in regions that support Availability Zones. For details, see [Premium SSD v2 limitations](https://learn.microsoft.com/azure/virtual-machines/disks-types#premium-ssd-v2).
+
 * `target_disk_encryption_set_id` - (Optional) The Disk Encryption Set that the Managed Disk will be associated with. Changing this forces a new resource to be created.
 
 -> **Note:** Creating replicated vm with `target_disk_encryption_set_id` wil take more time (up to 5 hours), please extend the `timeout` for `create`.

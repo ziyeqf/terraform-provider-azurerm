@@ -842,8 +842,24 @@ func resourceSiteRecoveryReplicatedItemRead(d *pluginsdk.ResourceData, meta inte
 			}
 
 			if a2aDetails.ProtectedManagedDisks != nil {
+				configuredDiskIds := make(map[string]struct{})
+				if configuredDisks, ok := d.GetOk("managed_disk"); ok {
+					for _, raw := range configuredDisks.(*pluginsdk.Set).List() {
+						diskInput := raw.(map[string]interface{})
+						if id, ok := diskInput["disk_id"].(string); ok && id != "" {
+							configuredDiskIds[strings.ToLower(id)] = struct{}{}
+						}
+					}
+				}
+
 				disksOutput := make([]interface{}, 0)
 				for _, disk := range *a2aDetails.ProtectedManagedDisks {
+					// PremiumV2_LRS protection may return generated seed disks in the API response.
+					// Keep user-managed and other service disks, but skip generated seed-disk-only entries.
+					if !shouldIncludeProtectedManagedDisk(disk, configuredDiskIds) {
+						continue
+					}
+
 					diskOutput := make(map[string]interface{})
 					diskId := ""
 					if respDiskId := pointer.From(disk.DiskId); respDiskId != "" {
@@ -985,6 +1001,25 @@ func resourceSiteRecoveryReplicatedVMDiskHash(v interface{}) int {
 	}
 
 	return pluginsdk.HashString(buf.String())
+}
+
+func shouldIncludeProtectedManagedDisk(disk replicationprotecteditems.A2AProtectedManagedDiskDetails, configuredDiskIds map[string]struct{}) bool {
+	// fully computed, accept all values
+	if len(configuredDiskIds) == 0 {
+		return true
+	}
+
+	// specified seed disk in config
+	diskId := strings.ToLower(pointer.From(disk.DiskId))
+	if _, ok := configuredDiskIds[diskId]; ok {
+		return true
+	}
+
+	if pointer.From(disk.RecoveryOrignalTargetDiskId) != "" {
+		return false
+	}
+
+	return true
 }
 
 func waitForReplicationToBeHealthy(ctx context.Context, d *pluginsdk.ResourceData, meta interface{}) (*replicationprotecteditems.ReplicationProtectedItem, error) {
