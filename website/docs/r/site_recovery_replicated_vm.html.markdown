@@ -250,7 +250,9 @@ The following arguments are supported:
 * `managed_disk` - (Optional) One or more `managed_disk` block as defined below. Changing this forces a new resource to be created.
 
 * `unmanaged_disk` - (Optional) One or more `unmanaged_disk` block as defined below. Changing this forces a new resource to be created.
- 
+
+~> **Note:** Azure no longer supports creating Virtual Machines with unmanaged disks. The `unmanaged_disk` block is deprecated and will be removed in a future major version of the AzureRM Provider. Use the `managed_disk` block instead. For more information, see [Azure Unmanaged Disks deprecation](https://learn.microsoft.com/azure/virtual-machines/unmanaged-disks-deprecation).
+
 * `target_edge_zone` - (Optional) Specifies the Edge Zone within the Azure Region where this Managed Kubernetes Cluster should exist. Changing this forces a new resource to be created.
 
 * `target_proximity_placement_group_id` - (Optional) Id of Proximity Placement Group the new VM should belong to when a failover is done.

@@ -163,6 +163,7 @@ func resourceSiteRecoveryReplicatedVM() *pluginsdk.Resource {
 				Computed:   true,
 				ConfigMode: pluginsdk.SchemaConfigModeAttr,
 				ForceNew:   true,
+				Deprecated: "The `unmanaged_disk` block has been deprecated because Azure no longer supports unmanaged disks and will be removed in a future major version of the AzureRM Provider. Please migrate to managed disks. For more information, see https://learn.microsoft.com/azure/virtual-machines/unmanaged-disks-deprecation.",
 				Elem: &pluginsdk.Resource{
 					Schema: map[string]*pluginsdk.Schema{
 						"disk_uri": {
